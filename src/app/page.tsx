@@ -11,7 +11,7 @@ export default function Home() {
     async function testConnection() {
       try {
         const { data, error } = await supabase
-          .from('tweets')
+          .from('Tweets')
           .select('*')  // Sélectionne toutes les colonnes
           .limit(1);
 
