@@ -1,0 +1,25 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+body {
+  font-family: 'Bangers', sans-serif;
+  background-color: #FBFBEF;
+}
+
+.dark {
+  background-color: #222;
+  color: white;
+}
+
+.text-primary {
+  color: #4357AD;
+}
+
+.bg-primary {
+  background-color: #4357AD;
+}
+
+.bg-secondary {
+  background-color: #FBFBEF;
+}

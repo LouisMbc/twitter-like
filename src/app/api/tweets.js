@@ -6,7 +6,7 @@ export async function getTweets() {
   return data;
 }
 
-export async function createTweet(content, userId) {
-  const { error } = await supabase.from("tweets").insert([{ content, author_id: userId }]);
+export async function createTweet(userId, content) {
+  const { error } = await supabase.from("tweets").insert([{ user_id: userId, content }]);
   if (error) throw error;
 }
