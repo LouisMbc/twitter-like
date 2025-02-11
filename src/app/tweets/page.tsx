@@ -4,113 +4,119 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 
-interface Tweet {
-  content: string;
-  picture: string[];
-}
-
 export default function CreateTweetPage() {
   const router = useRouter();
-  const [tweet, setTweet] = useState<Tweet>({
-    content: '',
-    picture: [], 
-  });
+  const [content, setContent] = useState('');
+  const [images, setImages] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImages(files);
+  };
+
+  const uploadImages = async (files: File[]) => {
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `tweets/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('tweets')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('tweets')
+          .getPublicUrl(filePath);
+
+        return publicUrl;
+      });
+
+      return await Promise.all(uploadPromises);
+    } catch (error) {
+      console.error("Erreur lors de l'upload:", error);
+      throw error;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setUploading(true);
     setError('');
 
     try {
-      // Vérification du contenu
-      if (!tweet.content.trim()) {
-        throw new Error('Le contenu du tweet ne peut pas être vide');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Non authentifié');
+
+      // D'abord récupérer l'ID du profil de l'utilisateur
+      const { data: profileData, error: profileError } = await supabase
+        .from('Profile')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profileData) throw new Error('Profil non trouvé');
+
+      // Upload des images si présentes
+      let imageUrls: string[] = [];
+      if (images.length > 0) {
+        imageUrls = await uploadImages(images);
       }
 
+      // Créer le tweet avec l'ID du profil comme author_id
       const { error: tweetError } = await supabase
-        .from('tweets')
+        .from('Tweets')
         .insert([
           {
-            content: tweet.content,
-            picture: tweet.picture,
-            // author_id sera automatiquement défini par Supabase RLS
-            // published_at sera automatiquement défini par défaut
-            // view_count sera initialisé à 0 par défaut
+            content,
+            picture: imageUrls,
+            author_id: profileData.id // Utiliser l'ID du profil au lieu de session.user.id
           }
         ]);
 
       if (tweetError) throw tweetError;
 
-      // Redirection vers le dashboard après création
       router.push('/dashboard');
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Créer un Tweet</h1>
+      <h1 className="text-2xl font-bold mb-6">Créer un tweet</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Contenu du tweet */}
         <div>
           <textarea
-            value={tweet.content}
-            onChange={(e) => setTweet(prev => ({ ...prev, content: e.target.value }))}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             placeholder="Quoi de neuf ?"
             className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
             rows={4}
             maxLength={280}
+            required
           />
           <div className="text-sm text-gray-500 text-right">
-            {tweet.content.length}/280 caractères
+            {content.length}/280 caractères
           </div>
         </div>
 
         {/* Upload d'images */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ajouter des photos
-          </label>
           <input
             type="file"
             accept="image/*"
             multiple
-            onChange={async (e) => {
-              const files = e.target.files;
-              if (!files) return;
-
-              // Upload des images vers Supabase Storage
-              const uploadedUrls = await Promise.all(
-                Array.from(files).map(async (file) => {
-                  const fileExt = file.name.split('.').pop();
-                  const fileName = `${Math.random()}.${fileExt}`;
-                  const filePath = `tweets/${fileName}`;
-
-                  const { error: uploadError } = await supabase.storage
-                    .from('images')
-                    .upload(filePath, file);
-
-                  if (uploadError) throw uploadError;
-
-                  const { data: { publicUrl } } = supabase.storage
-                    .from('images')
-                    .getPublicUrl(filePath);
-
-                  return publicUrl;
-                })
-              );
-
-              setTweet(prev => ({
-                ...prev,
-                picture: [...prev.picture, ...uploadedUrls]
-              }));
-            }}
+            onChange={handleImageUpload}
             className="block w-full text-sm text-gray-500
               file:mr-4 file:py-2 file:px-4
               file:rounded-full file:border-0
@@ -121,15 +127,16 @@ export default function CreateTweetPage() {
         </div>
 
         {/* Prévisualisation des images */}
-        {tweet.picture.length > 0 && (
+        {images.length > 0 && (
           <div className="grid grid-cols-2 gap-2">
-            {tweet.picture.map((url, index) => (
-              <img
-                key={index}
-                src={url}
-                alt={`Image ${index + 1}`}
-                className="w-full h-32 object-cover rounded"
-              />
+            {images.map((file, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`Preview ${index + 1}`}
+                  className="w-full h-32 object-cover rounded"
+                />
+              </div>
             ))}
           </div>
         )}
@@ -140,11 +147,11 @@ export default function CreateTweetPage() {
 
         <button
           type="submit"
-          disabled={loading || !tweet.content.trim()}
+          disabled={uploading || !content.trim()}
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg
             hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Publication...' : 'Tweeter'}
+          {uploading ? 'Publication...' : 'Tweeter'}
         </button>
       </form>
     </div>

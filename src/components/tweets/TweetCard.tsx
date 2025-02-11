@@ -1,81 +1,109 @@
 "use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import supabase from '@/lib/supabase';
+import { useState, useEffect } from 'react';
+import CommentList from '@/components/comments/CommentList';
+import ReactionBar from '@/components/reactions/ReactionBar';
+import supabase  from '@/lib/supabase';
+import ViewCount from '@/components/shared/ViewCount';
 
 interface TweetCardProps {
   tweet: {
-    id: number;
+    id: string;
     content: string;
-    picture: string[];
+    picture: string[] | null;
     published_at: string;
     view_count: number;
     author: {
+      id: string; // Ajout de l'ID de l'auteur
       nickname: string;
-      profilePicture: string;
+      profilePicture: string | null;
     };
   }
 }
 
 export default function TweetCard({ tweet }: TweetCardProps) {
-  const [imageError, setImageError] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      setUploading(true);
-      const files = e.target.files;
-      if (!files) return;
-
-      const uploadPromises = Array.from(files).map(async (file) => {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `tweets/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('tweets')
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('tweets')
-          .getPublicUrl(filePath);
-
-        return publicUrl;
-      });
-
-      const urls = await Promise.all(uploadPromises);
-      setUploadedImages(urls);
-    } catch (error) {
-      console.error('Erreur upload:', error);
-    } finally {
-      setUploading(false);
-    }
-  };
+  // Vérification initiale
+  if (!tweet || !tweet.author) {
+    return <div>Tweet non disponible</div>;
+  }
 
   const formatDate = (date: string) => {
-    return formatDistance(new Date(date), new Date(), {
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return 'Date invalide';
+    }
+    return formatDistance(parsedDate, new Date(), {
       addSuffix: true,
       locale: fr
     });
   };
+
+  const [showComments, setShowComments] = useState(false);
+  const [viewCount, setViewCount] = useState(tweet.view_count);
+
+  useEffect(() => {
+    const incrementViewCount = async (contentType: 'tweet' | 'comment', id: string) => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        // Ajouter une vue
+        const { error } = await supabase
+          .from('ViewCount')
+          .insert([{
+            viewer_id: session.user.id,
+            ...(contentType === 'tweet' 
+              ? { tweet_id: id } 
+              : { comment_id: id })
+          }])
+          .single();
+
+        if (!error) {
+          // Mettre à jour le compteur dans la table appropriée
+          const table = contentType === 'tweet' ? 'Tweets' : 'Comments';
+          const idField = contentType === 'tweet' ? 'tweet_id' : 'comment_id';
+
+          const { data: viewCount } = await supabase
+            .from('ViewCount')
+            .select('id', { count: 'exact' })
+            .eq(idField, id);
+
+          await supabase
+            .from(table)
+            .update({ view_count: viewCount })
+            .eq('id', id);
+        }
+      } catch (error) {
+        console.error('Erreur lors du comptage de la vue:', error);
+      }
+    };
+
+    incrementViewCount('tweet', tweet.id.toString());
+  }, [tweet.id]);
 
   return (
     <article className="bg-white rounded-lg shadow p-4 mb-4">
       {/* En-tête du tweet avec les infos de l'auteur */}
       <div className="flex items-center mb-3">
         <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
-          {tweet.author.profilePicture ? (
+          {tweet.author?.profilePicture ? (
             <img
               src={tweet.author.profilePicture}
               alt={tweet.author.nickname}
               className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null; // Évite la boucle infinie
+                // Au lieu de rediriger vers une image qui n'existe pas
+                target.style.display = 'none';
+                target.parentElement?.classList.add('bg-gray-200');
+                const initial = document.createElement('span');
+                initial.className = 'text-xl text-gray-500';
+                initial.textContent = tweet.author.nickname.charAt(0).toUpperCase();
+                target.parentElement?.appendChild(initial);
+              }}
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -103,17 +131,17 @@ export default function TweetCard({ tweet }: TweetCardProps) {
 
       {/* Images du tweet */}
       {tweet.picture && tweet.picture.length > 0 && (
-        <div className={`grid gap-2 mb-4 ${
-          tweet.picture.length === 1 ? 'grid-cols-1' :
-          tweet.picture.length === 2 ? 'grid-cols-2' :
-          tweet.picture.length === 3 ? 'grid-cols-2' :
-          'grid-cols-2'
-        }`}>
-          {tweet.picture.map((url, index) => (
-            <div 
-              key={index}
-              className={`relative rounded-lg overflow-hidden ${
-                tweet.picture.length === 3 && index === 0 ? 'col-span-2' : ''
+              <div className={`grid gap-2 mb-4 ${
+                tweet.picture.length === 1 ? 'grid-cols-1' :
+                tweet.picture.length === 2 ? 'grid-cols-2' :
+                tweet.picture.length === 3 ? 'grid-cols-2' :
+                'grid-cols-2'
+              }`}>
+                {tweet.picture.map((url: string, index: number) => (
+                  <div 
+                    key={index}
+                    className={`relative rounded-lg overflow-hidden ${
+                      (tweet.picture && tweet.picture.length === 3 && index === 0) ? 'col-span-2' : ''
               }`}
             >
               <img
@@ -127,35 +155,40 @@ export default function TweetCard({ tweet }: TweetCardProps) {
         </div>
       )}
 
-      {/* Input pour l'upload d'images */}
-      <div className="mb-4">
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="block w-full text-sm text-gray-500
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-full file:border-0
-            file:text-sm file:font-semibold
-            file:bg-blue-50 file:text-blue-700
-            hover:file:bg-blue-100"
-        />
-        {uploading && <p className="text-sm text-gray-500 mt-2">Chargement des images...</p>}
+      <div className="mt-4 border-t pt-4">
+        <ReactionBar tweetId={tweet.id} />
       </div>
 
-      {/* Compteur de vues */}
-      <div className="flex items-center text-sm text-gray-500">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          viewBox="0 0 20 20" 
-          fill="currentColor" 
-          className="w-4 h-4 mr-1"
+      {/* Remplacer l'ancien compteur de vues par le nouveau composant */}
+      <ViewCount 
+        contentId={tweet.id} 
+        contentType="tweet" 
+        initialCount={tweet.view_count} 
+      />
+
+      {/* Section commentaires */}
+      <div className="mt-4 pt-4 border-t">
+        <button
+          onClick={() => setShowComments(!showComments)}
+          className="text-gray-500 hover:text-gray-700 text-sm flex items-center"
         >
-          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-        </svg>
-        <span>{tweet.view_count.toLocaleString()} vues</span>
+          <svg 
+            className="w-4 h-4 mr-1" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" 
+            />
+          </svg>
+          Commentaires
+        </button>
+
+        {showComments && <CommentList tweetId={tweet.id} />}
       </div>
     </article>
   );
