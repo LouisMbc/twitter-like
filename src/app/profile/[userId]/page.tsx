@@ -7,6 +7,7 @@ import TweetCard from '@/components/tweets/TweetCard';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import FollowButton from '@/components/following/FollowButton';
+import TweetList from '@/components/tweets/TweetList';
 
 interface Profile {
   id: string;
@@ -33,7 +34,11 @@ interface Tweet {
   published_at: string;
   view_count: number;
   retweet_id?: string;
-  author: Author;
+  author: {
+    id: string;
+    nickname: string;
+    profilePicture: string | null;
+  };
 }
 
 interface Comment {
@@ -74,44 +79,59 @@ export default function UserProfilePage() {
       }
 
       try {
-        const { data: profileData } = await supabase
+        // 1. Charger le profil
+        const { data: profileData, error: profileError } = await supabase
           .from('Profile')
           .select('id, firstName, lastName, nickname, profilePicture, bio, follower_count, following_count, created_at')
           .eq('id', params.userId)
           .single();
 
-        if (profileData) {
-          setProfile(profileData);
-          setFollowersCount(profileData.follower_count);
-          setFollowingCount(profileData.following_count);
-        }
+        if (profileError) throw profileError;
+        if (!profileData) throw new Error('Profil non trouvé');
 
-        // Charger les tweets
+        // 2. Mettre à jour l'état du profil
+        setProfile(profileData);
+        setFollowersCount(profileData.follower_count);
+        setFollowingCount(profileData.following_count);
+
+        // La requête Supabase pour obtenir les tweets d'un auteur
         const { data: tweetsData, error: tweetsError } = await supabase
           .from('Tweets')
-          .select('id, content, picture, published_at, view_count, retweet_id, author:Profile!author_id(id, nickname, profilePicture)')
+          .select(`
+            *,
+            author:Profile!author_id ( 
+              id,
+              nickname,
+              profilePicture
+            )
+          `)
           .eq('author_id', params.userId)
           .order('published_at', { ascending: false });
 
         if (tweetsError) throw tweetsError;
 
-        const formattedTweets: Tweet[] = (tweetsData || []).map(tweet => ({
-          id: tweet.id,
-          content: tweet.content,
-          picture: tweet.picture || null,
-          published_at: tweet.published_at,
-          view_count: tweet.view_count,
-          retweet_id: tweet.retweet_id,
-          author: {
-            id: tweet.author[0]?.id || '',
-            nickname: tweet.author[0]?.nickname || '',
-            profilePicture: tweet.author[0]?.profilePicture || null
-          }
-        }));
+        const formattedTweets: Tweet[] = (tweetsData || []).map(tweet => {
+          console.log('Processing tweet:', tweet); // Debug
+          return {
+            id: tweet.id,
+            content: tweet.content,
+            picture: tweet.picture || null,
+            published_at: tweet.published_at,
+            view_count: tweet.view_count,
+            retweet_id: tweet.retweet_id || null,
+            author: {
+              id: tweet.author?.id || params.userId,
+              nickname: tweet.author?.nickname || 'Utilisateur inconnu',
+              profilePicture: tweet.author?.profilePicture || null
+            }
+          };
+        });
 
         setTweets(formattedTweets);
-
-        // Charger les commentaires
+        console.log('Tweet data structure:', tweetsData?.[0]);
+        console.log('Tweet author structure:', tweetsData?.[0]?.author);
+        
+        // 4. Charger les commentaires
         const { data: commentsData, error: commentsError } = await supabase
           .from('Comments')
           .select('id, content, created_at, tweet:Tweets!tweet_id(content), author:Profile!author_id(nickname, profilePicture)')
@@ -301,9 +321,7 @@ export default function UserProfilePage() {
       {/* Liste des tweets ou des commentaires */}
       <div className="space-y-4">
         {activeTab === 'tweets' ? (
-          tweets.map((tweet) => (
-            <TweetCard key={tweet.id} tweet={tweet} />
-          ))
+          <TweetList tweets={tweets} />
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="bg-white rounded-lg shadow p-4">

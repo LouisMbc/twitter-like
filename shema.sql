@@ -100,3 +100,25 @@ CREATE TABLE public."Blocked_Hashtags" (
     hashtag_id UUID NOT NULL REFERENCES public."Hashtags"(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT now()
 );
+
+
+
+-- Incrémenter following_count pour le follower
+  UPDATE "Profile" 
+  SET following_count = following_count + 1
+  WHERE id = follower;
+  
+  -- Incrémenter follower_count pour la cible
+  UPDATE "Profile"
+  SET follower_count = follower_count + 1
+  WHERE id = target;
+
+   -- Décrémenter following_count pour le follower
+  UPDATE "Profile"
+  SET following_count = GREATEST(following_count - 1, 0)
+  WHERE id = follower;
+  
+  -- Décrémenter follower_count pour la cible
+  UPDATE "Profile"
+  SET follower_count = GREATEST(follower_count - 1, 0)
+  WHERE id = target;

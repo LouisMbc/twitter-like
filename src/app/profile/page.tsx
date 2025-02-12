@@ -113,19 +113,24 @@ export default function ProfilePage() {
             published_at,
             view_count,
             retweet_id,
-            author:author_id (
+            author:Profile!author_id ( 
               id,
               nickname,
               profilePicture
             )
           `)
-          .eq('author_id', profileData.id) // Utiliser profileData.id au lieu de session.user.id
+          .eq('author_id', profileData.id)
           .order('published_at', { ascending: false });
 
         if (tweetsError) throw tweetsError;
         const formattedTweets = (tweetsData || []).map(tweet => ({
-          ...tweet,
-          author: tweet.author[0]
+          id: tweet.id,
+          content: tweet.content,
+          picture: tweet.picture || null,
+          published_at: tweet.published_at,
+          view_count: tweet.view_count,
+          retweet_id: tweet.retweet_id || null,
+          author: tweet.author // Accès direct à l'objet author au lieu de tweet.author[0]
         }));
         setTweets(formattedTweets);
 
