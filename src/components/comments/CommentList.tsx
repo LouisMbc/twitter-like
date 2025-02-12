@@ -131,8 +131,10 @@ export default function CommentList({ tweetId, initialComments = [] }: CommentLi
 
   return (
     <div className="space-y-4">
+      
+      {/* Liste des commentaires */}
       {comments.map(comment => renderComment(comment))}
-      {!replyingTo && <CommentForm tweetId={tweetId} onCommentAdded={loadComments} />}
+      
     </div>
   );
 }

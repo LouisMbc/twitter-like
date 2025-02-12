@@ -8,6 +8,8 @@ import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import FollowButton from '@/components/following/FollowButton';
 import TweetList from '@/components/tweets/TweetList';
+import TweetComposer from '@/components/tweets/TweetComposer';
+import useFeed from '@/hooks/useFeed';
 
 interface Profile {
   id: string;
@@ -67,6 +69,7 @@ export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
+  const { tweets: feedTweets, loading: feedLoading, error: feedError, refreshFeed } = useFeed();
 
   // Charge les données du profil
   useEffect(() => {
@@ -239,9 +242,31 @@ export default function UserProfilePage() {
     }
   };
 
+  // Vérifier que l'utilisateur est authentifié
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/auth/login');
+      }
+    };
+    checkAuth();
+  }, [router]);
 
-  if (loading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
+  if (loading || feedLoading) {
+    return (
+      <div className="min-h-screen p-8">
+        <div className="text-center">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (feedError) {
+    return (
+      <div className="min-h-screen p-8">
+        <div className="text-red-500 text-center">{feedError}</div>
+      </div>
+    );
   }
 
   if (!profile) {
@@ -298,6 +323,11 @@ export default function UserProfilePage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Section pour créer un nouveau tweet */}
+      <div className="bg-white rounded-lg shadow mb-6">
+        <TweetComposer onSuccess={refreshFeed} />
       </div>
 
       {/* Onglets pour les tweets et les commentaires */}

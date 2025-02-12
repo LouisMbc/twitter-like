@@ -55,15 +55,18 @@ const loadComments = async (userId: string) => {
       content,
       created_at,
       tweet_id,
-      parent_comment_id,
       tweet:Tweets(content),
-      author:Profile(nickname, profilePicture)
+      author:Profile!author_id (
+        id,
+        nickname,
+        profilePicture
+      )
     `)
     .eq('author_id', userId)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return comments;
+  return comments || [];
 };
 
 export default function ProfilePage() {
@@ -135,11 +138,18 @@ export default function ProfilePage() {
         setTweets(formattedTweets);
 
         // Charger les commentaires de l'utilisateur
-        const commentsData = await loadComments(session.user.id);
+        const commentsData = await loadComments(profileData.id); // Utiliser l'ID du profil
         const formattedComments = commentsData.map(comment => ({
-          ...comment,
-          tweet: comment.tweet[0],
-          author: comment.author[0]
+          id: comment.id,
+          content: comment.content,
+          created_at: comment.created_at,
+          tweet: {
+            content: comment.tweet?.content || ''
+          },
+          author: {
+            nickname: comment.author?.nickname || '',
+            profilePicture: comment.author?.profilePicture || null
+          }
         }));
         setComments(formattedComments);
 
