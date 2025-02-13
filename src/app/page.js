@@ -1,15 +1,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { getTweets } from "./api/tweets";
-import Header from "../../components/Header";
+import Header from "../components/Header";
 
 const Home = () => {
   const [tweets, setTweets] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchTweets = async () => {
-      const tweets = await getTweets();
-      setTweets(tweets);
+      try {
+        const tweets = await getTweets();
+        setTweets(tweets);
+      } catch (err) {
+        setError(err.message);
+      }
     };
     fetchTweets();
   }, []);
@@ -17,6 +22,7 @@ const Home = () => {
   return (
     <div>
       <Header />
+      {error && <p>Error: {error}</p>}
       <ul>
         {tweets.map(tweet => (
           <li key={tweet.id}>{tweet.text}</li>
