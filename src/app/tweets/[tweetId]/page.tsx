@@ -1,59 +1,15 @@
 "use client";
 
-import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import supabase from '@/lib/supabase';
 import TweetCard from '@/components/tweets/TweetCard';
 import CommentForm from '@/components/comments/CommentForm';
 import CommentList from '@/components/comments/CommentList';
-import { Tweet } from '@/types';
+import { useTweetDetails } from '@/hooks/useTweetDetails';
 
 export default function TweetPage() {
   const params = useParams();
   const router = useRouter();
-  const [tweet, setTweet] = useState<Tweet | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadTweet = async () => {
-      try {
-        const { data: tweetData, error: tweetError } = await supabase
-          .from('Tweets')
-          .select(`
-            *,
-            author:Profile!author_id (
-              id,
-              nickname,
-              profilePicture
-            )
-          `)
-          .eq('id', params.tweetId)
-          .single();
-
-        if (tweetError) throw tweetError;
-        if (!tweetData) throw new Error('Tweet non trouvé');
-
-        // Incrémenter le compteur de vues
-        const { error: viewError } = await supabase
-          .from('Tweets')
-          .update({ view_count: (tweetData.view_count || 0) + 1 })
-          .eq('id', params.tweetId);
-
-        if (viewError) console.error('Erreur lors de la mise à jour des vues:', viewError);
-
-        setTweet(tweetData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (params.tweetId) {
-      loadTweet();
-    }
-  }, [params.tweetId]);
+  const { tweet, loading, error } = useTweetDetails(params.tweetId);
 
   if (loading) {
     return (

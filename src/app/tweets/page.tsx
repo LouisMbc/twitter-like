@@ -1,10 +1,12 @@
 "use client";
 
+import { useAuth } from '@/hooks/useAuth';
 import TweetComposer from '@/components/tweets/TweetComposer';
 import { useRouter } from 'next/navigation';
 
 export default function CreateTweetPage() {
   const router = useRouter();
+  useAuth(); // Protection de la route
 
   const onTweetCreated = () => {
     router.push('/dashboard');
