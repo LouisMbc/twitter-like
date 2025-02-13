@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../lib/supabase";
 
 export async function getTweets() {
   const { data, error } = await supabase.from("tweets").select("*").order("created_at", { ascending: false });

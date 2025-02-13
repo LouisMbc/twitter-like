@@ -1,12 +1,17 @@
-const languages = ["en", "fr", "es", "de", "it", "ja", "ru"]; 
+import { NextResponse } from "next/server";
 
-export function getRandomLanguage() {
-  return languages[Math.floor(Math.random() * languages.length)];
-}
+export async function POST(req) {
+    try {
+        const { text, targetLanguage } = await req.json();
 
-export async function translateText(text) {
-  const targetLang = getRandomLanguage();
-  const response = await fetch(`https://api.mymemory.translated.net/get?q=${text}&langpair=auto|${targetLang}`);
-  const data = await response.json();
-  return data.responseData.translatedText || text;
+        if (!text || !targetLanguage) {
+            return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+        }
+ 
+        const translatedText = `Traduction simulée en ${targetLanguage}: ${text}`;
+
+        return NextResponse.json({ translatedText });
+    } catch (error) {
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
+    }
 }

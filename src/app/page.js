@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { getTweets } from "@/app/api/tweets";
-import { translateText } from "@/app/api/translate";
-import Header from "@/components/Header";
+import { getTweets } from "./api/tweets";
+import Header from "../../components/Header";
 
 const Home = () => {
   const [tweets, setTweets] = useState([]);

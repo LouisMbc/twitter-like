@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { sendMessage, getMessages } from "@/app/api/messages";
+import { sendMessage, getMessages } from "../../app/api/messages";
 
 export default function MessageBox({ userId, contactId }) {
   const [messages, setMessages] = useState([]);
