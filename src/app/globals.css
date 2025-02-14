@@ -4,18 +4,69 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f1419;
+  --primary: #1da1f2;
+  --secondary: #657786;
+  --accent: #e0245e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #15202b;
+    --foreground: #ffffff;
+    --primary: #1da1f2;
+    --secondary: #8899a6;
+    --accent: #e0245e;
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  background-color: var(--primary);
+  color: var(--foreground);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: darken(var(--primary), 10%);
+}
+header {
+  background-color: var(--primary);
+  color: var(--foreground);
+  padding: 20px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+header nav {
+  margin-top: 10px;
+}
+
+header nav a {
+  margin: 0 15px;
+  color: var(--foreground);
+  font-size: 18px;
+}
+
+header nav a:hover {
+  color: var(--accent);
 }
