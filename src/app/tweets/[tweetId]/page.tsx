@@ -40,7 +40,7 @@ export default function TweetPage() {
           onCommentAdded={() => router.refresh()}
         />
         <div className="mt-6">
-          <CommentList tweetId={tweet.id} />
+        {tweet.id && <CommentList tweetId={tweet.id} />}
         </div>
       </div>
     </div>

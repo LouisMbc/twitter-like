@@ -107,7 +107,8 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
     }
   };
 
-  const handleReaction = async (type: string) => {
+  const handleReaction = async (e: React.MouseEvent, type: string) => {
+    e.stopPropagation(); // Arrête la propagation de l'événement
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -135,7 +136,7 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
         if (existingReaction.reaction_type === type) {
           // Supprimer la réaction
           await supabase
-            .from('Reactions')
+            .from('reactions')
             .delete()
             .match({
               user_id: profileData.id,
@@ -174,7 +175,7 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
       {Object.entries(reactionTypes).map(([emoji, type]) => (
         <button
           key={type}
-          onClick={() => handleReaction(type)}
+          onClick={(e) => handleReaction(e, type)}
           className={`flex items-center space-x-1 hover:text-gray-700 ${
             userReaction === type ? 'text-blue-500' : ''
           }`}

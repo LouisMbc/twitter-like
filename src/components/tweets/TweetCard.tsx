@@ -90,7 +90,9 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
             contentType="tweet"
             initialCount={tweet.view_count}
           />
-          <ReactionBar tweetId={tweet.id} />
+          <div onClick={(e) => e.stopPropagation()}>
+            <ReactionBar tweetId={tweet.id} />
+          </div>
         </div>
       </article>
     </div>

@@ -21,8 +21,8 @@ CREATE TABLE public."Tweets" (
     picture TEXT,
     published_at TIMESTAMP DEFAULT now(),
     retweet_id UUID REFERENCES public."Tweets"(id) ON DELETE SET NULL,
-    view_count INT DEFAULT 0
-);
+    view_counts INT DEFAULT 0
+    );
 
 -- Table Comments
 CREATE TABLE public."Comments" (
@@ -41,7 +41,7 @@ CREATE TABLE public."ViewCount" (
     tweet_id UUID REFERENCES public."Tweets"(id) ON DELETE CASCADE,
     comment_id UUID REFERENCES public."Comments"(id) ON DELETE CASCADE,
     viewer_id UUID NOT NULL REFERENCES public."Profile"(id) ON DELETE CASCADE,
-    viewed_at TIMESTAMP DEFAULT now()
+    view_count INT DEFAULT 0
 );
 
 -- Table reactions
@@ -122,3 +122,19 @@ CREATE TABLE public."Blocked_Hashtags" (
   UPDATE "Profile"
   SET follower_count = GREATEST(follower_count - 1, 0)
   WHERE id = target;
+
+  -- Table pour suivre les vues uniques (temporaire, avant transfert vers Redis)
+CREATE TABLE public."ViewTracking" (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content_id UUID NOT NULL,
+    content_type TEXT CHECK (content_type IN ('tweet', 'comment')),
+    viewer_id UUID REFERENCES public."Profile"(id),
+    ip_address TEXT,
+    user_agent TEXT,
+    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    CONSTRAINT unique_view CHECK (viewer_id IS NOT NULL OR (ip_address IS NOT NULL AND user_agent IS NOT NULL))
+);
+
+-- Index pour optimiser les requêtes de vérification
+CREATE INDEX idx_view_tracking_content ON public."ViewTracking" (content_id, content_type);
+CREATE INDEX idx_view_tracking_viewer ON public."ViewTracking" (viewer_id) WHERE viewer_id IS NOT NULL;

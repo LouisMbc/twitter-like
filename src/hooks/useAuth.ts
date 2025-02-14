@@ -1,15 +1,18 @@
 // src/hooks/useAuth.ts
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import supabase from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 export function useAuth() {
   const router = useRouter();
   const pathname = usePathname();
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
       
       if (!session) {
         router.push('/auth/login');
@@ -28,4 +31,6 @@ export function useAuth() {
 
     checkAuth();
   }, [router, pathname]);
-}// Hook pour l'authentification
+
+  return { session };
+}
