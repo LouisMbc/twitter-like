@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 
-const CommentForm: React.FC = () => {
+interface CommentFormProps {
+    tweetId: string;
+    onCommentAdded: () => void;
+}
+
+const CommentForm: React.FC<CommentFormProps> = ({ tweetId, onCommentAdded }) => {
     const [comment, setComment] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -8,6 +13,7 @@ const CommentForm: React.FC = () => {
         // Handle comment submission logic here
         console.log('Comment submitted:', comment);
         setComment('');
+        onCommentAdded();
     };
 
     return (

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProfileEdit } from '@/hooks/useProfileEdit';
-import ProfilEdit from '@/components/profile/ProfilEdit';
+import ProfilEdit from '@/components/profile/ProfileEdit';
 
 export default function EditProfilePage() {
   const { 
