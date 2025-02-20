@@ -9,7 +9,7 @@ import { useTweetDetails } from '@/hooks/useTweetDetails';
 export default function TweetPage() {
   const params = useParams();
   const router = useRouter();
-  const { tweet, loading, error } = useTweetDetails(params.tweetId as string);
+  const { tweet, loading, error } = useTweetDetails(params.tweetId);
 
   if (loading) {
     return (

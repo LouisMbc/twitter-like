@@ -4,9 +4,6 @@ import { useRouter } from 'next/navigation';
 import {formatDistance} from "date-fns/formatDistance"; 
 import { fr } from "date-fns/locale"; 
 
- 
-
-
 interface ProfileCardProps {
   profile: {
     firstName: string;

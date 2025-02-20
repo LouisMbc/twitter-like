@@ -7,6 +7,13 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const isBrowser = typeof window !== 'undefined';
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    storage: isBrowser ? window.localStorage : undefined
+  }
+});
 
 export default supabase;

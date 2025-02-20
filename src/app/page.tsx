@@ -1,20 +1,38 @@
-import React from 'react';
+"use client";  // Ajout de cette directive pour utiliser les Hooks
 
-const Header = () => {
+import { useEffect, useState } from 'react';
+import supabase from '../lib/supabase';
+
+export default function Home() {
+  // Les Hooks sont valides ici car nous avons déclaré "use client"
+  const [status, setStatus] = useState<string>('Testing connection...');
+
+  useEffect(() => {
+    async function testConnection() {
+      try {
+        const { data, error } = await supabase
+          .from('Tweets')
+          .select('*')  // Sélectionne toutes les colonnes
+          .limit(1);
+
+        if (error) {
+          setStatus('Erreur de connexion: ' + error.message);
+        } else {
+          setStatus('Connexion réussie!');
+          console.log('Données reçues:', data);
+        }
+      } catch (err) {
+        setStatus('Erreur: ' + (err as Error).message);
+      }
+    }
+
+    testConnection();
+  }, []);
+
   return (
-    <header className="bg-blue-500 text-white p-4">
-      <h1 className="text-xl font-bold">Twitter-like</h1>
-    </header>
+    <div className="min-h-screen p-8">
+      <h1>Test de connexion Supabase</h1>
+      <p>{status}</p>
+    </div>
   );
-};
-
-export default Header;
-const Footer = () => {
-  return (
-    <footer className="bg-gray-800 text-white p-4 mt-4">
-      <p className="text-center">&copy; 2023 Twitter-like. All rights reserved.</p>
-    </footer>
-  );
-};
-
-export { Footer };
+}

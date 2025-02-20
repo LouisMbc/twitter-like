@@ -1,8 +1,8 @@
 "use client";
 
 import { useUserProfile } from '@/hooks/useUserProfile';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import ProfileTabs from '@/components/profile/ProfileTabs';
+import ProfileHeader from '@/components/profile/ProfilHeader';
+import ProfileTabs from '@/components/profile/ProfilTabs';
 import TweetList from '@/components/tweets/TweetList';
 import CommentList from '@/components/comments/CommentList';
 

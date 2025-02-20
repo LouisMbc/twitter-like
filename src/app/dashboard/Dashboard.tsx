@@ -11,7 +11,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const { tweets, loading, error, refreshFeed } = useFeed();
 
-  // Vérifier que l'utilisateur est authentifié
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
