@@ -1,12 +1,15 @@
 "use client";
 
-import { useUserProfile } from '@/hooks/useUserProfile';
-import ProfileHeader from '@/components/profile/ProfilHeader';
-import ProfileTabs from '@/components/profile/ProfilTabs';
-import TweetList from '@/components/tweets/TweetList';
-import CommentList from '@/components/comments/CommentList';
+import { useUserProfile } from "@/hooks/useUserProfile";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import ProfileTabs from "@/components/profile/ProfileTabs";
+import TweetList from "@/components/tweets/TweetList";
+import CommentList from "@/components/comments/CommentList";
+import { useParams } from "next/navigation"; 
+import { Comment } from "@/types";
 
-export default function UserProfilePage() {
+export default function User() {
+  const { userId } = useParams();
   const {
     profile,
     tweets,
@@ -15,11 +18,9 @@ export default function UserProfilePage() {
     followingCount,
     isFollowing,
     loading,
-    currentProfileId,
-    handleFollowToggle,
     activeTab,
-    setActiveTab
-  } = useUserProfile();
+    setActiveTab,
+  } = useUserProfile(userId as string);
 
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
@@ -29,27 +30,26 @@ export default function UserProfilePage() {
     return <div className="flex justify-center p-8 text-red-500">Profil non trouvé</div>;
   }
 
+  console.log("Commentaires reçus :", comments); 
+
   return (
     <div className="max-w-4xl mx-auto p-4 mt-20">
-      <ProfileHeader 
+      <ProfileHeader
         profile={profile}
         followersCount={followersCount}
         followingCount={followingCount}
-        currentProfileId={currentProfileId}
         isFollowing={isFollowing}
-        onFollowToggle={handleFollowToggle}
+        onFollowToggle={() => {}}
+        currentProfileId={null} 
       />
 
-      <ProfileTabs 
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       <div className="space-y-4">
-        {activeTab === 'tweets' ? (
+        {activeTab === "tweets" ? (
           <TweetList tweets={tweets} />
         ) : (
-          <CommentList comments={comments} />
+          <CommentList comments={comments as Comment[]} tweetId={userId as string} />
         )}
       </div>
     </div>

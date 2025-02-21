@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useProfileEdit } from '@/hooks/useProfileEdit';
-import ProfilEdit from '@/components/profile/ProfileEdit';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useProfileEdit } from "@/hooks/useProfileEdit";
+import ProfilEdit from "@/components/profile/ProfileEdit";
 
 export default function EditProfilePage() {
   const { 
@@ -30,7 +30,7 @@ export default function EditProfilePage() {
       <ProfilEdit
         formData={formData}
         setFormData={setFormData}
-        onSubmit={handleSubmit}
+        onSubmit={() => handleSubmit(formData)}
         error={error}
         loading={loading}
         onCancel={() => router.push('/profile')}

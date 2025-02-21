@@ -1,65 +1,73 @@
-"use client";
+import React from "react";
 
-import React from 'react';
-
-interface ProfileEditProps {
-    formData: any;
-    setFormData: (data: any) => void;
-    onSubmit: () => void;
-    error: string | null;
-    loading: boolean;
-    onCancel: () => void;
+interface ProfileForm {
+  name: string;
+  email: string;
+  bio?: string;
 }
 
-const ProfileEdit: React.FC<ProfileEditProps> = ({ formData, setFormData, onSubmit, error, loading, onCancel }) => {
-    const handleEditClick = (e: React.FormEvent) => {
+interface ProfilEditProps {
+  formData: ProfileForm;
+  setFormData: (data: ProfileForm) => void;
+  onSubmit: () => void; // ✅ Correction du type
+  error?: string;
+  loading: boolean;
+  onCancel: () => void;
+}
+
+export default function ProfilEdit({ formData, setFormData, onSubmit, error, loading, onCancel }: ProfilEditProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <form
+      onSubmit={(e) => {
         e.preventDefault();
-        onSubmit();
-    };
+        onSubmit(); 
+      }}
+      className="space-y-4"
+    >
+      <div>
+        <label className="block text-sm font-medium">Nom</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full border rounded px-3 py-2"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Email</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full border rounded px-3 py-2"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Bio</label>
+        <textarea
+          name="bio"
+          value={formData.bio}
+          onChange={handleChange}
+          className="w-full border rounded px-3 py-2"
+        />
+      </div>
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
+      {error && <p className="text-red-500">{error}</p>}
 
-    return (
-        <div>
-            <h1 className="text-2xl font-bold mb-6">Modifier le profil</h1>
-            {error && <div className="text-red-500">{error}</div>}
-            <form onSubmit={handleEditClick}>
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Nom</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name || ''}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email || ''}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-                    />
-                </div>
-                {/* Ajoutez d'autres champs de formulaire selon les besoins */}
-                <button type="submit" disabled={loading} className="mr-2 bg-blue-500 text-white px-4 py-2 rounded-md">
-                    Modifier le profil
-                </button>
-                <button type="button" onClick={onCancel} className="bg-gray-500 text-white px-4 py-2 rounded-md">
-                    Annuler
-                </button>
-            </form>
-        </div>
-    );
-};
-
-export default ProfileEdit;
+      <div className="flex space-x-4">
+        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded" disabled={loading}>
+          {loading ? "Enregistrement..." : "Enregistrer"}
+        </button>
+        <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-400 text-white rounded">
+          Annuler
+        </button>
+      </div>
+    </form>
+  );
+}

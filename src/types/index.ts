@@ -1,7 +1,9 @@
 export interface Comment {
-  id: string;
-  content: string;
-  created_at: string;
+  id: number;
+  userId: string;
+  postId: string;
+  text: string; 
+  createdAt: string;
   view_count: number;
   parent_comment_id?: string;
   author: {
@@ -33,7 +35,8 @@ export interface Tweet {
   published_at: string;
   view_count: number;
   retweet_id: string | null;
-  author_id: string 
+  author_id: string;
+  comments: Comment[]; // Add this line
 }
 
 // Ajouter aux types existants
