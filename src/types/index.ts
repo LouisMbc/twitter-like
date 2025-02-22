@@ -16,8 +16,8 @@ export interface Comment {
 }
 
 export interface Profile {
-  id: string;           // Ajout du champ id qui est nécessaire pour la recherche
-  user_id: string;      // Ajout du champ user_id
+  id: string;
+  user_id: string;     
   firstName: string;
   lastName: string;
   nickname: string;
@@ -30,16 +30,25 @@ export interface Profile {
 
 export interface Tweet {
   id: string;
-  content: string
-  picture: string | null;
+  content: string;
+  picture?: string[] | null;
   published_at: string;
   view_count: number;
-  retweet_id: string | null;
+  retweet_id?: string | null;
   author_id: string;
-  comments: Comment[]; // Add this line
+  comments: Comment[];
+  author: Author;
 }
 
-// Ajouter aux types existants
+export interface Author {
+  id: string;
+  username: string;
+  profile_image_url: string;
+  name: string;
+  profilePicture: string | null;
+  nickname: string;
+}
+
 export interface ProfilePageData {
   profile: Profile;
   tweets: Tweet[];

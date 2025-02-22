@@ -3,7 +3,7 @@
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
-import ReactionBar from '@/components/reactions/ReactionBar';
+import ReactionBar from '@/components/reactions/ReactionsBar';
 import ViewCount from '@/components/shared/ViewCount';
 import { Tweet } from '@/types';
 
@@ -74,7 +74,7 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
 
         <p className="text-gray-800 mb-4">{tweet.content}</p>
 
-        {tweet.picture?.length > 0 && (
+        {tweet.picture && tweet.picture.length > 0 && (
           <div className="mb-4">
             <img
               src={tweet.picture[0]}
