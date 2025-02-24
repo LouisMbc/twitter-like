@@ -13,13 +13,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          router.push('/auth/login');
-        }
-      } catch (error) {
-        console.error("Erreur lors de la vérification de l'authentification:", error);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         router.push('/auth/login');
       }
     };

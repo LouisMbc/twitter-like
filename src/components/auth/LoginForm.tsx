@@ -14,7 +14,7 @@ export default function LoginForm() {
     if (error) {
       setError(error.message);
     } else {
-      router.push('/page');
+      router.push('/dashboard');
     }
   };
 
@@ -31,7 +31,7 @@ export default function LoginForm() {
         />
       </div>
       <div>
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">Mot de passe</label>
         <input
           type="password"
           id="password"
@@ -41,7 +41,7 @@ export default function LoginForm() {
         />
       </div>
       {error && <p>{error}</p>}
-      <button type="submit">Login</button>
+      <button type="submit">Connexion</button>
     </form>
   );
 }
