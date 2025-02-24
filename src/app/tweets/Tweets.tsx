@@ -12,14 +12,13 @@ import { Tweet } from '@/types';
 
 export default function CreateTweetPage() {
   const router = useRouter();
-  useAuth(); // Protection de la route
+  useAuth();
 
   const onTweetCreated = () => {
     router.push('/dashboard');
   };
 
   const handleTweetSubmit = async (tweetContent: string) => {
-    // Logic to handle tweet submission
     try {
       const response = await fetch('/api/tweets', {
         method: 'POST',
@@ -31,7 +30,6 @@ export default function CreateTweetPage() {
 
       if (response.headers.get('content-type')?.includes('application/json')) {
         const parsedContent = await response.json();
-        // ...existing code...
       } else {
         console.error("Unexpected response content type:", response.headers.get('content-type'));
       }
@@ -40,8 +38,8 @@ export default function CreateTweetPage() {
     }
   };
 
-  const tweetId = "exampleTweetId"; // Replace with actual tweet ID
-  const tweets: Tweet[] = []; // Replace with actual tweets array
+  const tweetId = "exampleTweetId"; 
+  const tweets: Tweet[] = [];
   const tweet: Tweet = {
     id: "exampleTweetId",
     content: "Example tweet content",
@@ -58,7 +56,7 @@ export default function CreateTweetPage() {
       profilePicture: null,
       nickname: ''
     },
-  }; // Replace with actual tweet object
+  };
 
   return (
     <div className="max-w-2xl mx-auto p-4">

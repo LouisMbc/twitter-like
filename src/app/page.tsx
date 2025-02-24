@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import supabase from '../lib/supabase';
 import TweetList from '../components/tweets/TweetList';
-import  CreateTweetPage from '../app/tweets/Tweets';
+import CreateTweetPage from '../app/tweets/Tweets';
 
 import { Tweet } from '../types';
 
@@ -49,10 +49,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-8">
-      <h1>Test de connexion Supabase</h1>
-      <p>{status}</p>
-      CreateTweetPage
-      <TweetList tweets={tweets} />      
+      {/* <h1>Test de connexion Supabase</h1>
+      <p>{status}</p> */}
+      <CreateTweetPage />
+      <TweetList tweets={tweets} />
     </div>
   );
 }

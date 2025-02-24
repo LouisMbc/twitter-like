@@ -1,41 +1,47 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import supabase from '@/lib/supabase';
 
-const LoginForm: React.FC = () => {
-    const [nomUtilisateur, setNomUtilisateur] = useState('');
-    const [motDePasse, setMotDePasse] = useState('');
+export default function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-    const handleSubmit = (event: React.FormEvent) => {
-        event.preventDefault();
-        // Gérer la logique de connexion ici
-        console.log('Nom d\'utilisateur:', nomUtilisateur);
-        console.log('Mot de passe:', motDePasse);
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setError(error.message);
+    } else {
+      router.push('/page');
+    }
+  };
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor="nomUtilisateur">Nom d'utilisateur:</label>
-                <input
-                    type="text"
-                    id="nomUtilisateur"
-                    value={nomUtilisateur}
-                    onChange={(e) => setNomUtilisateur(e.target.value)}
-                    required
-                />
-            </div>
-            <div>
-                <label htmlFor="motDePasse">Mot de passe:</label>
-                <input
-                    type="password"
-                    id="motDePasse"
-                    value={motDePasse}
-                    onChange={(e) => setMotDePasse(e.target.value)}
-                    required
-                />
-            </div>
-            <button type="submit">Connexion</button>
-        </form>
-    );
-};
-
-export default LoginForm;
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      {error && <p>{error}</p>}
+      <button type="submit">Login</button>
+    </form>
+  );
+}
