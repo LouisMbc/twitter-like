@@ -1,0 +1,3 @@
+- un twitter like mais avec seulement des gens de la campagne : ChampX
+- un twitter like mais tout les commentaires et postes sont traduit dans une langue aléatoire définit par une liste définit par l'utilisateur : MultiluinguiX
+- un twitter like mais pour les homme préhistorique : PierreX
