@@ -9,7 +9,8 @@ import { useParams } from "next/navigation";
 import { Comment, Tweet } from "@/types";
 
 export default function User() {
-  const { userId } = useParams();
+  const params = useParams();
+  const userId = params?.userId as string;
   const {
     profile,
     tweets = [] as Tweet[],  // Typage explicite

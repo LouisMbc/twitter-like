@@ -29,7 +29,7 @@ export default function AuthCallback() {
         }
       } catch (error) {
         console.error('Erreur:', error);
-        router.push('/auth/login?error=Échec de la vérification');
+        router.push('/');
       }
     };
 

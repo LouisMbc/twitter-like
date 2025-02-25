@@ -1,25 +1,51 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import supabase from '@/lib/supabase';
-import TweetComposer from '@/components/tweets/TweetComposer';
-import TweetList from '@/components/tweets/TweetList';
-import useFeed from '@/hooks/useFeed';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import supabase from "@/lib/supabase";
+import TweetComposer from "@/components/tweets/TweetComposer";
+import TweetList from "@/components/tweets/TweetList";
+import useFeed from "@/hooks/useFeed";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { tweets, loading, error, refreshFeed } = useFeed();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/auth/login');
+      setIsCheckingAuth(true);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Session détectée :", session);
+
+        if (error) {
+          console.error("Erreur lors de la vérification de la session :", error);
+          router.push('/login');
+          return;
+        }
+
+        if (!session) {
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error("Erreur inattendue :", error);
+        router.push('/login');
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
+
     checkAuth();
   }, [router]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <p>Vérification de votre session...</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

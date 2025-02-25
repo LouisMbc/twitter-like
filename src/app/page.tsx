@@ -49,8 +49,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-8">
-      {/* <h1>Test de connexion Supabase</h1>
-      <p>{status}</p> */}
+      <h1>Test de connexion Supabase</h1>
+      <p>{status}</p>
       <CreateTweetPage />
       <TweetList tweets={tweets} />
     </div>
