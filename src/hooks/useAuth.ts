@@ -15,7 +15,7 @@ export function useAuth() {
       setSession(session);
       
       if (!session) {
-        router.push('/auth/login');
+        router.push('/');
         return;
       }
 

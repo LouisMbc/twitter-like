@@ -1,14 +1,14 @@
-import { Tweet } from '@/types';
+"use client";
+
 import TweetCard from './TweetCard';
+import { Tweet } from '@/types';
 
 interface TweetListProps {
   tweets: Tweet[];
 }
 
 export default function TweetList({ tweets }: TweetListProps) {
-  if (!tweets || tweets.length === 0) {
-    return (
-      <div className="text-center text-gray-500 py-8">
+  if (tweets.length === 0) {
         Aucun tweet à afficher
       </div>
     );

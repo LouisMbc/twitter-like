@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
@@ -127,8 +129,6 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
                 className="w-full h-full object-cover rounded"
               />
               <button
-                type="button"
-                onClick={() => {
                   setImages(images.filter((_, i) => i !== index));
                   setPreview(preview.filter((_, i) => i !== index));
                 }}

@@ -10,8 +10,14 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
+        if (error) {
+          console.error('Erreur lors de la récupération de la session:', error);
+          router.push('/');
+          return;
+        }
+
         if (session) {
           // Vérifier si un profil existe déjà
           const { data: profile } = await supabase
@@ -28,7 +34,7 @@ export default function AuthCallback() {
           }
         }
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Erreur inattendue:', error);
         router.push('/');
       }
     };

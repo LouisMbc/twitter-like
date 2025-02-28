@@ -1,28 +1,28 @@
-// import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
-// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-// const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// if (!supabaseUrl || !supabaseKey) {
-//   throw new Error('Missing Supabase environment variables');
-// }
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
+}
 
-// const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== 'undefined';
 
-// const supabase = createClient(supabaseUrl, supabaseKey, {
-//   auth: {
-//     persistSession: true,
-//     storage: isBrowser ? window.localStorage : undefined
-//   }
-// });
-
-// export default supabase;
-
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    storage: isBrowser ? window.localStorage : undefined
+  }
+});
 
 export default supabase;
+
+// import { createClient } from "@supabase/supabase-js";
+
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+// const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+// const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// export default supabase;
