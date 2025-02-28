@@ -9,9 +9,7 @@ interface TweetListProps {
 
 export default function TweetList({ tweets }: TweetListProps) {
   if (tweets.length === 0) {
-        Aucun tweet à afficher
-      </div>
-    );
+    return <div className="text-center text-gray-500 py-8">Aucun tweet à afficher</div>;
   }
 
   return (

@@ -30,6 +30,7 @@ export default function CreateTweetPage() {
 
       if (response.headers.get('content-type')?.includes('application/json')) {
         const parsedContent = await response.json();
+        // Handle the parsed content if needed
       } else {
         console.error("Unexpected response content type:", response.headers.get('content-type'));
       }
@@ -45,7 +46,6 @@ export default function CreateTweetPage() {
     content: "Example tweet content",
     published_at: "2023-01-01T00:00:00Z",
     view_count: 0,
-    // retweet_count: 0,
     author_id: "exampleAuthorId",
     comments: [],
     author: {
