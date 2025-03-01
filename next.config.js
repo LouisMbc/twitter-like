@@ -1,4 +1,13 @@
 module.exports = {
   reactStrictMode: true,
-  // ...other configurations...
+  // ...autres configurations...
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
 };

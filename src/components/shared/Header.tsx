@@ -31,7 +31,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+      <header className="fixed top-0 left-0 right-0 bg-grey shadow-md z-50">
         <div className="max-w-6xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <button 
@@ -58,11 +58,11 @@ export default function Header() {
                     clipRule="evenodd" 
                   />
                 </svg>
-                Poster
+                Tweeter
               </button>
               <button
                 onClick={() => router.push('/profile')}
-                className="px-4 py-2 rounded-full hover:bg-gray-100"
+                className="px-4 py-2 rounded-full bg-black-500 hover:bg-blue-100"
               >
                 Profil
               </button>

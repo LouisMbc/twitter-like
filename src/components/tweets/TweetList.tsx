@@ -1,6 +1,5 @@
 "use client";
 
-import TweetCard from './TweetCard';
 import { Tweet } from '@/types';
 
 interface TweetListProps {
@@ -8,14 +7,12 @@ interface TweetListProps {
 }
 
 export default function TweetList({ tweets }: TweetListProps) {
-  if (tweets.length === 0) {
-    return <div className="text-center text-gray-500 py-8">Aucun tweet à afficher</div>;
-  }
-
   return (
-    <div className="space-y-4">
+    <div>
       {tweets.map((tweet) => (
-        <TweetCard key={tweet.id} tweet={tweet} />
+        <div key={tweet.id} className="p-4 border-b border-gray-200">
+          <p>{tweet.content}</p>
+        </div>
       ))}
     </div>
   );
