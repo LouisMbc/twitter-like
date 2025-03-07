@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getStories } from "@/services/supabase/stories";
+// import { getStories } from "@/services/supabase/story";
 
 export const useStories = () => {
   const [stories, setStories] = useState<any[]>([]);
