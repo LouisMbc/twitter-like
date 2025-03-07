@@ -7,7 +7,7 @@ const nextConfig = {
       'path': false,
     };
 
-    // Fallbacks basiques pour Node.js (sans FFmpeg)
+    // Fallbacks basiques pour Node.js
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
@@ -15,6 +15,9 @@ const nextConfig = {
     };
 
     return config;
+  },
+  images: {
+    domains: ['ekpximtmuwwxdkhrepna.supabase.co'],
   },
   headers: async () => {
     return [
@@ -27,7 +30,11 @@ const nextConfig = {
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp'
+            value: 'credentialless' // Changement important ici
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin' // Ajout pour autoriser les ressources cross-origin
           }
         ]
       }
