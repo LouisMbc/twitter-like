@@ -9,8 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ffmpeg/core": "^0.12.10",
-    "@ffmpeg/ffmpeg": "^0.12.15",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.48.1",
     "date-fns": "^4.1.0",

@@ -37,22 +37,17 @@ const convertToMp4 = async (file: File): Promise<File> => {
 
 export const addStory = async (userId: string, file: File, mediaType: 'image' | 'video') => {
   try {
-    // Convertir la vidéo si nécessaire
-    let fileToUpload = file;
-    if (mediaType === 'video' && file.type !== 'video/mp4') {
-      fileToUpload = await convertToMp4(file);
-    }
-
-    const fileExt = mediaType === 'video' ? 'mp4' : file.name.split('.').pop();
+    // Utiliser le fichier tel quel, sans conversion
+    const fileExt = file.name.split('.').pop();
     const filePath = `stories/${userId}/${Date.now()}.${fileExt}`;
 
     // Upload du fichier
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("stories")
-      .upload(filePath, fileToUpload, { 
+      .upload(filePath, file, { 
         cacheControl: "3600", 
         upsert: false,
-        contentType: mediaType === 'video' ? 'video/mp4' : file.type 
+        contentType: file.type
       });
 
     if (uploadError) {
@@ -85,17 +80,26 @@ export const addStory = async (userId: string, file: File, mediaType: 'image' | 
 
 // 📌 Récupérer les Stories actives
 export const getStories = async () => {
-  const { data, error } = await supabase
-    .from("Stories")
-    .select("id, user_id, media_url, media_type, created_at")
-    .gte("expires_at", new Date().toISOString()) // Stories non expirées
-    .order("created_at", { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from("Stories")
+      .select(`
+        id,
+        user_id,
+        content,
+        media_url,
+        media_type,
+        created_at,
+        Profile(id, nickname, profilePicture)
+      `)
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error("Erreur lors de la récupération des stories :", error);
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Erreur lors de la récupération des stories:", error);
     return [];
   }
-  return data;
 };
 
 // 📌 Supprimer une Story

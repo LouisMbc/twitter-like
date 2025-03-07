@@ -6,22 +6,12 @@ const nextConfig = {
       'fs': false,
       'path': false,
     };
-    
-    // Ajouter cette configuration pour FFmpeg
-    config.module.rules.push({
-      test: /\.wasm$/,
-      type: 'asset/resource'
-    });
 
-    // Ajout du fallback node pour FFmpeg
+    // Fallbacks basiques pour Node.js (sans FFmpeg)
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
       path: false,
-      crypto: false,
-      os: false,
-      buffer: false,
-      stream: false,
     };
 
     return config;
@@ -42,14 +32,6 @@ const nextConfig = {
         ]
       }
     ];
-  },
-  // Ajouter cette configuration pour le chargement des fichiers FFmpeg
-  experimental: {
-    outputFileTracingExcludes: {
-      '*': [
-        'node_modules/@ffmpeg/**/*',
-      ],
-    },
   }
 };
 
