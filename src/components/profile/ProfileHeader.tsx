@@ -7,6 +7,7 @@ import { useState, useRef } from "react";
 import { addStory } from "@/services/supabase/story";
 import Story from "@/components/stories/Story";
 import supabase from "@/lib/supabase";
+import { useRouter } from 'next/navigation';
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -27,6 +28,7 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   // Gestion de l'upload
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,27 +118,40 @@ export default function ProfileHeader({
               </p>
             </div>
 
-            {currentProfileId !== profile.id && (
-              <button
-                onClick={onFollowToggle}
-                className={`px-4 py-2 rounded-full transition-colors ${
-                  isFollowing
-                    ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                }`}
-              >
-                {isFollowing ? "Ne plus suivre" : "Suivre"}
-              </button>
-            )}
+            <div>
+              {/* Bouton pour éditer le profil si c'est le profil de l'utilisateur courant */}
+              {currentProfileId === profile.id && (
+                <button
+                  onClick={() => router.push('/profile/edit')}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
+                >
+                  Éditer le profil
+                </button>
+              )}
+              
+              {/* Bouton suivre/ne plus suivre si ce n'est pas le profil de l'utilisateur courant */}
+              {currentProfileId !== profile.id && (
+                <button
+                  onClick={onFollowToggle}
+                  className={`px-4 py-2 rounded-full transition-colors ${
+                    isFollowing
+                      ? "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
+                >
+                  {isFollowing ? "Ne plus suivre" : "Suivre"}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Stats */}
           <div className="flex space-x-6 mt-4">
-            <div className="text-center">
+            <div>
               <span className="font-bold">{followersCount}</span>
               <span className="text-gray-600 ml-1">Abonnés</span>
             </div>
-            <div className="text-center">
+            <div>
               <span className="font-bold">{followingCount}</span>
               <span className="text-gray-600 ml-1">Abonnements</span>
             </div>
