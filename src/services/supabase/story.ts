@@ -1,39 +1,4 @@
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import supabase from '@/lib/supabase';
-
-// Fonction pour convertir la vidéo en MP4
-const convertToMp4 = async (file: File): Promise<File> => {
-  if (file.type === 'video/mp4') return file;
-
-  const ffmpeg = createFFmpeg({ log: true });
-  await ffmpeg.load();
-
-  // Charger le fichier
-  const inputFileName = 'input.' + file.name.split('.').pop();
-  const outputFileName = 'output.mp4';
-  ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
-
-  // Convertir en MP4
-  await ffmpeg.run(
-    '-i', inputFileName,
-    '-c:v', 'libx264',
-    '-crf', '23',
-    '-preset', 'medium',
-    '-c:a', 'aac',
-    '-b:a', '128k',
-    outputFileName
-  );
-
-  // Lire le fichier converti
-  const data = ffmpeg.FS('readFile', outputFileName);
-  
-  // Nettoyer
-  ffmpeg.FS('unlink', inputFileName);
-  ffmpeg.FS('unlink', outputFileName);
-
-  // Créer un nouveau fichier
-  return new File([data.buffer], outputFileName, { type: 'video/mp4' });
-};
 
 export const addStory = async (userId: string, file: File, mediaType: 'image' | 'video') => {
   try {
