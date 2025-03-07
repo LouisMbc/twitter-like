@@ -68,9 +68,22 @@ CREATE TABLE public."Stories" (
     user_id UUID NOT NULL REFERENCES public."Profile"(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     media_url TEXT,
+    media_type TEXT CHECK (media_type IN ('image', 'video')) NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
-    expires_at TIMESTAMP
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (now() + interval '24 hours')
 );
+
+-- Index pour accélérer les requêtes
+CREATE INDEX idx_stories_user ON public."Stories"(user_id);
+
+
+
+
+
+
+
+
+
 
 -- Table Hashtags
 CREATE TABLE public."Hashtags" (

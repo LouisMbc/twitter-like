@@ -1,35 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Tweet } from '@/types';
-import { tweetService } from '@/services/supabase/tweet';
+import { useEffect, useState } from "react";
+import { getStories } from "@/services/supabase/stories";
 
-export const useTweetDetails = (tweetId: string) => {
-  const [tweet, setTweet] = useState<Tweet | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const useStories = () => {
+  const [stories, setStories] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const loadTweet = async () => {
-      try {
-        const { data: tweetData, error: tweetError } = await tweetService.getTweetById(tweetId);
-        
-        if (tweetError) throw tweetError;
-        if (!tweetData) throw new Error('Tweet non trouvé');
-
-        const { error: viewError } = await tweetService.incrementViewCount(tweetId, tweetData.view_count);
-        if (viewError) console.error('Erreur lors de la mise à jour des vues:', viewError);
-
-        setTweet(tweetData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-      } finally {
-        setLoading(false);
-      }
+    const fetchStories = async () => {
+      setLoading(true);
+      const data = await getStories();
+      setStories(data);
+      setLoading(false);
     };
 
-    if (tweetId) {
-      loadTweet();
-    }
-  }, [tweetId]);
+    fetchStories();
+  }, []);
 
-  return { tweet, loading, error };
+  return { stories, loading };
 };
