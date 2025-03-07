@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getStories } from "@/services/supabase/story";
+import { tweetService } from "@/services/supabase/tweet";
 
-// Exporter cette fonction qui manque dans votre code
 export const useTweetDetails = (tweetId: string) => {
   const [tweet, setTweet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -9,12 +9,26 @@ export const useTweetDetails = (tweetId: string) => {
 
   useEffect(() => {
     const fetchTweetDetails = async () => {
-      try {
-        // Implémenter la récupération des détails du tweet
-        // ...
+      if (!tweetId) {
+        setError("ID du tweet manquant");
         setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error: tweetError } = await tweetService.getTweetById(tweetId);
+        
+        if (tweetError) throw tweetError;
+        if (!data) throw new Error("Tweet non trouvé");
+        
+        setTweet(data);
+        
+        // Incrémenter le compteur de vues
+        await tweetService.incrementViewCount(tweetId, data.view_count);
       } catch (err) {
+        console.error("Erreur lors du chargement du tweet:", err);
         setError("Erreur lors du chargement du tweet");
+      } finally {
         setLoading(false);
       }
     };
@@ -27,7 +41,6 @@ export const useTweetDetails = (tweetId: string) => {
   return { tweet, loading, error };
 };
 
-// Votre hook useStories existant
 export const useStories = () => {
   const [stories, setStories] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
