@@ -5,9 +5,11 @@ import { fr } from "date-fns/locale";
 import { Profile } from "@/types";
 import { useState, useRef } from "react";
 import { addStory } from "@/services/supabase/story";
-import Story from "@/components/stories/Story";
 import supabase from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useStories } from "@/hooks/useStories";
+import Story from "@/components/stories/Story"; // Ajout de cette ligne
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -29,6 +31,13 @@ export default function ProfileHeader({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { stories, loading: storiesLoading, refreshStories } = useStories();
+  const [isViewingStories, setIsViewingStories] = useState(false);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  
+  // Filtrer les stories du profil actuel
+  const userStories = stories.filter(story => story.user_id === profile.id);
+  const hasStories = userStories.length > 0;
 
   // Gestion de l'upload
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,6 +58,7 @@ export default function ProfileHeader({
       const success = await addStory(profile.id, file, mediaType);
       if (success) {
         alert("Story ajoutée !");
+        refreshStories(); // Rafraîchir les stories après l'ajout
       } else {
         alert("Erreur lors de l'ajout de la story.");
       }
@@ -60,12 +70,37 @@ export default function ProfileHeader({
     }
   };
 
+  const handleStoryClick = () => {
+    // Au lieu de rediriger vers une page dédiée
+    // router.push("/stories");
+    
+    // Définir directement l'index de la story à afficher
+    if (hasStories && userStories.length > 0) {
+      setIsViewingStories(true);
+      setCurrentStoryIndex(0);
+    }
+  };
+
+  // Fonction pour ouvrir l'uploader de fichiers
+  const handleAddStoryClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-6">
       <div className="flex items-start space-x-6">
-        {/* Avatar avec bouton d'ajout de story */}
-        <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200">
+        {/* Avatar avec anneau de story et bouton d'ajout */}
+        <div className="relative" onClick={hasStories ? handleStoryClick : undefined}>
+          {/* Anneau coloré autour de l'avatar si l'utilisateur a des stories */}
+          {hasStories && (
+            <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-1 cursor-pointer">
+              <div className="absolute inset-0.5 bg-white rounded-full"></div>
+            </div>
+          )}
+          
+          <div className={`w-32 h-32 rounded-full overflow-hidden bg-gray-200 ${hasStories ? 'cursor-pointer' : ''} relative z-10`}>
             {profile.profilePicture ? (
               <img
                 src={profile.profilePicture}
@@ -73,30 +108,45 @@ export default function ProfileHeader({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-4xl text-gray-500">
-                  {profile.firstName.charAt(0).toUpperCase()}
-                </span>
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <span className="text-4xl">{profile.firstName?.charAt(0)}</span>
               </div>
             )}
           </div>
+          
+          {/* Bouton pour ajouter une story si c'est notre profil */}
           {currentProfileId === profile.id && (
-            <>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full text-white flex items-center justify-center hover:bg-blue-600 transition-colors disabled:opacity-50"
-              >
-                {isUploading ? "⏳" : "+"}
-              </button>
+            <button
+              onClick={handleAddStoryClick}
+              className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer z-20"
+              title="Ajouter une story"
+              disabled={isUploading}
+            >
               <input
+                ref={fileInputRef}
+                id="story-upload"
                 type="file"
                 accept="image/*,video/*"
                 className="hidden"
-                ref={fileInputRef}
                 onChange={handleFileChange}
               />
-            </>
+              {isUploading ? (
+                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </button>
           )}
         </div>
 
@@ -155,9 +205,23 @@ export default function ProfileHeader({
               <span className="font-bold">{followingCount}</span>
               <span className="text-gray-600 ml-1">Abonnements</span>
             </div>
+            <div>
+              <span className="font-bold">{userStories.length}</span>
+              <span className="text-gray-600 ml-1">Stories</span>
+            </div>
           </div>
         </div>
       </div>
+      {/* Afficher les stories en modal si isViewingStories est true */}
+      {isViewingStories && (
+        <div className="fixed inset-0 z-50">
+          <Story 
+            userId={profile.id} 
+            initialStoryIndex={currentStoryIndex}
+            onClose={() => setIsViewingStories(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

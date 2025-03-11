@@ -40,14 +40,18 @@ const nextConfig = {
       }
     ];
   },
-  // Désactiver les erreurs ESLint pendant le build
+  // Ignorer les erreurs pendant le build
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Désactiver les erreurs TypeScript pendant le build
   typescript: {
     ignoreBuildErrors: true,
-  }
+  },
+  // Configuration pour les composants serveur
+  experimental: {
+    serverComponents: true,
+    serverActions: true,
+  },
 };
 
 module.exports = nextConfig;
