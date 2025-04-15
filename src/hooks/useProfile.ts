@@ -3,10 +3,10 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile, Tweet, Comment } from '@/types';
 import { profileService } from '@/services/supabase/profile';
-import { useAuth } from '@/hooks/useAuth';
 
 export const useProfile = () => {
   const router = useRouter();
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -16,8 +16,11 @@ export const useProfile = () => {
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
 
+  // Fonction pour charger un profil spécifique (ex: autre utilisateur)
   const loadProfileData = async (userId: string) => {
     try {
+      setLoading(true);
+
       const { data: profileData, error: profileError } = await profileService.getUserProfile(userId);
       if (profileError) throw profileError;
 
@@ -26,22 +29,56 @@ export const useProfile = () => {
         setFollowersCount(profileData.follower_count || 0);
         setFollowingCount(profileData.following_count || 0);
 
-        const { data: tweets } = await profileService.getUserTweets(profileData.id);
-        const { data: comments } = await profileService.getUserComments(profileData.id);
+        const { data: tweetsData } = await profileService.getUserTweets(profileData.id);
+        const { data: commentsData } = await profileService.getUserComments(profileData.id);
 
-        setTweets(tweets || []);
-        setComments(comments || []);
+        const formattedTweets = tweetsData
+          ? tweetsData.map(tweet => ({
+              ...tweet,
+              author_id: tweet.author?.[0]?.id || profileData.id,
+            }))
+          : [];
+
+        const formattedComments = commentsData
+          ? commentsData.map(comment => {
+              const authorData = comment.author?.[0] || {
+                id: profileData.id,
+                nickname: profileData.nickname || '',
+                profilePicture: profileData.avatar || null
+              };
+              
+              return {
+                ...comment,
+                tweet_id: comment.tweet?.[0]?.id || '',
+                view_count: 0, // optionnel
+                author: {
+                  id: authorData.id,
+                  nickname: authorData.nickname,
+                  profilePicture: authorData.profilePicture
+                }
+              };
+            })
+          : [];
+
+        setTweets(formattedTweets);
+        setComments(formattedComments);
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur lors du chargement du profil utilisateur :', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Fonction pour charger le profil connecté
   const loadProfile = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      setLoading(true);
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         router.push('/auth/login');
         return;
@@ -57,20 +94,51 @@ export const useProfile = () => {
 
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
-
-      // Charger les tweets et commentaires
+      
       const { data: tweetsData } = await profileService.getUserTweets(profileData.id);
       const { data: commentsData } = await profileService.getUserComments(profileData.id);
 
-      setTweets(tweetsData || []);
-      setComments(commentsData || []);
-      setFollowersCount(profileData.follower_count || 0);
-      setFollowingCount(profileData.following_count || 0);
+      const formattedTweets = tweetsData
+        ? tweetsData.map((tweet: any) => ({
+            ...tweet,
+            author_id: tweet.author?.[0]?.id || profileData.id,
+          }))
+        : [];
+
+      const formattedComments = commentsData
+        ? commentsData.map((comment: any) => {
+            const authorData = comment.author?.[0] || {
+              id: profileData.id,
+              nickname: profileData.nickname || '',
+              profilePicture: profileData.avatar || null
+            };
+            
+            return {
+              ...comment,
+              tweet_id: comment.tweet?.[0]?.id || '',
+              view_count: 0,
+              author: {
+                id: authorData.id,
+                nickname: authorData.nickname,
+                profilePicture: authorData.profilePicture
+              }
+            };
+          })
+        : [];
+
+      setTweets(formattedTweets);
+      setComments(formattedComments);
     } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
+      console.error('Erreur lors du chargement du profil connecté :', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Sélectionne une langue aléatoire (utile pour MultiluinguiX)
+  const getRandomLanguage = (languages: string[]) => {
+    const randomIndex = Math.floor(Math.random() * languages.length);
+    return languages[randomIndex];
   };
 
   useEffect(() => {
@@ -86,6 +154,8 @@ export const useProfile = () => {
     followersCount,
     followingCount,
     loading,
-    currentProfileId // Ajout de currentProfileId
+    currentProfileId,
+    loadProfileData,
+    getRandomLanguage,
   };
 };

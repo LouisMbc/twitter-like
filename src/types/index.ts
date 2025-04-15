@@ -14,6 +14,7 @@ export interface Comment {
 }
 
 export interface Profile {
+  languages(languages: any): unknown;
   id: string;           // Ajout du champ id qui est nécessaire pour la recherche
   user_id: string;      // Ajout du champ user_id
   firstName: string;
@@ -27,6 +28,12 @@ export interface Profile {
 }
 
 export interface Tweet {
+  author: any;
+  author: any;
+  author: any;
+  author: any;
+  author: any;
+  [x: string]: any;
   id: string;
   content: string
   picture: string | null;

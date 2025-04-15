@@ -21,6 +21,17 @@ export default function useFeed() {
 
       if (!profile) throw new Error('Profil non trouvé');
 
+      // Récupérer les IDs des personnes suivies
+      const { data: followingData, error: followingError } = await supabase
+        .from('Following')
+        .select('following_id')
+        .eq('follower_id', profile.id);
+        
+      if (followingError) throw followingError;
+      
+      // Extraire les IDs des résultats
+      const followingIds = followingData.map(item => item.following_id);
+      
       // Récupérer les tweets des personnes suivies
       const { data: feedTweets, error: tweetsError } = await supabase
         .from('Tweets')
@@ -32,12 +43,7 @@ export default function useFeed() {
             profilePicture
           )
         `)
-        .in('author_id', 
-          supabase
-            .from('Following')
-            .select('following_id')
-            .eq('follower_id', profile.id)
-        )
+        .in('author_id', followingIds)
         .order('published_at', { ascending: false });
 
       if (tweetsError) throw tweetsError;
