@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,8 @@ import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import { Tweet } from '@/types';
 import { useProfile } from '@/hooks/useProfile';
+import { useTranslation } from '@/hooks/useTranslation';
+import { TranslatedContent } from '@/types/language';
 
 interface TweetCardProps {
   tweet: Tweet;
@@ -17,6 +19,10 @@ interface TweetCardProps {
 export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
   const router = useRouter();
   const { profile } = useProfile();
+  const { translateContent } = useTranslation();
+  const [translation, setTranslation] = useState<TranslatedContent | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showOriginal, setShowOriginal] = useState<boolean>(true);
 
   const formatDate = (date: string) => {
     const parsedDate = new Date(date);
@@ -30,6 +36,22 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
     if (!detailed) {
       router.push(`/tweets/${tweet.id}`);
     }
+  };
+
+  useEffect(() => {
+    async function translateTweet() {
+      setIsLoading(true);
+      const result = await translateContent(tweet.content);
+      setTranslation(result);
+      setIsLoading(false);
+    }
+    
+    translateTweet();
+  }, [tweet.content, translateContent]);
+
+  const toggleLanguage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowOriginal(!showOriginal);
   };
 
   if (!tweet) {
@@ -75,7 +97,29 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
           </div>
         </div>
 
-        <p className="text-gray-800 mb-4">{tweet.content}</p>
+        <div className="mb-4">
+          {isLoading ? (
+            <p className="text-gray-400">Translating...</p>
+          ) : (
+            <>
+              <p className="text-gray-800">{showOriginal ? tweet.content : translation?.translatedContent}</p>
+              
+              {translation && translation.translatedLanguage && (
+                <div className="mt-2 text-sm text-gray-500 flex items-center">
+                  {!showOriginal && (
+                    <span>Translated to: {translation.translatedLanguage}</span>
+                  )}
+                  <button 
+                    onClick={toggleLanguage} 
+                    className="ml-2 text-blue-500 hover:underline"
+                  >
+                    {showOriginal ? 'Show translation' : 'Show original'}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
         {tweet.picture && tweet.picture.length > 0 && (
           <div className="mb-4">

@@ -1,6 +1,7 @@
 import supabase from '@/lib/supabase';
 import { AuthSession } from '@/types/auth';
 
+
 export const authService = {
   getSession: async () => {
     const { data: { session }, error } = await supabase.auth.getSession();
