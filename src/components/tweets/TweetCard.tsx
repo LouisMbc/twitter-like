@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import { Tweet } from '@/types';
-import { translateText } from '@/lib/utils/translate';
 import { useProfile } from '@/hooks/useProfile';
 
 interface TweetCardProps {
@@ -17,8 +16,7 @@ interface TweetCardProps {
 
 export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
   const router = useRouter();
-  const { profile, getRandomLanguage } = useProfile();
-  const [translatedContent, setTranslatedContent] = useState<string | null>(null);
+  const { profile } = useProfile();
 
   const formatDate = (date: string) => {
     const parsedDate = new Date(date);
@@ -27,35 +25,6 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
       locale: fr
     });
   };
-
-  useEffect(() => {
-    if (profile && tweet.content) {
-      // Ensure we're passing a string array to getRandomLanguage
-      /**
-       * An array of language strings extracted from the user's profile.
-       * 
-       * This variable safely handles the profile.languages property by:
-       * - Checking if the property exists
-       * - Verifying it's not a function
-       * - Confirming it's an array
-       * 
-       * If any validation fails, it defaults to an empty array.
-       * 
-       * @type {string[]}
-       */
-      const languagesToUse: string[] = (profile.languages && 
-        typeof profile.languages !== 'function' && 
-        Array.isArray(profile.languages)) 
-        ? profile.languages 
-        : [];
-      
-      // Explicitly cast the return value to string
-      const language = getRandomLanguage(languagesToUse) as string;
-      translateText(tweet.content, language).then((translation) => {
-        setTranslatedContent(translation);
-      });
-    }
-  }, [profile, tweet.content, getRandomLanguage]);
 
   const handleClick = () => {
     if (!detailed) {
@@ -106,7 +75,7 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
           </div>
         </div>
 
-        <p className="text-gray-800 mb-4">{translatedContent || tweet.content}</p>
+        <p className="text-gray-800 mb-4">{tweet.content}</p>
 
         {tweet.picture && tweet.picture.length > 0 && (
           <div className="mb-4">
