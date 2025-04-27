@@ -165,10 +165,11 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
             : { id: '', nickname: '', profilePicture: null };
         } else if (comment.author) {
           // If author is an object, use its properties with appropriate defaults
+          const author = comment.author as { id?: string | number, nickname?: string, profilePicture?: string | null };
           authorObject = {
-            id: String(comment.author.id || ''),
-            nickname: String(comment.author.nickname || ''),
-            profilePicture: comment.author.profilePicture || null
+            id: String(author.id || ''),
+            nickname: String(author.nickname || ''),
+            profilePicture: author.profilePicture || null
           };
         } else {
           // Default values if author is null/undefined
