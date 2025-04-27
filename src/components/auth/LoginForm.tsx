@@ -1,7 +1,7 @@
 // src/components/auth/LoginForm.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import supabase from '@/lib/supabase';
@@ -14,23 +14,62 @@ export default function LoginForm() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+
+  // Check online status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    setIsOnline(navigator.onLine);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    // Check for connectivity
+    if (!isOnline) {
+      setError('Vous semblez être hors ligne. Veuillez vérifier votre connexion internet.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: supabaseError, data } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
+      }).catch(err => {
+        console.error('Supabase auth error:', err);
+        return { error: new Error('Erreur de connexion au service d\'authentification. Veuillez réessayer.'), data: null };
       });
 
-      if (error) throw error;
+      if (supabaseError) throw supabaseError;
 
       router.push('/dashboard');
     } catch (err) {
-      setError((err as Error).message);
+      console.error('Login error:', err);
+      
+      // Provide more user-friendly error messages
+      if (err instanceof Error) {
+        if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+          setError('Problème de connexion au serveur. Veuillez vérifier votre connexion internet ou réessayer plus tard.');
+        } else if (err.message.includes('Invalid login')) {
+          setError('Email ou mot de passe incorrect.');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
+      }
     } finally {
       setLoading(false);
     }
@@ -39,6 +78,12 @@ export default function LoginForm() {
   return (
     <div className="max-w-md mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Se connecter</h1>
+
+      {!isOnline && (
+        <div className="mb-4 p-2 bg-yellow-100 text-yellow-800 rounded">
+          ⚠️ Vous êtes actuellement hors ligne. La connexion ne sera pas possible.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
