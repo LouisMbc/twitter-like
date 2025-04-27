@@ -5,8 +5,7 @@ import { translateText, getRandomLanguage, supportedLanguages } from '@/services
 import { TranslatedContent } from '@/types/language';
 
 export function useTranslation() {
-  const { session } = useAuth();
-  const user = session?.user;
+  const { user } = useAuth();
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [defaultLanguage, setDefaultLanguage] = useState<string>('en');
   const [isLoading, setIsLoading] = useState<boolean>(true);

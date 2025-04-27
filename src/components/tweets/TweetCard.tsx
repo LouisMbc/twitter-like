@@ -6,10 +6,18 @@ import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
+import { TweetActions } from './TweetActions'; // Add this import
 import { Tweet } from '@/types';
 import { useProfile } from '@/hooks/useProfile';
 import { useTranslation } from '@/hooks/useTranslation';
 import { TranslatedContent } from '@/types/language';
+
+// Define supported languages if not defined elsewhere
+const supportedLanguages = [
+  { code: 'en', name: 'English' },
+  { code: 'fr', name: 'French' },
+  // Add other languages as needed
+];
 
 interface TweetCardProps {
   tweet: Tweet;
@@ -21,7 +29,7 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
   const { profile } = useProfile();
   const { translateContent } = useTranslation();
   const [translation, setTranslation] = useState<TranslatedContent | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showOriginal, setShowOriginal] = useState<boolean>(true);
 
   const formatDate = (date: string) => {
@@ -102,12 +110,17 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
             <p className="text-gray-400">Translating...</p>
           ) : (
             <>
-              <p className="text-gray-800">{showOriginal ? tweet.content : translation?.translatedContent}</p>
+              <p className="text-gray-800">
+                {showOriginal ? tweet.content : translation?.translatedContent}
+              </p>
               
               {translation && translation.translatedLanguage && (
                 <div className="mt-2 text-sm text-gray-500 flex items-center">
                   {!showOriginal && (
-                    <span>Translated to: {translation.translatedLanguage}</span>
+                    <span>Translated to: {
+                      supportedLanguages.find(l => l.code === translation.translatedLanguage)?.name || 
+                      translation.translatedLanguage
+                    }</span>
                   )}
                   <button 
                     onClick={toggleLanguage} 
@@ -140,6 +153,8 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
           <div onClick={(e) => e.stopPropagation()}>
             <ReactionBar tweetId={tweet.id} />
           </div>
+          
+          <TweetActions tweet={tweet} />
         </div>
       </article>
     </div>
