@@ -5,17 +5,17 @@ import { translateText, getRandomLanguage, supportedLanguages } from '@/services
 import { TranslatedContent } from '@/types/language';
 
 export function useTranslation() {
-  const { user } = useAuth();
+  const { session } = useAuth();
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [defaultLanguage, setDefaultLanguage] = useState<string>('en');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function loadUserPreferences() {
-      if (!user) return;
+      if (!session?.user) return;
       
       setIsLoading(true);
-      const preferences = await getUserLanguagePreferences(user.id);
+      const preferences = await getUserLanguagePreferences(session.user.id);
       
       if (preferences) {
         setSelectedLanguages(preferences.selectedLanguages);
@@ -30,7 +30,7 @@ export function useTranslation() {
     }
     
     loadUserPreferences();
-  }, [user]);
+  }, [session]);
 
   async function translateContent(content: string): Promise<TranslatedContent> {
     if (isLoading || selectedLanguages.length === 0) {

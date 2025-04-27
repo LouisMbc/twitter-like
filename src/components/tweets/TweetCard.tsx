@@ -6,7 +6,7 @@ import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
-import { TweetActions } from './TweetActions'; // Add this import
+import TweetActions from './TweetActions'; // Add this import
 import { Tweet } from '@/types';
 import { useProfile } from '@/hooks/useProfile';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -154,7 +154,7 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
             <ReactionBar tweetId={tweet.id} />
           </div>
           
-          <TweetActions tweet={tweet} />
+          <TweetActions tweetId={tweet.id} />
         </div>
       </article>
     </div>

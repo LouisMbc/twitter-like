@@ -16,19 +16,19 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { session } = useAuth();
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['en', 'fr', 'es']);
   const [defaultLanguage, setDefaultLanguage] = useState<string>('en');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function loadPreferences() {
-      if (!user) {
+      if (!session?.user) {
         setIsLoading(false);
         return;
       }
       
-      const prefs = await getUserLanguagePreferences(user.id);
+      const prefs = await getUserLanguagePreferences(session.user.id);
       
       if (prefs) {
         setSelectedLanguages(prefs.selectedLanguages);
@@ -39,7 +39,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
     
     loadPreferences();
-  }, [user]);
+  }, [session]);
 
   const updateSelectedLanguages = (languages: string[]) => {
     setSelectedLanguages(languages);
@@ -50,12 +50,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
   
   const savePreferences = async () => {
-    if (!user) return false;
+    if (!session?.user) return false;
     
     const { updateUserLanguagePreferences } = await import('@/services/supabase/language');
     
     return await updateUserLanguagePreferences({
-      userId: user.id,
+      userId: session.user.id,
       selectedLanguages,
       defaultLanguage,
     });

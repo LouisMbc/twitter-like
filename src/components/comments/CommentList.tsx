@@ -103,7 +103,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
       >
         Répondre
       </button>
-      {isReplying && (
+      {isReplying && tweetId && (
         <CommentForm
           tweetId={tweetId}
           parentCommentId={comment.id}
@@ -138,6 +138,7 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
           created_at,
           view_count,
           parent_comment_id,
+          tweet_id,
           author:author_id (
             id,
             nickname,
@@ -149,7 +150,38 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
 
       if (error) throw error;
       console.log('Comments loaded:', data);
-      setComments(data || []);
+      // Transform data to ensure author is a single object with the correct shape
+      const transformedData = (data || []).map(comment => {
+        let authorObject: { id: string, nickname: string, profilePicture: string | null };
+        
+        if (Array.isArray(comment.author)) {
+          // If author is an array, take the first element or use default values
+          authorObject = comment.author.length > 0 
+            ? {
+                id: String(comment.author[0].id || ''),
+                nickname: String(comment.author[0].nickname || ''),
+                profilePicture: comment.author[0].profilePicture || null
+              }
+            : { id: '', nickname: '', profilePicture: null };
+        } else if (comment.author) {
+          // If author is an object, use its properties with appropriate defaults
+          authorObject = {
+            id: String(comment.author.id || ''),
+            nickname: String(comment.author.nickname || ''),
+            profilePicture: comment.author.profilePicture || null
+          };
+        } else {
+          // Default values if author is null/undefined
+          authorObject = { id: '', nickname: '', profilePicture: null };
+        }
+        
+        return {
+          ...comment,
+          author: authorObject
+        };
+      }) as Comment[];
+      
+      setComments(transformedData);
     } catch (err) {
       console.error('Error loading comments:', err);
       setError('Erreur lors du chargement des commentaires');
