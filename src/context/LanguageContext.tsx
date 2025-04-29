@@ -1,87 +1,26 @@
-"use client"
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { getUserLanguagePreferences } from '@/services/supabase/language';
-import { supportedLanguages } from '@/services/translation';
-
-interface LanguageContextType {
-  selectedLanguages: string[];
-  defaultLanguage: string;
-  isLoading: boolean;
-  supportedLanguages: { code: string; name: string; nativeName?: string }[];
-  updateSelectedLanguages: (languages: string[]) => void;
-  updateDefaultLanguage: (language: string) => void;
-  savePreferences: () => Promise<boolean>;
+interface LanguageContextProps {
+  language: string;
+  setLanguage: (lang: string) => void;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const { session } = useAuth();
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['en', 'fr', 'es']);
-  const [defaultLanguage, setDefaultLanguage] = useState<string>('en');
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    async function loadPreferences() {
-      if (!session?.user) {
-        setIsLoading(false);
-        return;
-      }
-      
-      const prefs = await getUserLanguagePreferences(session.user.id);
-      
-      if (prefs) {
-        setSelectedLanguages(prefs.selectedLanguages);
-        setDefaultLanguage(prefs.defaultLanguage);
-      }
-      
-      setIsLoading(false);
-    }
-    
-    loadPreferences();
-  }, [session]);
-
-  const updateSelectedLanguages = (languages: string[]) => {
-    setSelectedLanguages(languages);
-  };
-  
-  const updateDefaultLanguage = (language: string) => {
-    setDefaultLanguage(language);
-  };
-  
-  const savePreferences = async () => {
-    if (!session?.user) return false;
-    
-    const { updateUserLanguagePreferences } = await import('@/services/supabase/language');
-    
-    return await updateUserLanguagePreferences({
-      userId: session.user.id,
-      selectedLanguages,
-      defaultLanguage,
-    });
-  };
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [language, setLanguage] = useState('en');
 
   return (
-    <LanguageContext.Provider value={{
-      selectedLanguages,
-      defaultLanguage,
-      isLoading,
-      supportedLanguages,
-      updateSelectedLanguages,
-      updateDefaultLanguage,
-      savePreferences,
-    }}>
+    <LanguageContext.Provider value={{ language, setLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
-}
+};
 
-export function useLanguage() {
+export const useLanguage: () => LanguageContextProps = () => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
-}
+};
