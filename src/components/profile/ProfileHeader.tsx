@@ -3,13 +3,14 @@
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Profile } from "@/types";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { addStory } from "@/services/supabase/story";
 import supabase from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { useStories } from "@/hooks/useStories";
-import Story from "@/components/stories/Story"; // Ajout de cette ligne
+import Story from "@/components/stories/Story";
+import { messageService } from '@/services/supabase/message';
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -34,6 +35,7 @@ export default function ProfileHeader({
   const { stories, loading: storiesLoading, refreshStories } = useStories();
   const [isViewingStories, setIsViewingStories] = useState(false);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const [canMessage, setCanMessage] = useState(false);
   
   // Filtrer les stories du profil actuel
   const userStories = stories.filter(story => story.user_id === profile.id);
@@ -87,6 +89,33 @@ export default function ProfileHeader({
       fileInputRef.current.click();
     }
   };
+
+  // Ajout de la vérification pour la messagerie
+  useEffect(() => {
+    // Vérifier si l'utilisateur peut envoyer un message à ce profil
+    const checkMessagingPermission = async () => {
+      if (!currentProfileId || !profile.id || profile.id === currentProfileId) {
+        return;
+      }
+      
+      console.log("Vérification des permissions de messagerie");
+      console.log("currentProfileId:", currentProfileId);
+      console.log("profile.id:", profile.id);
+      
+      try {
+        const { canMessage: canSendMessage, error } = await messageService.canMessage(currentProfileId, profile.id);
+        console.log("Résultat canMessage:", canSendMessage, error);
+        setCanMessage(canSendMessage);
+      } catch (err) {
+        console.error("Erreur lors de la vérification des permissions de messagerie:", err);
+        setCanMessage(false);
+      }
+    };
+    
+    if (currentProfileId && profile.id) {
+      checkMessagingPermission();
+    }
+  }, [currentProfileId, profile.id]);
 
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -168,8 +197,8 @@ export default function ProfileHeader({
               </p>
             </div>
 
-            <div>
-              {/* Bouton pour éditer le profil si c'est le profil de l'utilisateur courant */}
+            <div className="flex">
+              {/* Bouton pour éditer le profil (si c'est notre profil) */}
               {currentProfileId === profile.id && (
                 <button
                   onClick={() => router.push('/profile/edit')}
@@ -178,8 +207,8 @@ export default function ProfileHeader({
                   Éditer le profil
                 </button>
               )}
-              
-              {/* Bouton suivre/ne plus suivre si ce n'est pas le profil de l'utilisateur courant */}
+
+              {/* Bouton suivre/ne plus suivre (si ce n'est pas notre profil) */}
               {currentProfileId !== profile.id && (
                 <button
                   onClick={onFollowToggle}
@@ -190,6 +219,16 @@ export default function ProfileHeader({
                   }`}
                 >
                   {isFollowing ? "Ne plus suivre" : "Suivre"}
+                </button>
+              )}
+
+              {/* Bouton Message (si ce n'est pas notre profil et qu'on peut s'envoyer des messages) */}
+              {canMessage && profile.id !== currentProfileId && (
+                <button
+                  onClick={() => router.push(`/messages/${profile.id}`)}
+                  className="ml-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition"
+                >
+                  Message
                 </button>
               )}
             </div>

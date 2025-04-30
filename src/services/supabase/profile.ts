@@ -99,5 +99,15 @@ export const profileService = {
     }
     
     return { data, error };
-  }
+  },
+
+  getProfileById: async (profileId: string) => {
+    const { data, error } = await supabase
+      .from('Profile')
+      .select('id, nickname, profilePicture')
+      .eq('id', profileId)
+      .single();
+    
+    return { data, error };
+  },
 };
