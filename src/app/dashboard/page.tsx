@@ -23,7 +23,7 @@ export default function DashboardPage() {
     checkAuth();
   }, [router]);
 
-  if (loading) {
+  if (loading) {  
     return (
       <div className="min-h-screen p-8">
         <div className="text-center">Chargement...</div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import supabase from '@/lib/supabase';
 import SearchBar from '@/components/searchBar/SearchBar';
 
@@ -35,12 +36,9 @@ export default function Header() {
       <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
         <div className="max-w-6xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
-            <button 
-              onClick={() => router.push('/')}
-              className="text-xl font-bold"
-            >
+            <Link href="/dashboard" className="font-bold text-xl text-blue-500">
               Twitter-like
-            </button>
+            </Link>
 
             <SearchBar />
 

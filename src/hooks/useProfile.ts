@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile, Tweet, Comment } from '@/types';
@@ -16,31 +16,10 @@ export const useProfile = () => {
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
 
-  const loadProfileData = async (userId: string) => {
+  // Utilisez useCallback pour éviter les re-créations inutiles de la fonction
+  const loadProfile = useCallback(async () => {
     try {
-      const { data: profileData, error: profileError } = await profileService.getUserProfile(userId);
-      if (profileError) throw profileError;
-
-      if (profileData) {
-        setProfile(profileData);
-        setFollowersCount(profileData.follower_count || 0);
-        setFollowingCount(profileData.following_count || 0);
-
-        const { data: tweets } = await profileService.getUserTweets(profileData.id);
-        const { data: comments } = await profileService.getUserComments(profileData.id);
-
-        setTweets(tweets || []);
-        setComments(comments || []);
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadProfile = async () => {
-    try {
+      setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push('/auth/login');
@@ -48,9 +27,14 @@ export const useProfile = () => {
       }
 
       const { data: profileData, error: profileError } = await profileService.getProfile(session.user.id);
-      if (profileError) throw profileError;
+      
+      if (profileError) {
+        console.error('Erreur profil:', profileError);
+        throw profileError;
+      }
 
       if (!profileData) {
+        console.log("Aucun profil trouvé, redirection vers setup");
         router.push('/profile/setup');
         return;
       }
@@ -58,12 +42,14 @@ export const useProfile = () => {
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
 
-      // Charger les tweets et commentaires
-      const { data: tweetsData } = await profileService.getUserTweets(profileData.id);
-      const { data: commentsData } = await profileService.getUserComments(profileData.id);
+      // Chargement parallèle des tweets et commentaires pour de meilleures performances
+      const [tweetsResponse, commentsResponse] = await Promise.all([
+        profileService.getUserTweets(profileData.id),
+        profileService.getUserComments(profileData.id)
+      ]);
 
-      setTweets(tweetsData || []);
-      setComments(commentsData || []);
+      setTweets(tweetsResponse.data || []);
+      setComments(commentsResponse.data || []);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
     } catch (error) {
@@ -71,11 +57,12 @@ export const useProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]); // Ajoutez router comme dépendance
 
+  // Chargement des données au montage du composant
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [loadProfile]); // Utiliser loadProfile comme dépendance
 
   return {
     profile,
@@ -86,6 +73,7 @@ export const useProfile = () => {
     followersCount,
     followingCount,
     loading,
-    currentProfileId // Ajout de currentProfileId
+    currentProfileId,
+    refreshProfile: loadProfile // Exposer la fonction pour permettre le rafraîchissement
   };
 };

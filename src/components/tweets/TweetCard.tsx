@@ -85,11 +85,13 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
         )}
 
         <div className="flex items-center justify-between text-gray-500">
-          <ViewCount 
-            contentId={tweet.id} 
-            contentType="tweet"
-            initialCount={tweet.view_count}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <ViewCount 
+              contentId={tweet.id} 
+              contentType="tweet"
+              initialCount={tweet.view_count || 0}
+            />
+          </div>
           <div onClick={(e) => e.stopPropagation()}>
             <ReactionBar tweetId={tweet.id} />
           </div>
