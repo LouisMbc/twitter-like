@@ -36,13 +36,12 @@ CREATE TABLE public."Comments" (
 );
 
 -- Table ViewCount
-CREATE TABLE public."ViewCount" (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tweet_id UUID REFERENCES public."Tweets"(id) ON DELETE CASCADE,
-    comment_id UUID REFERENCES public."Comments"(id) ON DELETE CASCADE,
-    viewer_id UUID NOT NULL REFERENCES public."Profile"(id) ON DELETE CASCADE,
-    view_count INT DEFAULT 0
+CREATE TABLE views (
+    post_id UUID PRIMARY KEY,
+    views_count INT DEFAULT 0,
+    viewers JSONB DEFAULT '[]'::JSONB
 );
+
 
 -- Table reactions
 CREATE TABLE public."reactions" (

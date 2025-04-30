@@ -1,7 +1,7 @@
 // src/hooks/useTweets.ts
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { tweetService } from '@/services/supabase/tweets';
+import { tweetService } from '@/services/supabase/tweet';
 
 export const useTweets = () => {
   const router = useRouter();

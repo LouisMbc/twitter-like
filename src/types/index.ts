@@ -27,6 +27,7 @@ export interface Profile {
   following_count: number;
 }
 
+// Si vous décidez d'étendre votre interface Tweet
 export interface Tweet {
   author: any;
   author: any;
@@ -35,12 +36,17 @@ export interface Tweet {
   author: any;
   [x: string]: any;
   id: string;
-  content: string
-  picture: string | null;
+  content: string;
+  picture?: string | null;
   published_at: string;
   view_count: number;
-  retweet_id: string | null;
-  author_id: string 
+  retweet_id?: string | null;
+  author: {
+    id: string;
+    nickname: string;
+    profilePicture?: string | null;
+  };
+  author_id?: string; // Optionnel si vous avez déjà author
 }
 
 // Ajouter aux types existants

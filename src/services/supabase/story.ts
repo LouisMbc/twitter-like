@@ -68,6 +68,10 @@ export const addStory = async (
 // 📌 Récupérer les Stories actives
 export const getStories = async () => {
   try {
+    // Calculer la date limite (24 heures en arrière)
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    
     const { data, error } = await supabase
       .from("Stories")
       .select(`
@@ -79,6 +83,7 @@ export const getStories = async () => {
         created_at,
         Profile(id, nickname, profilePicture)
       `)
+      .gte('created_at', twentyFourHoursAgo.toISOString()) // Filtrer par date
       .order('created_at', { ascending: false });
 
     if (error) throw error;
