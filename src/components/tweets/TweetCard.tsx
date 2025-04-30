@@ -9,7 +9,7 @@ import ViewCount from '@/components/shared/ViewCount';
 import TweetActions from './TweetActions'; // Add this import
 import { Tweet } from '@/types';
 import { useProfile } from '@/hooks/useProfile';
-import { useTranslation } from '@/hooks/useTranslation';
+import useTranslation from '@/hooks/useTranslation';
 import { TranslatedContent } from '@/types/language';
 
 // Define supported languages if not defined elsewhere
