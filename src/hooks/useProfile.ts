@@ -1,160 +1,94 @@
+"use client";
+
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import supabase from '@/lib/supabase';
-import { Profile, Tweet, Comment } from '@/types';
-import { profileService } from '@/services/supabase/profile';
+import { supabase } from '@/lib/supabaseClient';
+import { Profile } from '@/types';
+import profileService from '@/services/profileService';
 
-export const useProfile = () => {
+const useProfile = () => {
   const router = useRouter();
-
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
+  const [tweets, setTweets] = useState<any[]>([]);
+  const [comments, setComments] = useState<any[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
 
-<<<<<<< HEAD
   // Fonction pour charger un profil spécifique (ex: autre utilisateur)
   const loadProfileData = async (userId: string) => {
     try {
       setLoading(true);
-
-      const { data: profileData, error: profileError } = await profileService.getUserProfile(userId);
-      if (profileError) throw profileError;
-
-      if (profileData) {
-        setProfile(profileData);
-        setFollowersCount(profileData.follower_count || 0);
-        setFollowingCount(profileData.following_count || 0);
-
-        const { data: tweetsData } = await profileService.getUserTweets(profileData.id);
-        const { data: commentsData } = await profileService.getUserComments(profileData.id);
-
-        const formattedTweets = tweetsData
-          ? tweetsData.map(tweet => ({
-              ...tweet,
-              author_id: tweet.author?.[0]?.id || profileData.id,
-            }))
-          : [];
-
-        const formattedComments = commentsData
-          ? commentsData.map(comment => {
-              const authorData = comment.author?.[0] || {
-                id: profileData.id,
-                nickname: profileData.nickname || '',
-                profilePicture: profileData.avatar || null
-              };
-              
-              return {
-                ...comment,
-                tweet_id: comment.tweet?.[0]?.id || '',
-                view_count: 0, // optionnel
-                author: {
-                  id: authorData.id,
-                  nickname: authorData.nickname,
-                  profilePicture: authorData.profilePicture
-                }
-              };
-            })
-          : [];
-
-        setTweets(formattedTweets);
-        setComments(formattedComments);
+      
+      const { data: profileData, error } = await profileService.getUserProfile(userId);
+      
+      if (error) {
+        throw error;
       }
+      
+      if (!profileData) {
+        console.error('Profil non trouvé');
+        return;
+      }
+      
+      setProfile(profileData);
+      setCurrentProfileId(profileData.id);
+      
+      // Chargement parallèle des tweets et commentaires pour de meilleures performances
+      const [tweetsResponse, commentsResponse] = await Promise.all([
+        profileService.getUserTweets(profileData.id),
+        profileService.getUserComments(profileData.id)
+      ]);
+      
+      setTweets(tweetsResponse.data || []);
+      setComments(commentsResponse.data || []);
+      setFollowersCount(profileData.follower_count || 0);
+      setFollowingCount(profileData.following_count || 0);
     } catch (error) {
-      console.error('Erreur lors du chargement du profil utilisateur :', error);
+      console.error('Erreur lors du chargement du profil:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fonction pour charger le profil connecté
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-=======
   // Utilisez useCallback pour éviter les re-créations inutiles de la fonction
   const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
->>>>>>> origin/louis
+      
       if (!session) {
         router.push('/auth/login');
         return;
       }
 
-      const { data: profileData, error: profileError } = await profileService.getProfile(session.user.id);
+      const userId = session.user.id;
       
-      if (profileError) {
-        console.error('Erreur profil:', profileError);
-        throw profileError;
+      const { data: profileData, error } = await profileService.getUserProfile(userId);
+      
+      if (error) {
+        throw error;
       }
-
+      
       if (!profileData) {
-        console.log("Aucun profil trouvé, redirection vers setup");
-        router.push('/profile/setup');
+        console.error('Profil non trouvé');
         return;
       }
-
+      
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
-<<<<<<< HEAD
-      
-      const { data: tweetsData } = await profileService.getUserTweets(profileData.id);
-      const { data: commentsData } = await profileService.getUserComments(profileData.id);
-
-      const formattedTweets = tweetsData
-        ? tweetsData.map((tweet: any) => ({
-            ...tweet,
-            author_id: tweet.author?.[0]?.id || profileData.id,
-          }))
-        : [];
-
-      const formattedComments = commentsData
-        ? commentsData.map((comment: any) => {
-            const authorData = comment.author?.[0] || {
-              id: profileData.id,
-              nickname: profileData.nickname || '',
-              profilePicture: profileData.avatar || null
-            };
-            
-            return {
-              ...comment,
-              tweet_id: comment.tweet?.[0]?.id || '',
-              view_count: 0,
-              author: {
-                id: authorData.id,
-                nickname: authorData.nickname,
-                profilePicture: authorData.profilePicture
-              }
-            };
-          })
-        : [];
-
-      setTweets(formattedTweets);
-      setComments(formattedComments);
-=======
 
       // Chargement parallèle des tweets et commentaires pour de meilleures performances
       const [tweetsResponse, commentsResponse] = await Promise.all([
         profileService.getUserTweets(profileData.id),
         profileService.getUserComments(profileData.id)
       ]);
-
+      
       setTweets(tweetsResponse.data || []);
       setComments(commentsResponse.data || []);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
->>>>>>> origin/louis
     } catch (error) {
       console.error('Erreur lors du chargement du profil connecté :', error);
     } finally {
@@ -162,16 +96,13 @@ export const useProfile = () => {
     }
   }, [router]); // Ajoutez router comme dépendance
 
-<<<<<<< HEAD
   // Sélectionne une langue aléatoire (utile pour MultiluinguiX)
   const getRandomLanguage = (languages: string[]) => {
     const randomIndex = Math.floor(Math.random() * languages.length);
     return languages[randomIndex];
   };
 
-=======
   // Chargement des données au montage du composant
->>>>>>> origin/louis
   useEffect(() => {
     loadProfile();
   }, [loadProfile]); // Utiliser loadProfile comme dépendance
@@ -180,17 +111,14 @@ export const useProfile = () => {
     profile,
     tweets,
     comments,
-    activeTab,
-    setActiveTab,
     followersCount,
     followingCount,
     loading,
     currentProfileId,
-<<<<<<< HEAD
     loadProfileData,
     getRandomLanguage,
-=======
     refreshProfile: loadProfile // Exposer la fonction pour permettre le rafraîchissement
->>>>>>> origin/louis
   };
 };
+
+export default useProfile;
