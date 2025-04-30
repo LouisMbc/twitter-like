@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supportedLanguages } from '@/services/translation';
@@ -10,35 +12,57 @@ export function LanguagePreferences() {
   const [defaultLanguage, setDefaultLanguage] = useState<string>('en');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Use useEffect to ensure this only runs client-side
   useEffect(() => {
+    let isMounted = true;
     async function loadPreferences() {
-      if (!user) return;
-      
-      setIsLoading(true);
-      const prefs = await getUserLanguagePreferences(user.id);
-      
-      if (prefs) {
-        setSelectedLanguages(prefs.selectedLanguages);
-        setDefaultLanguage(prefs.defaultLanguage);
-      } else {
-        setSelectedLanguages(['en', 'fr', 'es']);
-        setDefaultLanguage('en');
+      if (!user) {
+        if (isMounted) setIsLoading(false);
+        return;
       }
       
-      setIsLoading(false);
+      try {
+        const prefs = await getUserLanguagePreferences(user.id);
+        
+        if (!isMounted) return;
+        
+        if (prefs) {
+          setSelectedLanguages(prefs.selectedLanguages || ['en', 'fr', 'es']);
+          setDefaultLanguage(prefs.defaultLanguage || 'en');
+        } else {
+          setSelectedLanguages(['en', 'fr', 'es']);
+          setDefaultLanguage('en');
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error('Failed to load language preferences:', err);
+          setError('Failed to load language preferences. Please try again later.');
+          setSelectedLanguages(['en', 'fr', 'es']);
+          setDefaultLanguage('en');
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
     }
     
     loadPreferences();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const handleLanguageToggle = (code: string) => {
     setSelectedLanguages(prev => {
-      if (prev.includes(code)) {
+      // Don't remove the last language
+      if (prev.includes(code) && prev.length > 1) {
         return prev.filter(lang => lang !== code);
-      } else {
+      } else if (!prev.includes(code)) {
         return [...prev, code];
       }
+      return prev;
     });
   };
 
@@ -50,21 +74,40 @@ export function LanguagePreferences() {
     if (!user) return;
     
     setIsSaving(true);
-    await updateUserLanguagePreferences({
-      userId: user.id,
-      selectedLanguages,
-      defaultLanguage,
-    });
-    setIsSaving(false);
+    setError(null);
+    
+    try {
+      await updateUserLanguagePreferences({
+        userId: user.id,
+        selectedLanguages,
+        defaultLanguage,
+      });
+    } catch (err) {
+      console.error('Failed to save language preferences:', err);
+      setError('Failed to save preferences. Please try again later.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
+  // Loading state
   if (isLoading) {
-    return <div>Loading language preferences...</div>;
+    return (
+      <div className="bg-white p-4 rounded-lg shadow">
+        <p className="text-center">Loading language preferences...</p>
+      </div>
+    );
   }
 
   return (
     <div className="bg-white p-4 rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4">MultiluinguiX Preferences</h2>
+      
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+          <p>{error}</p>
+        </div>
+      )}
       
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-2">Selected Languages</h3>
@@ -79,6 +122,7 @@ export function LanguagePreferences() {
                 checked={selectedLanguages.includes(language.code)}
                 onChange={() => handleLanguageToggle(language.code)}
                 className="mr-2"
+                disabled={selectedLanguages.length === 1 && selectedLanguages.includes(language.code)}
               />
               <label htmlFor={`lang-${language.code}`}>
                 {language.name} {language.nativeName !== language.name && `(${language.nativeName})`}
