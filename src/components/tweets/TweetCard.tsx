@@ -1,134 +1,110 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useRouter } from 'next/navigation';
-import ReactionBar from '@/components/reactions/ReactionBar';
-import ViewCount from '@/components/shared/ViewCount';
-import TweetActions from './TweetActions';
-import { Tweet } from '@/types';
-import useProfile from '@/hooks/useProfile';
-import { TranslatedContent } from '@/types/language';
-
-function useTranslation() {
-  const translateContent = async (content: string): Promise<TranslatedContent> => {
-    return {
-      originalContent: content,
-      translatedContent: content,
-      detectedLanguage: 'fr',
-      translatedLanguage: 'en'
-    };
-  };
-
-  return { translateContent };
-}
+import { Heart, MessageSquare, Repeat, BarChart2 } from 'lucide-react';
 
 interface TweetCardProps {
-  tweet: Tweet;
-  detailed?: boolean;
+  tweet: {
+    id: string;
+    content: string;
+    created_at: string;
+    likes_count?: number;
+    comments_count?: number;
+    shares_count?: number;
+    views_count?: number;
+    user_id: string;
+    profiles: {
+      nickname: string;
+      firstName?: string;
+      lastName?: string;
+      profilePicture?: string;
+      id: string;
+      verified?: boolean;
+    };
+    media_url?: string;
+  };
+  isComment?: boolean;
 }
 
-export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
-  const router = useRouter();
-  const { profile } = useProfile();
-  const { translateContent } = useTranslation();
-  const [translation, setTranslation] = useState<TranslatedContent | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [showOriginal, setShowOriginal] = useState<boolean>(true);
-
-  useEffect(() => {
-    async function translateTweet() {
-      setIsLoading(true);
-      const result = await translateContent(tweet.content);
-      setTranslation(result);
-      setIsLoading(false);
-    }
-    
-    translateTweet();
-  }, [tweet.content, translateContent]);
-
-  const handleClick = () => {
-    if (!detailed) {
-      router.push(`/tweets/${tweet.id}`);
-    }
-  };
-
-  const formatDate = (date: string) => {
-    return formatDistance(new Date(date), new Date(), {
-      addSuffix: true,
-      locale: fr
-    });
-  };
-
-  if (!tweet?.author) {
-    return <div className="text-red-500">Erreur : ce tweet n'a pas d'auteur.</div>;
-  }
-
+export default function TweetCard({ tweet, isComment = false }: TweetCardProps) {
+  const [liked, setLiked] = useState(false);
+  
   return (
-    <div 
-      onClick={handleClick}
-      className={`border-b border-gray-200 p-4 ${!detailed && 'cursor-pointer hover:bg-gray-50'}`}
-    >
+    <div className={`p-4 ${!isComment && 'border-b'} border-gray-800 hover:bg-gray-900/30`}>
       <div className="flex">
-        <div className="mr-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden">
-            {tweet.author.profilePicture ? (
+        <div className="mr-3 flex-shrink-0">
+          <Link href={`/profile/${tweet.profiles.id}`}>
+            {tweet.profiles.profilePicture ? (
               <img
-                src={tweet.author.profilePicture}
-                alt={tweet.author.nickname}
-                className="w-full h-full object-cover"
+                src={tweet.profiles.profilePicture}
+                alt={tweet.profiles.nickname}
+                className="w-12 h-12 rounded-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-sm text-gray-500">
-                  {tweet.author.nickname.charAt(0).toUpperCase()}
-                </span>
+              <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-white">
+                {tweet.profiles.firstName?.[0] || tweet.profiles.nickname[0]}
               </div>
             )}
-          </div>
+          </Link>
         </div>
         
         <div className="flex-1">
-          <div className="flex items-center mb-1">
-            <span className="font-bold mr-1">{tweet.author.nickname}</span>
-            <span className="text-gray-500 text-sm">@{tweet.author.nickname.toLowerCase()}</span>
+          <div className="flex items-center">
+            <Link href={`/profile/${tweet.profiles.id}`} className="font-bold hover:underline">
+              {tweet.profiles.nickname}
+            </Link>
+            {tweet.profiles.verified && (
+              <span className="ml-1 text-blue-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                </svg>
+              </span>
+            )}
             <span className="mx-1 text-gray-500">•</span>
-            <span className="text-gray-500 text-sm">{formatDate(tweet.published_at || tweet.created_at)}</span>
+            <span className="text-gray-500 text-sm">
+              {formatDistance(new Date(tweet.created_at), new Date(), { locale: fr })}
+            </span>
           </div>
           
-          <p className="text-gray-900 mb-2">
-            {tweet.content}
-          </p>
+          <p className="mt-1 text-white">{tweet.content}</p>
           
-          {tweet.picture && tweet.picture.length > 0 && (
-            <div className="mt-2 mb-3 rounded-lg overflow-hidden">
+          {tweet.media_url && (
+            <div className="mt-3 rounded-xl overflow-hidden">
               <img
-                src={tweet.picture[0]}
-                alt="Tweet image"
-                className="w-full h-auto max-h-80 object-cover"
+                src={tweet.media_url}
+                alt="Tweet media"
+                className="w-full h-auto max-h-96 object-cover"
               />
             </div>
           )}
           
-          <div className="flex justify-between mt-2 text-gray-500 text-sm">
-            <button className="flex items-center hover:text-blue-500" onClick={(e) => e.stopPropagation()}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+          <div className="mt-3 flex items-center justify-between text-gray-500 max-w-md">
+            <button className="flex items-center hover:text-blue-400">
+              <MessageSquare size={18} className="mr-1" />
               <span>{tweet.comments_count || 0}</span>
             </button>
             
-            <div onClick={(e) => e.stopPropagation()} className="flex items-center">
-              <ReactionBar tweetId={tweet.id} />
-            </div>
+            <button className="flex items-center hover:text-green-400">
+              <Repeat size={18} className="mr-1" />
+              <span>{tweet.shares_count || 0}</span>
+            </button>
             
-            <ViewCount 
-              contentId={tweet.id} 
-              contentType="tweet"
-              initialCount={tweet.view_count || 0}
-              onClick={(e) => e.stopPropagation()}
-            />
+            <button 
+              className={`flex items-center ${liked ? 'text-red-500' : 'hover:text-red-500'}`}
+              onClick={() => setLiked(!liked)}
+            >
+              <Heart size={18} className="mr-1" fill={liked ? 'currentColor' : 'none'} />
+              <span>{(tweet.likes_count || 0) + (liked ? 1 : 0)}</span>
+            </button>
+            
+            <button className="flex items-center hover:text-blue-400">
+              <BarChart2 size={18} className="mr-1" />
+              <span>{tweet.views_count || 0}</span>
+            </button>
           </div>
         </div>
       </div>

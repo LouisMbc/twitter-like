@@ -1,32 +1,52 @@
-"use client";
+import { useState } from 'react';
 
-import { useEffect, useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
+interface Translations {
+  [key: string]: {
+    [key: string]: string;
+  };
+}
 
-const useTranslation = (text: string) => {
-  const { language } = useLanguage();
-  const [translatedText, setTranslatedText] = useState(text);
-
-  useEffect(() => {
-    // Simuler une traduction
-    const translate = async () => {
-      // Appel à un service de traduction
-      const translated = await fakeTranslate(text, language);
-      setTranslatedText(translated);
-    };
-
-    translate();
-  }, [text, language]);
-
-  return translatedText;
+const translations: Translations = {
+  fr: {
+    comments: 'Commentaires',
+    noComments: 'Aucun commentaire',
+    writeComment: 'Écrire un commentaire',
+    post: 'Publier',
+    reply: 'Répondre',
+    loading: 'Chargement...',
+    error: 'Une erreur est survenue',
+    // Add more translations as needed
+  },
+  en: {
+    comments: 'Comments',
+    noComments: 'No comments',
+    writeComment: 'Write a comment',
+    post: 'Post',
+    reply: 'Reply',
+    loading: 'Loading...',
+    error: 'An error occurred',
+    // Add more translations as needed
+  },
 };
 
-const fakeTranslate = (text: string, lang: string): Promise<string> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(`${text} [translated to ${lang}]`);
-    }, 1000);
-  });
-};
+export function useTranslation() {
+  // You could get this from user preferences or browser settings
+  const [locale, setLocale] = useState<'fr' | 'en'>('fr');
+  
+  const t = (key: string): string => {
+    return translations[locale][key] || key;
+  };
 
+  const changeLocale = (newLocale: 'fr' | 'en') => {
+    setLocale(newLocale);
+  };
+  
+  return {
+    t,
+    locale,
+    changeLocale,
+  };
+}
+
+// Make sure to export the hook as the default export as well
 export default useTranslation;
