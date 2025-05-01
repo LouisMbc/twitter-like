@@ -14,6 +14,8 @@ export interface Comment {
 }
 
 export interface Profile {
+  username: any;
+  full_name: any;
   languages(languages: any): unknown;
   id: string;           // Ajout du champ id qui est nécessaire pour la recherche
   user_id: string;      // Ajout du champ user_id

@@ -3,8 +3,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
+  const router = useRouter();
+  
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
       <main className="flex flex-grow items-center justify-center p-4">
@@ -15,14 +18,14 @@ export default function AuthPage() {
               L'essentiel de l'information est ici
             </h1>
             <div className="w-48 h-48 relative">
-              {/* Logo F stylisé - nous utiliserons un div avec des styles pour le représenter */}
-              <div className="relative w-full h-full">
-                <div className="absolute inset-0 bg-red-500 text-white flex items-center justify-center text-9xl font-bold skew-y-2">
-                  F
-                </div>
-                <div className="absolute bottom-0 right-0 w-3/4 h-1/4 bg-gray-400 rounded-full transform -rotate-12 translate-y-1/4"></div>
-                <div className="absolute bottom-0 right-0 w-3/4 h-1/4 bg-red-400 rounded-full transform -rotate-6 translate-y-1/3"></div>
-              </div>
+              <Image 
+                src="/logo_Flow.png" 
+                alt="Flow Logo" 
+                width={200} 
+                height={200} 
+                className="object-contain"
+                priority
+              />
             </div>
           </div>
 
@@ -31,7 +34,7 @@ export default function AuthPage() {
             <h2 className="text-xl font-bold mb-4">Inscrivez vous</h2>
             
             {/* Google Sign-in Button */}
-            <button className="flex items-center justify-center bg-white text-black rounded-full py-2 px-4 mb-4 w-full">
+            <button className="flex items-center justify-center bg-white text-black rounded-full py-2 px-4 mb-4 w-full hover:bg-gray-100 transition-colors">
               <svg className="w-6 h-6 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -54,7 +57,7 @@ export default function AuthPage() {
             </button>
             
             {/* Apple Sign-in Button */}
-            <button className="flex items-center justify-center bg-white text-black rounded-full py-2 px-4 mb-6 w-full">
+            <button className="flex items-center justify-center bg-white text-black rounded-full py-2 px-4 mb-6 w-full hover:bg-gray-100 transition-colors">
               <svg className="w-6 h-6 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
@@ -72,19 +75,25 @@ export default function AuthPage() {
             </div>
             
             {/* Create Account Button */}
-            <button className="bg-red-600 hover:bg-red-700 text-white rounded-full py-2 px-4 mb-4 w-full font-bold">
+            <button 
+              onClick={() => router.push('/auth/register')}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full py-2 px-4 mb-4 w-full font-bold transition-colors"
+            >
               Créer un compte
             </button>
             
             {/* Terms and Conditions */}
             <p className="text-xs text-gray-400 mb-8">
-              En vous inscrivant, vous acceptez les <Link href="#" className="text-red-600">Conditions d'utilisation</Link> et la <Link href="#" className="text-red-600">Politique de confidentialité</Link>, notamment <Link href="#" className="text-red-600">l'Utilisation des cookies</Link>.
+              En vous inscrivant, vous acceptez les <Link href="#" className="text-red-600 hover:underline">Conditions d'utilisation</Link> et la <Link href="#" className="text-red-600 hover:underline">Politique de confidentialité</Link>, notamment <Link href="#" className="text-red-600 hover:underline">l'Utilisation des cookies</Link>.
             </p>
             
             {/* Already have account */}
             <div className="mt-4">
               <h3 className="text-lg font-bold mb-4">Vous avez déjà un compte ?</h3>
-              <button className="border border-gray-600 hover:bg-gray-900 text-white rounded-full py-2 px-4 w-full">
+              <button 
+                onClick={() => router.push('/auth/login')}
+                className="border border-gray-600 hover:bg-gray-900 text-white rounded-full py-2 px-4 w-full transition-colors"
+              >
                 Se connecter
               </button>
             </div>
@@ -94,7 +103,16 @@ export default function AuthPage() {
       
       {/* Footer */}
       <footer className="p-4 text-center text-gray-600 text-sm">
-        Flowep. Tous droits réservés
+        <div className="flex items-center justify-center">
+          <Image 
+            src="/logo_Flow.png" 
+            alt="Flow Logo" 
+            width={60} 
+            height={20} 
+            priority
+          />
+          <span className="ml-2">Tous droits réservés</span>
+        </div>
       </footer>
     </div>
   );

@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { getStories } from "@/services/supabase/story";
 import { tweetService } from "@/services/supabase/tweet";
 
-export const useTweetDetails = (tweetId: string) => {
-  const [tweet, setTweet] = useState<any>(null);
+export function useTweetDetails(tweetId?: string) {
+  const [tweet, setTweet] = useState<Tweet | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTweetDetails = async () => {
+    const fetchTweet = async () => {
       if (!tweetId) {
-        setError("ID du tweet manquant");
+        setError("Identifiant de tweet manquant");
         setLoading(false);
         return;
       }
@@ -33,13 +33,11 @@ export const useTweetDetails = (tweetId: string) => {
       }
     };
 
-    if (tweetId) {
-      fetchTweetDetails();
-    }
+    fetchTweet();
   }, [tweetId]);
 
   return { tweet, loading, error };
-};
+}
 
 export const useStories = () => {
   const [stories, setStories] = useState<any[]>([]);
