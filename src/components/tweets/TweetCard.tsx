@@ -6,26 +6,17 @@ import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
-import TweetActions from './TweetActions'; // Add this import
+import TweetActions from './TweetActions';
 import { Tweet } from '@/types';
 import useProfile from '@/hooks/useProfile';
 import { TranslatedContent } from '@/types/language';
 
-// Define supported languages if not defined elsewhere
-const supportedLanguages = [
-  { code: 'en', name: 'English' },
-  { code: 'fr', name: 'French' },
-  // Add other languages as needed
-];
-
 function useTranslation() {
   const translateContent = async (content: string): Promise<TranslatedContent> => {
-    // Implement your translation logic here
-    // This is a simple mock implementation
     return {
       originalContent: content,
-      translatedContent: content, // In a real scenario, this would be the translated text
-      detectedLanguage: 'fr', // Adding the required property
+      translatedContent: content,
+      detectedLanguage: 'fr',
       translatedLanguage: 'en'
     };
   };
@@ -46,20 +37,6 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showOriginal, setShowOriginal] = useState<boolean>(true);
 
-  const formatDate = (date: string) => {
-    const parsedDate = new Date(date);
-    return formatDistance(parsedDate, new Date(), {
-      addSuffix: true,
-      locale: fr
-    });
-  };
-
-  const handleClick = () => {
-    if (!detailed) {
-      router.push(`/tweets/${tweet.id}`);
-    }
-  };
-
   useEffect(() => {
     async function translateTweet() {
       setIsLoading(true);
@@ -71,29 +48,31 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
     translateTweet();
   }, [tweet.content, translateContent]);
 
-  const toggleLanguage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowOriginal(!showOriginal);
+  const handleClick = () => {
+    if (!detailed) {
+      router.push(`/tweets/${tweet.id}`);
+    }
   };
 
-  if (!tweet) {
-    console.error('Tweet manquant');
-    return <div>Tweet non disponible</div>;
-  }
+  const formatDate = (date: string) => {
+    return formatDistance(new Date(date), new Date(), {
+      addSuffix: true,
+      locale: fr
+    });
+  };
 
   if (!tweet?.author) {
-    console.warn(`⚠️ Tweet sans auteur ! ID: ${tweet.id}`, tweet);
     return <div className="text-red-500">Erreur : ce tweet n'a pas d'auteur.</div>;
   }
 
   return (
     <div 
       onClick={handleClick}
-      className={`p-4 bg-white rounded-lg ${!detailed && 'cursor-pointer hover:bg-gray-50'}`}
+      className={`border-b border-gray-200 p-4 ${!detailed && 'cursor-pointer hover:bg-gray-50'}`}
     >
-      <article className="bg-white rounded-lg shadow p-4 mb-4">
-        <div className="flex items-center mb-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+      <div className="flex">
+        <div className="mr-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden">
             {tweet.author.profilePicture ? (
               <img
                 src={tweet.author.profilePicture}
@@ -102,77 +81,57 @@ export default function TweetCard({ tweet, detailed = false }: TweetCardProps) {
               />
             ) : (
               <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-xl text-gray-500">
+                <span className="text-sm text-gray-500">
                   {tweet.author.nickname.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
           </div>
+        </div>
+        
+        <div className="flex-1">
+          <div className="flex items-center mb-1">
+            <span className="font-bold mr-1">{tweet.author.nickname}</span>
+            <span className="text-gray-500 text-sm">@{tweet.author.nickname.toLowerCase()}</span>
+            <span className="mx-1 text-gray-500">•</span>
+            <span className="text-gray-500 text-sm">{formatDate(tweet.published_at || tweet.created_at)}</span>
+          </div>
           
-          <div>
-            <h3 className="font-bold text-gray-900">
-              {tweet.author.nickname}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {formatDate(tweet.published_at)}
-            </p>
-          </div>
-        </div>
-
-        <div className="mb-4">
-          {isLoading ? (
-            <p className="text-gray-400">Translating...</p>
-          ) : (
-            <>
-              <p className="text-gray-800">
-                {showOriginal ? tweet.content : translation?.translatedContent}
-              </p>
-              
-              {translation && translation.translatedLanguage && (
-                <div className="mt-2 text-sm text-gray-500 flex items-center">
-                  {!showOriginal && (
-                    <span>Translated to: {
-                      supportedLanguages.find(l => l.code === translation.translatedLanguage)?.name || 
-                      translation.translatedLanguage
-                    }</span>
-                  )}
-                  <button 
-                    onClick={toggleLanguage} 
-                    className="ml-2 text-blue-500 hover:underline"
-                  >
-                    {showOriginal ? 'Show translation' : 'Show original'}
-                  </button>
-                </div>
-              )}
-            </>
+          <p className="text-gray-900 mb-2">
+            {tweet.content}
+          </p>
+          
+          {tweet.picture && tweet.picture.length > 0 && (
+            <div className="mt-2 mb-3 rounded-lg overflow-hidden">
+              <img
+                src={tweet.picture[0]}
+                alt="Tweet image"
+                className="w-full h-auto max-h-80 object-cover"
+              />
+            </div>
           )}
-        </div>
-
-        {tweet.picture && tweet.picture.length > 0 && (
-          <div className="mb-4">
-            <img
-              src={tweet.picture[0]}
-              alt="Tweet image"
-              className="rounded-lg max-h-96 w-auto"
-            />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between text-gray-500">
-          <div onClick={(e) => e.stopPropagation()}>
+          
+          <div className="flex justify-between mt-2 text-gray-500 text-sm">
+            <button className="flex items-center hover:text-blue-500" onClick={(e) => e.stopPropagation()}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span>{tweet.comments_count || 0}</span>
+            </button>
+            
+            <div onClick={(e) => e.stopPropagation()} className="flex items-center">
+              <ReactionBar tweetId={tweet.id} />
+            </div>
+            
             <ViewCount 
               contentId={tweet.id} 
               contentType="tweet"
               initialCount={tweet.view_count || 0}
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
-          <div onClick={(e) => e.stopPropagation()}>
-            <ReactionBar tweetId={tweet.id} />
-          </div>
-          
-          <TweetActions tweetId={tweet.id} />
         </div>
-      </article>
+      </div>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import supabase from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { useStories } from "@/hooks/useStories";
-import Story from "@/components/stories/Story"; // Ajout de cette ligne
+import Story from "@/components/stories/Story";
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -54,11 +54,10 @@ export default function ProfileHeader({
         throw new Error("Non autorisé");
       }
 
-      console.log("USER_ID envoyé à Supabase:", profile.id);
       const success = await addStory(profile.id, file, mediaType);
       if (success) {
         alert("Story ajoutée !");
-        refreshStories(); // Rafraîchir les stories après l'ajout
+        refreshStories();
       } else {
         alert("Erreur lors de l'ajout de la story.");
       }
@@ -70,149 +69,98 @@ export default function ProfileHeader({
     }
   };
 
-  const handleStoryClick = () => {
-    // Au lieu de rediriger vers une page dédiée
-    // router.push("/stories");
-    
-    // Définir directement l'index de la story à afficher
-    if (hasStories && userStories.length > 0) {
-      setIsViewingStories(true);
-      setCurrentStoryIndex(0);
-    }
-  };
-
-  // Fonction pour ouvrir l'uploader de fichiers
-  const handleAddStoryClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
-      <div className="flex items-start space-x-6">
-        {/* Avatar avec anneau de story et bouton d'ajout */}
-        <div className="relative" onClick={hasStories ? handleStoryClick : undefined}>
-          {/* Anneau coloré autour de l'avatar si l'utilisateur a des stories */}
-          {hasStories && (
-            <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-1 cursor-pointer">
-              <div className="absolute inset-0.5 bg-white rounded-full"></div>
+    <div className="bg-white p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <div className="w-16 h-16 md:w-20 md:h-20 relative">
+            <div className={`w-full h-full rounded-full overflow-hidden bg-gray-200 ${hasStories ? 'border-2 border-red-500' : ''}`}>
+              {profile.profilePicture ? (
+                <img
+                  src={profile.profilePicture}
+                  alt={`${profile.firstName} ${profile.lastName}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <span className="text-2xl">{profile.firstName?.charAt(0)}</span>
+                </div>
+              )}
             </div>
-          )}
-          
-          <div className={`w-32 h-32 rounded-full overflow-hidden bg-gray-200 ${hasStories ? 'cursor-pointer' : ''} relative z-10`}>
-            {profile.profilePicture ? (
-              <img
-                src={profile.profilePicture}
-                alt={`${profile.firstName} ${profile.lastName}`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <span className="text-4xl">{profile.firstName?.charAt(0)}</span>
-              </div>
+            
+            {currentProfileId === profile.id && (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                title="Ajouter une story"
+                disabled={isUploading}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+              </button>
             )}
           </div>
           
-          {/* Bouton pour ajouter une story si c'est notre profil */}
-          {currentProfileId === profile.id && (
+          <div className="ml-3">
+            <h1 className="font-bold text-lg">{profile.nickname}</h1>
+            <div className="flex text-sm text-gray-500">
+              <span>{profile.firstName} {profile.lastName}</span>
+              <span className="mx-1">•</span>
+              <span>{followersCount} abonnés</span>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          {currentProfileId === profile.id ? (
             <button
-              onClick={handleAddStoryClick}
-              className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer z-20"
-              title="Ajouter une story"
-              disabled={isUploading}
+              onClick={() => router.push('/profile/edit')}
+              className="px-4 py-1 border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50"
             >
-              <input
-                ref={fileInputRef}
-                id="story-upload"
-                type="file"
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-              {isUploading ? (
-                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
+              Modifier le profil
+            </button>
+          ) : (
+            <button
+              onClick={onFollowToggle}
+              className={`px-4 py-1 rounded-full text-sm font-medium ${
+                isFollowing
+                  ? "bg-white text-black border border-gray-300"
+                  : "bg-black text-white"
+              }`}
+            >
+              {isFollowing ? "Ne plus suivre" : "Suivre"}
             </button>
           )}
         </div>
-
-        {/* Profile Info */}
-        <div className="flex-1">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold">{profile.nickname}</h1>
-              <p className="text-gray-600">
-                {profile.firstName} {profile.lastName}
-              </p>
-              {profile.bio && <p className="text-gray-700 mt-2">{profile.bio}</p>}
-              <p className="text-sm text-gray-500 mt-1">
-                Membre depuis{" "}
-                {formatDistance(new Date(profile.created_at), new Date(), {
-                  addSuffix: true,
-                  locale: fr,
-                })}
-              </p>
-            </div>
-
-            <div>
-              {/* Bouton pour éditer le profil si c'est le profil de l'utilisateur courant */}
-              {currentProfileId === profile.id && (
-                <button
-                  onClick={() => router.push('/profile/edit')}
-                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
-                >
-                  Éditer le profil
-                </button>
-              )}
-              
-              {/* Bouton suivre/ne plus suivre si ce n'est pas le profil de l'utilisateur courant */}
-              {currentProfileId !== profile.id && (
-                <button
-                  onClick={onFollowToggle}
-                  className={`px-4 py-2 rounded-full transition-colors ${
-                    isFollowing
-                      ? "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
-                      : "bg-blue-500 text-white hover:bg-blue-600"
-                  }`}
-                >
-                  {isFollowing ? "Ne plus suivre" : "Suivre"}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="flex space-x-6 mt-4">
-            <div>
-              <span className="font-bold">{followersCount}</span>
-              <span className="text-gray-600 ml-1">Abonnés</span>
-            </div>
-            <div>
-              <span className="font-bold">{followingCount}</span>
-              <span className="text-gray-600 ml-1">Abonnements</span>
-            </div>
-            <div>
-              <span className="font-bold">{userStories.length}</span>
-              <span className="text-gray-600 ml-1">Stories</span>
-            </div>
-          </div>
-        </div>
       </div>
-      {/* Afficher les stories en modal si isViewingStories est true */}
+      
+      <div className="text-sm text-gray-600 mb-3">
+        {profile.bio || "Aucune bio"}
+      </div>
+      
+      <div className="flex border-t border-gray-200 mt-4">
+        <button className="flex-1 py-3 font-medium border-b-2 border-red-500">
+          Posts
+        </button>
+        <button className="flex-1 py-3 text-gray-500">
+          Réponses
+        </button>
+        <button className="flex-1 py-3 text-gray-500">
+          Médias
+        </button>
+        <button className="flex-1 py-3 text-gray-500">
+          J'aime
+        </button>
+      </div>
+      
       {isViewingStories && (
         <div className="fixed inset-0 z-50">
           <Story 

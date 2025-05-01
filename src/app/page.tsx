@@ -33,44 +33,47 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col text-white" style={{ backgroundColor: '#171717' }}>
-      {/* Main content container with max width */}
-      <div className="flex-grow flex flex-col w-full max-w-4xl mx-auto px-4 py-8">
-        {/* Main heading - centered at top */}
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-2xl md:text-3xl font-bold">
-            L'essentiel de l'information est ici
-          </h1>
-        </div>
-        
-        <div className="flex flex-col md:flex-row flex-grow items-center">
-          {/* Left side - Logo */}
-          <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
-            <div className="w-48 h-48 sm:w-64 sm:h-64 relative">
+    <div className="min-h-screen text-white" style={{ backgroundColor: '#171717' }}>
+      <div className="flex flex-col md:flex-row h-screen">
+        {/* Left side - Logo and tagline */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6">
+          <div className="max-w-md">
+            <div className="flex justify-center md:justify-start mb-8">
               <Image 
                 src="/logo_Flow.png" 
                 alt="Flow Logo" 
-                fill
-                style={{objectFit: "contain"}}
+                width={150} 
+                height={150} 
                 priority
+                className="object-contain"
               />
             </div>
+            
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center md:text-left">
+              L'essentiel de l'information est ici
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-gray-300 text-center md:text-left">
+              Rejoignez Flow dès aujourd'hui
+            </p>
           </div>
+        </div>
 
-          {/* Right side - Sign up options */}
-          <div className="w-full md:w-1/2 px-6 md:px-8 max-w-md mx-auto md:mx-0">
-            <h2 className="text-xl font-bold mb-6">
+        {/* Right side - Sign up options */}
+        <div className="w-full md:w-1/2 bg-black p-8 flex items-center justify-center">
+          <div className="w-full max-w-md space-y-6">
+            <h2 className="text-2xl font-bold mb-8">
               Inscrivez vous
             </h2>
             
             <div className="space-y-4">
               <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-                <FaGoogle className="mr-2" />
+                <FaGoogle className="mr-2 text-lg" />
                 Inscrivez vous avec Google
               </button>
               
               <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-                <FaApple className="mr-2" />
+                <FaApple className="mr-2 text-lg" />
                 Inscrivez vous avec Apple
               </button>
 
@@ -93,20 +96,16 @@ export default function Home() {
             </div>
 
             <div className="mt-8">
-              <p className="text-base mb-3">Vous avez déjà un compte?</p>
+              <p className="font-medium mb-3">Vous avez déjà un compte?</p>
               <button 
                 onClick={() => router.push('/auth/login')}
-                className="w-full border border-gray-600 text-white font-medium rounded-full py-2.5 transition-colors hover:bg-white/10"
+                className="w-full border border-gray-600 text-white font-medium rounded-full py-3 transition-colors hover:bg-white/10"
               >
                 Se connecter
               </button>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="text-xs text-gray-600 text-center py-4">
-        Flow© Tous droits réservés
       </div>
     </div>
   );
