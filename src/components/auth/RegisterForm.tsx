@@ -35,21 +35,19 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Créer un compte</h1>
-
+    <div className="max-w-md mx-auto">
       {!submitted ? (
         <>
-          <form onSubmit={handleSignUp} className="space-y-4">
+          <h2 className="text-2xl font-bold mb-6">Créer votre compte</h2>
+          <form onSubmit={handleSignUp} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full p-2 border rounded-lg"
-                placeholder="Entrez votre email"
+                className="w-full p-3 border border-gray-700 bg-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Email"
               />
             </div>
 
@@ -58,33 +56,36 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              className="w-full bg-red-500 text-white py-3 px-4 rounded-full hover:bg-red-600 disabled:opacity-50 font-bold"
             >
-              {loading ? 'Envoi en cours...' : 'Envoyer le lien magique'}
+              {loading ? 'Envoi en cours...' : 'Poursuivre'}
             </button>
           </form>
 
-          {/* Ajout du lien vers la page de connexion */}
-          <div className="mt-4 text-center">
-            <p className="text-gray-600">
-              Déjà un compte ?{' '}
-              <Link 
-                href="/auth/login" 
-                className="text-blue-500 hover:text-blue-600 font-medium"
-              >
-                Se connecter
-              </Link>
-            </p>
+          <div className="mt-8 text-center text-gray-400">
+            Vous avez déjà un compte?
+            <Link href="/auth/login" className="text-red-500 hover:underline ml-1">
+              Se connecter
+            </Link>
           </div>
         </>
       ) : (
-        <div className="text-center space-y-4">
-          <div className="text-green-500">
-            ✓ Un lien de connexion a été envoyé à {email}
+        <div className="text-center space-y-4 bg-gray-900 rounded-lg p-6">
+          <div className="text-green-500 text-xl font-semibold">
+            ✓ Vérifiez votre email
           </div>
-          <p className="text-gray-600">
-            Veuillez vérifier votre boîte mail et cliquer sur le lien pour vous connecter.
+          <p className="text-gray-400">
+            Un lien de connexion a été envoyé à <span className="text-white font-medium">{email}</span>
           </p>
+          <p className="text-gray-500">
+            Cliquez sur le lien envoyé à votre adresse pour vous connecter automatiquement.
+          </p>
+          <button 
+            onClick={() => setSubmitted(false)} 
+            className="text-red-500 hover:text-red-400 mt-4"
+          >
+            Utiliser une autre adresse email
+          </button>
         </div>
       )}
     </div>

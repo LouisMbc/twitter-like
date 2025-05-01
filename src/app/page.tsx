@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import supabase from '../lib/supabase';
 import Link from 'next/link';
 import Image from 'next/image';
+import { FaGoogle, FaApple } from 'react-icons/fa';
 
 export default function Home() {
   const router = useRouter();
@@ -32,96 +33,81 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Hero Section */}
-      <main className="flex-grow flex flex-col items-center justify-center p-4">
-        <div className="max-w-4xl w-full">
-          <div className="text-center mb-12">
-            <div className="mb-6 flex justify-center">
+    <div className="min-h-screen flex flex-col text-white" style={{ backgroundColor: '#171717' }}>
+      {/* Main content container with max width */}
+      <div className="flex-grow flex flex-col w-full max-w-4xl mx-auto px-4 py-8">
+        {/* Main heading - centered at top */}
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-2xl md:text-3xl font-bold">
+            L'essentiel de l'information est ici
+          </h1>
+        </div>
+        
+        <div className="flex flex-col md:flex-row flex-grow items-center">
+          {/* Left side - Logo */}
+          <div className="w-full md:w-1/2 flex justify-center mb-8 md:mb-0">
+            <div className="w-48 h-48 sm:w-64 sm:h-64 relative">
               <Image 
                 src="/logo_Flow.png" 
                 alt="Flow Logo" 
-                width={250} 
-                height={80} 
+                fill
+                style={{objectFit: "contain"}}
                 priority
-                className="object-contain"
               />
             </div>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8">
-              Connectez-vous avec le monde, partagez vos idées
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              {isLoggedIn ? (
-                <button 
-                  onClick={() => router.push('/dashboard')}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full transition-colors"
-                >
-                  Accéder à mon flow
-                </button>
-              ) : (
-                <>
-                  <button 
-                    onClick={() => router.push('/auth')}
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full transition-colors"
-                  >
-                    Commencer
-                  </button>
-                  <button 
-                    onClick={() => router.push('/auth/login')}
-                    className="bg-transparent hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-full border border-white transition-colors"
-                  >
-                    Se connecter
-                  </button>
-                </>
-              )}
-            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div className="bg-gray-900 p-6 rounded-lg">
-              <div className="text-red-500 text-3xl mb-4">💬</div>
-              <h3 className="text-xl font-bold mb-2">Partagez vos idées</h3>
-              <p className="text-gray-400">Exprimez-vous et partagez vos pensées avec le monde entier en quelques clics.</p>
-            </div>
+
+          {/* Right side - Sign up options */}
+          <div className="w-full md:w-1/2 px-6 md:px-8 max-w-md mx-auto md:mx-0">
+            <h2 className="text-xl font-bold mb-6">
+              Inscrivez vous
+            </h2>
             
-            <div className="bg-gray-900 p-6 rounded-lg">
-              <div className="text-red-500 text-3xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold mb-2">Découvrez</h3>
-              <p className="text-gray-400">Explorez des sujets tendances et découvrez du contenu qui vous passionne.</p>
+            <div className="space-y-4">
+              <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
+                <FaGoogle className="mr-2" />
+                Inscrivez vous avec Google
+              </button>
+              
+              <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
+                <FaApple className="mr-2" />
+                Inscrivez vous avec Apple
+              </button>
+
+              <div className="flex items-center my-4">
+                <div className="flex-grow h-px bg-gray-700"></div>
+                <span className="px-4 text-gray-400 text-sm">ou</span>
+                <div className="flex-grow h-px bg-gray-700"></div>
+              </div>
+
+              <button 
+                onClick={() => router.push('/auth/register')}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full py-3 transition-colors"
+              >
+                Créer un compte
+              </button>
+
+              <p className="text-gray-500 text-xs mt-2">
+                En vous inscrivant, vous acceptez les <Link href="#" className="text-red-500">Conditions d'utilisation</Link> et la <Link href="#" className="text-red-500">Politique de confidentialité</Link>, notamment l'<Link href="#" className="text-red-500">Utilisation des cookies</Link>.
+              </p>
             </div>
-            
-            <div className="bg-gray-900 p-6 rounded-lg">
-              <div className="text-red-500 text-3xl mb-4">🌐</div>
-              <h3 className="text-xl font-bold mb-2">Connectez-vous</h3>
-              <p className="text-gray-400">Créez des liens avec des personnes partageant vos intérêts du monde entier.</p>
+
+            <div className="mt-8">
+              <p className="text-base mb-3">Vous avez déjà un compte?</p>
+              <button 
+                onClick={() => router.push('/auth/login')}
+                className="w-full border border-gray-600 text-white font-medium rounded-full py-2.5 transition-colors hover:bg-white/10"
+              >
+                Se connecter
+              </button>
             </div>
           </div>
         </div>
-      </main>
+      </div>
       
-      {/* Footer */}
-      <footer className="p-4 text-center text-gray-600 text-sm border-t border-gray-800">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0 flex items-center">
-            <Image 
-              src="/logo_Flow.png" 
-              alt="Flow Logo" 
-              width={60} 
-              height={20} 
-              className="mr-2"
-              priority
-            />
-            © {new Date().getFullYear()}
-          </div>
-          <div className="flex space-x-6">
-            <Link href="#" className="text-gray-400 hover:text-white">À propos</Link>
-            <Link href="#" className="text-gray-400 hover:text-white">Confidentialité</Link>
-            <Link href="#" className="text-gray-400 hover:text-white">Conditions</Link>
-            <Link href="#" className="text-gray-400 hover:text-white">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <div className="text-xs text-gray-600 text-center py-4">
+        Flow© Tous droits réservés
+      </div>
     </div>
   );
 }

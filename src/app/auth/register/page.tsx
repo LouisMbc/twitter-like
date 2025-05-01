@@ -34,12 +34,7 @@ export default function RegisterPage() {
         
         <RegisterForm />
         
-        <p className="mt-8 text-center text-gray-400">
-          Vous avez déjà un compte? 
-          <Link href="/auth/login" className="text-red-500 hover:underline ml-1">
-            Se connecter
-          </Link>
-        </p>
+        
       </div>
     </div>
   );
