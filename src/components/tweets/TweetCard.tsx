@@ -25,8 +25,8 @@ function useTranslation() {
     return {
       originalContent: content,
       translatedContent: content, // In a real scenario, this would be the translated text
-      translatedLanguage: 'en',
-      originalLanguage: 'fr'
+      detectedLanguage: 'fr', // Adding the required property
+      translatedLanguage: 'en'
     };
   };
 
