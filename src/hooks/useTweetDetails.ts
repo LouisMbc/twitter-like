@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getStories } from "@/services/supabase/story";
 import { tweetService } from "@/services/supabase/tweet";
+import { Tweet } from "@/types";
 
 export function useTweetDetails(tweetId?: string) {
   const [tweet, setTweet] = useState<Tweet | null>(null);

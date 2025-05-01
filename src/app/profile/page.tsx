@@ -13,7 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('tweets');
+  const router = useRouter();
   const {
     profile,
     tweets,
@@ -23,8 +23,10 @@ export default function ProfilePage() {
     loading,
     currentProfileId
   } = useProfile();
-  } = useProfile();
   
+  const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'languages'>('tweets');
+  
+  useAuth();
   useAuth();
 
   if (loading) {

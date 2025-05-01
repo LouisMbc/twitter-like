@@ -8,8 +8,7 @@ import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import TweetActions from './TweetActions'; // Add this import
 import { Tweet } from '@/types';
-import { useProfile } from '@/hooks/useProfile';
-import useTranslation from '@/hooks/useTranslation';
+import useProfile from '@/hooks/useProfile';
 import { TranslatedContent } from '@/types/language';
 
 // Define supported languages if not defined elsewhere
@@ -18,6 +17,21 @@ const supportedLanguages = [
   { code: 'fr', name: 'French' },
   // Add other languages as needed
 ];
+
+function useTranslation() {
+  const translateContent = async (content: string): Promise<TranslatedContent> => {
+    // Implement your translation logic here
+    // This is a simple mock implementation
+    return {
+      originalContent: content,
+      translatedContent: content, // In a real scenario, this would be the translated text
+      translatedLanguage: 'en',
+      originalLanguage: 'fr'
+    };
+  };
+
+  return { translateContent };
+}
 
 interface TweetCardProps {
   tweet: Tweet;

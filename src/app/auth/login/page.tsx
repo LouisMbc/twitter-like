@@ -34,12 +34,6 @@ export default function LoginPage() {
         
         <LoginForm />
         
-        <p className="mt-8 text-center text-gray-400">
-          Pas encore de compte? 
-          <Link href="/auth/register" className="text-red-500 hover:underline ml-1">
-            S'inscrire
-          </Link>
-        </p>
       </div>
     </div>
   );

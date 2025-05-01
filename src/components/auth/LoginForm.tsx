@@ -20,11 +20,11 @@ export default function LoginForm() {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     setIsOnline(navigator.onLine);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -57,7 +57,7 @@ export default function LoginForm() {
       router.push('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      
+
       // Provide more user-friendly error messages
       if (err instanceof Error) {
         if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
@@ -120,14 +120,12 @@ export default function LoginForm() {
       </form>
 
       <div className="mt-4 text-center">
-        <p className="text-gray-600">
-          Pas encore de compte ?{' '}
-          <Link 
-            href="/auth/register" 
-            className="text-blue-500 hover:text-blue-600 font-medium"
-          >
+        <p className="mt-8 text-center text-gray-400">
+          Pas encore de compte?
+          <Link href="/auth/register" className="text-red-500 hover:underline ml-1">
             S'inscrire
           </Link>
+
         </p>
       </div>
     </div>
