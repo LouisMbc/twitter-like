@@ -11,6 +11,11 @@ export interface Comment {
   };
   replies?: Comment[];
   tweet_id: string;
+  // Add these properties to match what's being accessed in the profile page
+  nickname?: string; // Same as author.nickname
+  first_name?: string;
+  last_name?: string;
+  profile_picture?: string | null; // Same as author.profilePicture
 }
 
 export interface Profile {
@@ -31,11 +36,6 @@ export interface Profile {
 
 // Si vous décidez d'étendre votre interface Tweet
 export interface Tweet {
-  author: any;
-  author: any;
-  author: any;
-  author: any;
-  author: any;
   [x: string]: any;
   id: string;
   content: string;

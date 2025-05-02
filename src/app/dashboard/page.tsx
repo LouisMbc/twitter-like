@@ -23,6 +23,12 @@ export default function Dashboard() {
         return;
       }
       
+      // Redirect to home page if they're on the dashboard root
+      if (window.location.pathname === '/dashboard') {
+        router.push('/home');
+        return;
+      }
+      
       // Charger le profil
       const { data: profileData } = await supabase
         .from('profiles')

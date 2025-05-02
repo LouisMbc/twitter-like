@@ -13,7 +13,7 @@ export default function UserProfilePage() {
   const router = useRouter();
   const params = useParams();
   const userId = params.userId as string;
-  
+
   const {
     profile,
     tweets,
@@ -41,11 +41,11 @@ export default function UserProfilePage() {
       <div className="min-h-screen bg-black text-white">
         <div className="text-center py-20">
           <div className="animate-pulse flex justify-center">
-            <Image 
-              src="/logo_Flow.png" 
-              alt="Flow Logo" 
-              width={120} 
-              height={40} 
+            <Image
+              src="/logo_Flow.png"
+              alt="Flow Logo"
+              width={120}
+              height={40}
               priority
             />
           </div>
@@ -68,8 +68,8 @@ export default function UserProfilePage() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
         <div className="max-w-2xl mx-auto flex items-center">
-          <button 
-            onClick={() => router.back()} 
+          <button
+            onClick={() => router.back()}
             className="p-2 rounded-full hover:bg-gray-800 mr-4"
           >
             <FaArrowLeft />
@@ -82,7 +82,7 @@ export default function UserProfilePage() {
       </div>
 
       <div className="max-w-2xl mx-auto border-x border-gray-800">
-        <ProfileHeader 
+        <ProfileHeader
           profile={profile}
           followersCount={followersCount}
           followingCount={followingCount}
@@ -91,7 +91,7 @@ export default function UserProfilePage() {
           onFollowToggle={handleFollowToggle}
         />
 
-        <ProfileTabs 
+        <ProfileTabs
           activeTab={activeTab}
           onTabChange={(tab) => {
             if (tab === 'tweets' || tab === 'comments') {
@@ -101,11 +101,20 @@ export default function UserProfilePage() {
           }}
         />
 
-        <div>
+        <div className="space-y-4">
           {activeTab === 'tweets' ? (
             <TweetList tweets={tweets} />
           ) : (
-            <CommentList comments={comments} />
+            <CommentList comments={comments.map(comment => ({
+              ...comment,
+              profiles: {
+                id: comment.id || '',
+                nickname: comment.nickname || '',
+                firstName: comment.first_name || '',
+                lastName: comment.last_name || '',
+                profilePicture: comment.profile_picture || null
+              }
+            }))} />
           )}
         </div>
       </div>
