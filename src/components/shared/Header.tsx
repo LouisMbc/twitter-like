@@ -8,11 +8,25 @@ import supabase from '@/lib/supabase';
 export default function Header() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
+      
+      if (session) {
+        // Charger le profil
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (profileData) {
+          setProfile(profileData);
+        }
+      }
     };
 
     checkAuth();
@@ -25,6 +39,11 @@ export default function Header() {
       subscription.unsubscribe();
     };
   }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+  };
 
   if (!isAuthenticated) {
     return null;
@@ -85,17 +104,22 @@ export default function Header() {
       </div>
       
       <div className="p-4 flex items-center">
-        <div className="h-10 w-10 rounded-full bg-gray-200 mr-3"></div>
+        <div className="h-10 w-10 rounded-full bg-gray-200 mr-3">
+          {profile?.profilePicture && (
+            <img
+              src={profile.profilePicture}
+              alt={profile.nickname || 'User'}
+              className="w-full h-full rounded-full object-cover"
+            />
+          )}
+        </div>
         <div className="text-sm overflow-hidden">
-          <p className="font-medium truncate">Votre_pseudo</p>
+          <p className="font-medium truncate">{profile?.nickname || 'Votre_pseudo'}</p>
           <button 
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.push('/auth/login');
-            }} 
+            onClick={handleSignOut}
             className="text-gray-500 text-xs"
           >
-            ...
+            Déconnexion
           </button>
         </div>
       </div>
