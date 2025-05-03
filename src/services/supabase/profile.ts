@@ -4,7 +4,7 @@ import supabase from '@/lib/supabase';
 export const profileService = {
   updateProfile: async (userId: string, data: Partial<Profile>) => {
     const { error } = await supabase
-      .from('Profile')
+      .from('profiles')  // Changed from 'Profile' to 'profiles'
       .update(data)
       .eq('user_id', userId);
     return { error };
@@ -30,7 +30,7 @@ export const profileService = {
 
   getProfile: async (userId: string) => {
     const { data, error } = await supabase
-      .from('Profile')
+      .from('profiles')  // Changed from 'Profile' to 'profiles'
       .select('*')
       .eq('user_id', userId)
       .single();
@@ -40,7 +40,7 @@ export const profileService = {
 
   createProfile: async (userId: string, profileData: Partial<Profile>) => {
     const { data, error } = await supabase
-      .from('Profile')
+      .from('profiles')  // Changed from 'Profile' to 'profiles'
       .insert([{
         user_id: userId,
         ...profileData
@@ -53,7 +53,7 @@ export const profileService = {
 
   getUserProfile: async (userId: string) => {
     const { data, error } = await supabase
-      .from('Profile')
+      .from('profiles')  // Changed from 'Profile' to 'profiles'
       .select('*, follower_count, following_count')
       .eq('user_id', userId)
       .single();

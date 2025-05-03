@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Search, Bell, Mail, User, Plus, LogOut } from 'lucide-react';
 import supabase from '@/lib/supabase';
@@ -38,6 +37,10 @@ export default function Sidebar() {
     await supabase.auth.signOut();
     router.push('/auth/login');
   };
+  
+  const navigateTo = (path: string) => {
+    router.push(path);
+  };
 
   const navItems = [
     { path: '/dashboard', label: 'Accueil', icon: <Home className="mr-4" /> },
@@ -49,45 +52,59 @@ export default function Sidebar() {
   return (
     <div className="w-64 fixed h-full border-r border-gray-800">
       <div className="p-4">
-        <Image 
-          src="/logo_Flow.png" 
-          alt="Flow" 
-          width={100} 
-          height={34} 
-          priority
-          className="mb-8"
-        />
+        <div 
+          onClick={() => navigateTo('/dashboard')}
+          className="cursor-pointer mb-8"
+        >
+          <Image 
+            src="/logo_Flow.png" 
+            alt="Flow" 
+            width={100} 
+            height={34} 
+            priority
+          />
+        </div>
         
         <nav className="space-y-3">
           {navItems.map(item => (
-            <Link 
+            <div 
               key={item.path}
-              href={item.path} 
-              className={`flex items-center p-3 text-lg text-black ${pathname === item.path ? 'font-semibold' : ''} rounded-full hover:bg-gray-800`}
+              onClick={() => navigateTo(item.path)}
+              className={`flex items-center p-3 text-lg text-white ${
+                pathname === item.path ? 'font-semibold bg-gray-800' : ''
+              } rounded-full hover:bg-gray-800 cursor-pointer`}
             >
               {item.icon}
               {item.label}
-            </Link>
+            </div>
           ))}
           
           {profile && (
-            <Link 
-              href={`/profile/${profile.id}`} 
-              className={`flex items-center p-3 text-lg text-black ${pathname.includes('/profile/') ? 'font-semibold' : ''} rounded-full hover:bg-gray-800`}
+            <div 
+              onClick={() => navigateTo(`/profile/${profile.id}`)}
+              className={`flex items-center p-3 text-lg text-white ${
+                pathname.includes('/profile/') ? 'font-semibold bg-gray-800' : ''
+              } rounded-full hover:bg-gray-800 cursor-pointer`}
             >
               <User className="mr-4" />
               Profil
-            </Link>
+            </div>
           )}
         </nav>
         
-        <button className="mt-8 bg-red-500 text-white rounded-full py-3 px-4 flex items-center justify-center w-full font-semibold">
+        <button 
+          onClick={() => navigateTo('/tweets/new')}
+          className="mt-8 bg-red-500 text-white rounded-full py-3 px-4 flex items-center justify-center w-full font-semibold cursor-pointer hover:bg-red-600"
+        >
           <Plus className="mr-1" size={18} />
           Ajouter un post
         </button>
         
         {profile && (
-          <div className="absolute bottom-16 w-full pr-8">
+          <div 
+            onClick={() => navigateTo(`/profile/${profile.id}`)}
+            className="absolute bottom-16 w-full pr-8"
+          >
             <div className="flex items-center p-3 hover:bg-gray-800 rounded-full cursor-pointer">
               {profile.profilePicture ? (
                 <img 
@@ -100,7 +117,7 @@ export default function Sidebar() {
                   <span>{profile.nickname?.charAt(0) || profile.firstName?.charAt(0) || '?'}</span>
                 </div>
               )}
-              <span className="text-sm ml-2">
+              <span className="text-sm ml-2 text-white">
                 {profile.nickname || 'Votre_pseudo'}
               </span>
             </div>
@@ -110,7 +127,7 @@ export default function Sidebar() {
         <div className="absolute bottom-4 w-full pr-8">
           <button 
             onClick={handleSignOut}
-            className="flex items-center p-3 text-red-500 hover:bg-gray-800 rounded-full w-full"
+            className="flex items-center p-3 text-red-500 hover:bg-gray-800 rounded-full w-full cursor-pointer"
           >
             <LogOut className="mr-4" size={18} />
             <span>Déconnexion</span>

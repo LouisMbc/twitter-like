@@ -1,15 +1,12 @@
 "use client";
 
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from '@/components/shared/Header';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-// Déplacez ces définitions de polices en dehors du composant
-// pour qu'elles soient chargées une seule fois
+// Define fonts outside the component
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -20,34 +17,49 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Note: Metadata ne fonctionne pas avec "use client", nous devrons donc les gérer différemment
-// Créez un nouveau fichier metadata.ts pour cela si nécessaire
+// Metadata is handled in metadata.ts since we're using "use client"
 
 function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Supprimer les attributs superflus de l'élément HTML qui pourraient être ajoutés par des extensions
+  const htmlRef = useRef<HTMLHtmlElement>(null);
+  
+  // More aggressive approach to remove problematic attributes
   useEffect(() => {
-    // Cette fonction s'exécute uniquement côté client
+    // Run once on mount
     const htmlElement = document.documentElement;
-    // Conserver uniquement les attributs essentiels
     const essentialAttributes = ["lang", "class", "data-theme", "style"];
     
-    Array.from(htmlElement.attributes).forEach(attr => {
-      if (!essentialAttributes.includes(attr.name)) {
-        htmlElement.removeAttribute(attr.name);
-      }
+    // Function to clean attributes
+    const cleanAttributes = () => {
+      Array.from(htmlElement.attributes).forEach(attr => {
+        if (!essentialAttributes.includes(attr.name)) {
+          htmlElement.removeAttribute(attr.name);        }
+      });
+    };
+    
+    // Initial cleanup
+    cleanAttributes();
+    
+    // Setup observer to catch any new attributes
+    const observer = new MutationObserver(() => {
+      cleanAttributes();
     });
+    
+    // Start observing
+    observer.observe(htmlElement, { attributes: true });
+    
+    // Clean up observer on unmount
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="en" ref={htmlRef}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <LanguageProvider>
-            <Header />
             {children}
           </LanguageProvider>
         </ThemeProvider>

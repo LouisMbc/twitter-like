@@ -1,3 +1,5 @@
+import { Profile } from './profile'; // Import the Profile interface
+
 export interface Comment {
     id: string;
     content: string;
@@ -5,6 +7,6 @@ export interface Comment {
     view_count: number;
     parent_comment_id?: string;
     profile_picture?: string | null; // Utilisez null si c'est acceptable
-    profiles: Profile;
+    Profile: Profile;
   }
   

@@ -6,8 +6,7 @@ import { supportedLanguages } from '@/services/translation';
 import { getUserLanguagePreferences, updateUserLanguagePreferences } from '@/services/supabase/language';
 
 export function LanguagePreferences() {
-  const { session } = useAuth();
-  const user = session?.user;
+  const { user } = useAuth();
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [defaultLanguage, setDefaultLanguage] = useState<string>('en');
   const [isLoading, setIsLoading] = useState<boolean>(true);
