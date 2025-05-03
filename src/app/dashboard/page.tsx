@@ -1,83 +1,60 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
+import TweetComposer from '@/components/tweets/TweetComposer';
 import TweetList from '@/components/tweets/TweetList';
-import LoadingSpinner from '@/components/layout/LoadingSpinner';
-import Sidebar from '@/components/layout/Sidebar';
+import useFeed from '@/hooks/useFeed';
 
-export default function Dashboard() {
+export default function DashboardPage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [tweets, setTweets] = useState([]);
+  const { tweets, loading, error, refreshFeed } = useFeed();
 
+  // Vérifier que l'utilisateur est authentifié
   useEffect(() => {
-    async function loadProfile() {
+    const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-
       if (!session) {
         router.push('/auth/login');
-        return;
       }
-
-      // Redirect to home page if they're on the dashboard root
-      if (window.location.pathname === '/dashboard') {
-        router.push('/home');
-        return;
-      }
-
-      // Charger le profil
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-
-      if (profileData) {
-        setProfile(profileData);
-      }
-
-      // Charger les tweets
-      const { data: tweetsData } = await supabase
-        .from('tweets')
-        .select('*, profiles(*)')
-        .order('created_at', { ascending: false });
-
-      if (tweetsData) {
-        setTweets(tweetsData);
-      }
-
-      setLoading(false);
-    }
-
-    loadProfile();
+    };
+    checkAuth();
   }, [router]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="min-h-screen p-8">
+        <div className="text-center">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-8">
+        <div className="text-red-500 text-center">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="flex">
-        <Sidebar />
+    <div className="max-w-2xl mx-auto p-4 space-y-6">
+      {/* Section pour créer un nouveau tweet */}
+      <div className="bg-white rounded-lg shadow">
+        <TweetComposer onSuccess={refreshFeed} />
+      </div>
 
-        {/* Main content */}
-        <div className="ml-64 flex-1">
-          <div className="border-b border-gray-800 p-4">
-            <h1 className="text-xl font-bold">Page d'accueil</h1>
+      {/* Fil d'actualité */}
+      <div className="space-y-4">
+        {tweets.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            Aucun tweet dans votre fil d'actualité.
+            Commencez à suivre des personnes pour voir leurs tweets ici !
           </div>
-
-          <div className="w-full max-w-2xl mx-auto">
-            <TweetList tweets={tweets} />
-          </div>
-        </div>
+        ) : (
+          <TweetList tweets={tweets} />
+        )}
       </div>
     </div>
   );

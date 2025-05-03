@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import supabase from '@/lib/supabase';
-import { ArrowLeft } from 'lucide-react'; // Import an arrow icon if you have lucide-react
 
 export default function LoginForm() {
   const router = useRouter();
@@ -38,26 +37,13 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-black text-white p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center mb-8">
-          <button 
-            onClick={() => router.back()} 
-            className="text-white mr-4"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-xl font-bold">Se connecter</h1>
-        </div>
-
+    <div className="flex flex-col items-end min-h-screen bg-black text-white p-4">
+      <div className="w-full max-w-md mr-16">
         <div className="flex justify-center mb-8">
-          <div className="bg-gray-800 rounded-full p-4 w-16 h-16 flex items-center justify-center">
-            <span className="text-red-500 text-3xl font-bold">F</span>
-          </div>
+          <h1 className="text-xl font-bold">Connectez-vous à votre compte</h1>
         </div>
 
-        <h2 className="text-2xl font-bold mb-6 text-center">Se connecter</h2>
-
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <input
@@ -95,8 +81,8 @@ export default function LoginForm() {
         <div className="mt-6 text-center">
           <p className="text-gray-400">
             Pas encore de compte ?{' '}
-            <Link 
-              href="/auth/register" 
+            <Link
+              href="/auth/register"
               className="text-red-500 hover:text-red-400"
             >
               S'inscrire

@@ -1,8 +1,14 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 
-export default function TweetComposer() {
+// Définir l'interface des props
+interface TweetComposerProps {
+  onSuccess: () => void;
+}
+
+// Utiliser l'interface dans la définition du composant
+const TweetComposer: React.FC<TweetComposerProps> = ({ onSuccess }) => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState('');
@@ -92,6 +98,7 @@ export default function TweetComposer() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      onSuccess(); // Appel de la fonction callback
       router.refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -172,4 +179,6 @@ export default function TweetComposer() {
       )}
     </form>
   );
-}
+};
+
+export default TweetComposer;

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import supabase from '@/lib/supabase';
+import SearchBar from '@/components/searchBar/SearchBar';
 
 export default function Header() {
   const router = useRouter();
@@ -51,10 +52,15 @@ export default function Header() {
 
   return (
     <div className="fixed top-0 left-0 h-full flex flex-col w-[250px] bg-white border-r border-gray-200 z-50">
-      <div className="p-4">
-        <Link href="/dashboard" className="flex items-center">
-          <img src="/logo_Flow.png" alt="Flow Logo" className="h-8 w-auto" />
-        </Link>
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center">
+          <Link href="/dashboard" className="flex-shrink-0 mr-3">
+            <img src="/logo_Flow.png" alt="Flow Logo" className="h-8 w-auto" />
+          </Link>
+          <div className="w-full">
+            <SearchBar />
+          </div>
+        </div>
       </div>
       
       <nav className="flex flex-col flex-grow">
