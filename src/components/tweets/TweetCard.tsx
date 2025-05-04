@@ -38,6 +38,8 @@ export default function TweetCard({ tweet, isComment = false }: TweetCardProps) 
   const nickname = tweet.profiles?.nickname || "Utilisateur";
   const profilePicture = tweet.profiles?.profilePicture;
   const firstName = tweet.profiles?.firstName;
+  const lastName = tweet.profiles?.lastName;
+  const fullName = firstName && lastName ? `${firstName} ${lastName}` : undefined;
   const isVerified = tweet.profiles?.verified || false;
   
   // Format the date with error handling
@@ -54,6 +56,9 @@ export default function TweetCard({ tweet, isComment = false }: TweetCardProps) 
       return "récemment";
     }
   })();
+  
+  // Affiche l'ID utilisateur en console pour débogage
+  console.log(`Tweet ID: ${tweet.id}, User ID: ${tweet.user_id}, Profile ID: ${profileId}`);
   
   return (
     <div className={`p-4 ${!isComment && 'border-b'} border-gray-800 hover:bg-gray-900/30`}>
