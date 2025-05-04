@@ -17,7 +17,7 @@ interface TweetCardProps {
     shares_count?: number;
     views_count?: number;
     user_id: string;
-    profiles: {
+    profiles?: {
       nickname: string;
       firstName?: string;
       lastName?: string;
@@ -33,20 +33,27 @@ interface TweetCardProps {
 export default function TweetCard({ tweet, isComment = false }: TweetCardProps) {
   const [liked, setLiked] = useState(false);
   
+  // Default values for when profiles data is missing
+  const profileId = tweet.profiles?.id || tweet.user_id;
+  const nickname = tweet.profiles?.nickname || "Utilisateur";
+  const profilePicture = tweet.profiles?.profilePicture;
+  const firstName = tweet.profiles?.firstName;
+  const isVerified = tweet.profiles?.verified || false;
+  
   return (
     <div className={`p-4 ${!isComment && 'border-b'} border-gray-800 hover:bg-gray-900/30`}>
       <div className="flex">
         <div className="mr-3 flex-shrink-0">
-          <Link href={`/profile/${tweet.profiles.id}`}>
-            {tweet.profiles.profilePicture ? (
+          <Link href={`/profile/${profileId}`}>
+            {profilePicture ? (
               <img
-                src={tweet.profiles.profilePicture}
-                alt={tweet.profiles.nickname}
+                src={profilePicture}
+                alt={nickname}
                 className="w-12 h-12 rounded-full object-cover"
               />
             ) : (
               <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-white">
-                {tweet.profiles.firstName?.[0] || tweet.profiles.nickname[0]}
+                {firstName?.[0] || nickname[0]}
               </div>
             )}
           </Link>
@@ -54,10 +61,10 @@ export default function TweetCard({ tweet, isComment = false }: TweetCardProps) 
         
         <div className="flex-1">
           <div className="flex items-center">
-            <Link href={`/profile/${tweet.profiles.id}`} className="font-bold hover:underline">
-              {tweet.profiles.nickname}
+            <Link href={`/profile/${profileId}`} className="font-bold hover:underline">
+              {nickname}
             </Link>
-            {tweet.profiles.verified && (
+            {isVerified && (
               <span className="ml-1 text-blue-400">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
