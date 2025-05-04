@@ -20,8 +20,8 @@ export default function AuthPage() {
           <Image
             src="/logo_Flow.png"
             alt="Flow Logo"
-            width={300}
-            height={100}
+            width={1000}
+            height={500}
             priority
             className="object-contain"
           />
@@ -87,7 +87,7 @@ export default function AuthPage() {
           <p className="font-bold mb-5">Vous avez déjà un compte?</p>
           <button
             onClick={() => router.push('/auth/login')}
-            className="w-full md:w-auto border border-gray-600 hover:border-red-500 hover:bg-red-500/10 text-red-500 font-medium rounded-full py-2.5 px-6 transition-colors"
+            className="w-full md:w-auto border border-gray-600 hover:border-red-500 hover:bg-red-500/10 text-red-700 font-medium rounded-full py-2.5 px-6 transition-colors"
           >
             Se connecter
           </button>

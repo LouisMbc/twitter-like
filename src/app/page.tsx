@@ -16,13 +16,13 @@ export default function Home() {
     async function checkAuth() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session) {
           setIsLoggedIn(true);
         } else {
           setIsLoggedIn(false);
         }
-        
+
         setStatus('Prêt');
       } catch (err) {
         setStatus('Erreur: ' + (err as Error).message);
@@ -33,57 +33,53 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen text-white" style={{ backgroundColor: '#171717' }}>
+    <div className="min-h-screen text-white" style={{ backgroundColor: '#282325' }}>
       <div className="flex flex-col md:flex-row h-screen">
         {/* Left side - Logo and tagline */}
         <div className="w-full md:w-1/2 flex items-center justify-center p-6">
           <div className="max-w-md">
-            <div className="flex justify-center md:justify-start mb-8">
-              <Image 
-                src="/logo_Flow.png" 
-                alt="Flow Logo" 
-                width={150} 
-                height={150} 
-                priority
-                className="object-contain"
-              />
-            </div>
-            
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center md:text-left">
+            <h1 className="text-2xl md:text-2xl lg:text-4xl font-bold mb-10 text-center md:text-left whitespace-nowrap">
               L'essentiel de l'information est ici
             </h1>
-            
-            <p className="text-xl md:text-2xl text-gray-300 text-center md:text-left">
-              Rejoignez Flow dès aujourd'hui
-            </p>
+            <div className="flex justify-center md:justify-start mb-8">
+
+              <Image
+                src="/logo_Flow.png"
+                alt="Flow Logo"
+                width={400}
+                height={300}
+                priority
+                className="object-contain hover:scale-105 transition-transform duration-300"
+              />
+            </div>
           </div>
         </div>
 
         {/* Right side - Sign up options */}
-        <div className="w-full md:w-1/2 bg-black p-8 flex items-center justify-center">
+        <div className="w-full md:w-1/2 style={{ backgroundColor: '#282325' } p-8 flex items-center justify-center ">
           <div className="w-full max-w-md space-y-6">
             <h2 className="text-2xl font-bold mb-8">
               Inscrivez vous
             </h2>
-            
+
             <div className="space-y-4">
-              <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-                <FaGoogle className="mr-2 text-lg" />
+                <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
+                <FaGoogle className="mr-2 text-lg" style={{ color: '#4285F4' }} /> {/* Google's blue color */}
                 Inscrivez vous avec Google
-              </button>
-              
+                </button>
+
               <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-                <FaApple className="mr-2 text-lg" />
-                Inscrivez vous avec Apple
+              <FaApple className="mr-2 text-lg" />
+              Inscrivez vous avec Apple
               </button>
 
-              <div className="flex items-center my-4">
-                <div className="flex-grow h-px bg-gray-700"></div>
-                <span className="px-4 text-gray-400 text-sm">ou</span>
-                <div className="flex-grow h-px bg-gray-700"></div>
-              </div>
+                <div className="flex items-center my-4" style={{ width: "412px", height: "23.99px", position: "relative" }}>
+                <div className="flex-grow h-px #FFFFFF border #FFFFFF"></div>
+                <span className="px-4 text-lg text-white ">ou</span>
+                <div className="flex-grow h-px #FFFFFF border #FFFFFF"></div>
+                </div>
 
-              <button 
+              <button
                 onClick={() => router.push('/auth/register')}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full py-3 transition-colors"
               >
@@ -97,7 +93,7 @@ export default function Home() {
 
             <div className="mt-8">
               <p className="font-medium mb-3">Vous avez déjà un compte?</p>
-              <button 
+              <button
                 onClick={() => router.push('/auth/login')}
                 className="w-full border border-gray-600 text-white font-medium rounded-full py-3 transition-colors hover:bg-white/10"
               >

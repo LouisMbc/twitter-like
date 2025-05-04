@@ -107,7 +107,13 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
         console.log('Updating view count:', { newViewCount, updatedViewers });
         
         // Préparer les données pour l'upsert
-        const viewsData = {
+        interface ViewsData {
+          views_count: number;
+          viewers: any[];
+          [key: string]: any; // Permet d'ajouter des propriétés dynamiques
+        }
+        
+        const viewsData: ViewsData = {
           views_count: newViewCount,
           viewers: updatedViewers
         };

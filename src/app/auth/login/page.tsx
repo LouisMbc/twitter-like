@@ -4,9 +4,24 @@ import LoginForm from '@/components/auth/LoginForm';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useEffect } from 'react';
+import supabase from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
+  
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // If already authenticated, redirect to dashboard
+        router.push('/dashboard');
+      }
+    };
+    
+    checkAuth();
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-black text-white flex">
@@ -43,7 +58,6 @@ export default function LoginPage() {
             </h1>
           </div>
           <LoginForm />
-
         </div>
       </div>
     </div>

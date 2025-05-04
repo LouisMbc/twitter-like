@@ -43,7 +43,7 @@ export default function Sidebar() {
   };
 
   const navItems = [
-    { path: '/home', label: 'Accueil', icon: <Home className="mr-4" /> },
+    { path: '/dashboard', label: 'Accueil', icon: <Home className="mr-4" /> },
     { path: '/explore', label: 'Explorer', icon: <Search className="mr-4" /> },
     { path: '/notifications', label: 'Notifications', icon: <Bell className="mr-4" /> },
     { path: '/messages', label: 'Messages', icon: <Mail className="mr-4" /> },

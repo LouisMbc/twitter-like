@@ -1,46 +1,57 @@
-import { useRouter } from 'next/router';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 interface ProfileTabsProps {
-  activeTab: 'tweets' | 'comments' | 'languages';
-  onTabChange: (tab: 'tweets' | 'comments' | 'languages') => void;
+  activeTab: 'tweets' | 'comments' | 'media' | 'likes';
+  onTabChange: (tab: 'tweets' | 'comments' | 'media' | 'likes') => void;
 }
 
 export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
-  const { pathname } = useRouter();
+  const pathname = usePathname();
   
   return (
-    <div className="mb-6">
-      <div className="flex space-x-4">
+    <div className="border-b border-gray-800">
+      <div className="flex">
         <button
-          className={`px-4 py-2 rounded-lg ${
-            activeTab === 'tweets'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700'
+          className={`px-6 py-4 text-center ${
+            activeTab === 'tweets' 
+              ? 'font-bold border-b-2 border-red-500' 
+              : 'text-gray-500'
           }`}
           onClick={() => onTabChange('tweets')}
         >
-          Tweets
+          Posts
         </button>
         <button
-          className={`px-4 py-2 rounded-lg ${
-            activeTab === 'comments'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700'
+          className={`px-6 py-4 text-center ${
+            activeTab === 'comments' 
+              ? 'font-bold border-b-2 border-red-500' 
+              : 'text-gray-500'
           }`}
           onClick={() => onTabChange('comments')}
         >
-          Commentaires
+          Réponses
         </button>
-        <Link 
-          href="/profile/languages" 
-          className={`
-            px-4 py-2 text-center
-            ${pathname === '/profile/languages' ? 'border-b-2 border-blue-500 font-bold' : 'text-gray-600'}
-          `}
+        <button
+          className={`px-6 py-4 text-center ${
+            activeTab === 'media' 
+              ? 'font-bold border-b-2 border-red-500' 
+              : 'text-gray-500'
+          }`}
+          onClick={() => onTabChange('media')}
         >
-          MultiluinguiX
-        </Link>
+          Médias
+        </button>
+        <button
+          className={`px-6 py-4 text-center ${
+            activeTab === 'likes' 
+              ? 'font-bold border-b-2 border-red-500' 
+              : 'text-gray-500'
+          }`}
+          onClick={() => onTabChange('likes')}
+        >
+          J'aime
+        </button>
       </div>
     </div>
   );

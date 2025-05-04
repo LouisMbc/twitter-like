@@ -1,19 +1,20 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import useProfile from '@/hooks/useProfile';
 import TweetCard from '@/components/tweets/TweetCard';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileTabs from '@/components/profile/ProfileTabs';
 import CommentList from '@/components/comments/CommentList';
-import { FaArrowLeft, FaEllipsisH, FaCog } from 'react-icons/fa';
+import { FaArrowLeft, FaCog } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const auth = useAuth();
   const {
     profile,
     tweets,
@@ -21,13 +22,18 @@ export default function ProfilePage() {
     followersCount,
     followingCount,
     loading,
-    currentProfileId
+    currentProfileId,
+    error
   } = useProfile();
   
-  const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'languages'>('tweets');
+  const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
   
-  useAuth();
-  useAuth();
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!auth.loading && !auth.user) {
+      router.push('/login');
+    }
+  }, [auth.loading, auth.user, router]);
 
   if (loading) {
     return (
@@ -48,10 +54,19 @@ export default function ProfilePage() {
     );
   }
 
-  if (!profile) {
+  if (error || !profile) {
     return (
       <div className="min-h-screen bg-black text-white">
-        <div className="flex justify-center p-8">Profil non trouvé</div>
+        <div className="flex flex-col items-center justify-center py-20">
+          <h2 className="text-2xl font-bold mb-4">Profil non trouvé</h2>
+          <p className="text-gray-400 mb-6">Le profil que vous recherchez n'existe pas ou n'est pas accessible.</p>
+          <button 
+            onClick={() => router.push('/dashboard')} 
+            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors"
+          >
+            Retour à l'accueil
+          </button>
+        </div>
       </div>
     );
   }
@@ -70,7 +85,7 @@ export default function ProfilePage() {
             </button>
             <div>
               <h1 className="text-xl font-bold">{profile.full_name || profile.username}</h1>
-              <p className="text-sm text-gray-500">{tweets.length} publications</p>
+              <p className="text-sm text-gray-500">{tweets?.length || 0} publications</p>
             </div>
           </div>
           <Link href="/profile/edit" className="p-2 rounded-full hover:bg-gray-800">
@@ -96,22 +111,38 @@ export default function ProfilePage() {
 
         {activeTab === 'tweets' ? (
           <div>
-            {tweets.length === 0 ? (
+            {!tweets?.length ? (
               <div className="text-center text-gray-400 py-12 px-4">
-                <h3 className="text-xl font-bold mb-2">Vous n'avez pas encore publié</h3>
-                <p>Partagez vos pensées avec le monde!</p>
-                <button onClick={() => router.push('/tweets')} className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors">
-                  Créer une publication
+                <h3 className="text-xl font-bold mb-2">Aucun post publié</h3>
+                <button 
+                  onClick={() => router.push('/tweets/create')} 
+                  className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center mx-auto"
+                >
+                  <span className="mr-1">+</span> Ajouter un post
                 </button>
               </div>
             ) : (
-              tweets.map(tweet => (
-                <TweetCard key={tweet.id} tweet={tweet} />
-              ))
+              <>
+                <div className="flex justify-center my-4">
+                  <button 
+                    onClick={() => router.push('/tweets/create')} 
+                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center"
+                  >
+                    <span className="mr-1">+</span> Ajouter un post
+                  </button>
+                </div>
+                {tweets.map(tweet => (
+                  <TweetCard key={tweet.id} tweet={tweet} />
+                ))}
+              </>
             )}
           </div>
+        ) : activeTab === 'comments' ? (
+          <CommentList comments={comments || []} />
         ) : (
-          <CommentList comments={comments} />
+          <div className="text-center text-gray-400 py-12 px-4">
+            <h3 className="text-xl font-bold mb-2">Aucun contenu</h3>
+          </div>
         )}
       </div>
     </div>
