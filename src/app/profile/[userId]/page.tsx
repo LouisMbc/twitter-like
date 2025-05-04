@@ -105,16 +105,23 @@ export default function UserProfilePage() {
           {activeTab === 'tweets' ? (
             <TweetList tweets={tweets} />
           ) : (
-            <CommentList comments={comments.map(comment => ({
-              ...comment,
-              profiles: {
-                id: comment.id || '',
-                nickname: comment.nickname || '',
-                firstName: comment.first_name || '',
-                lastName: comment.last_name || '',
-                profilePicture: comment.profile_picture || null
-              }
-            }))} />
+            <CommentList comments={comments.map(comment => {
+              // Create a new object without the potentially null profile_picture
+              const { profile_picture, ...rest } = comment;
+              
+              return {
+                ...rest,
+                // Add back profile_picture as undefined if null
+                profile_picture: profile_picture || undefined,
+                profiles: {
+                  id: comment.id || '',
+                  nickname: comment.nickname || '',
+                  firstName: comment.first_name || '',
+                  lastName: comment.last_name || '',
+                  profilePicture: comment.profile_picture || undefined
+                }
+              };
+            })} />
           )}
         </div>
       </div>

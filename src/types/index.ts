@@ -59,3 +59,14 @@ export interface ProfilePageData {
   followersCount: number;
   followingCount: number;
 }
+
+export interface ProfileForm {
+  firstName: string;
+  lastName: string;
+  nickname: string;
+  bio: string;
+  password: string;
+  confirmPassword: string;
+  profilePicture?: File | null;
+  currentProfilePicture?: string | null;
+}

@@ -31,7 +31,7 @@ export default function ProfileEditForm({
     const file = e.target.files?.[0];
     if (!file) return;
     
-    setFormData(prev => ({ ...prev, profilePicture: file }));
+    setFormData((prev: ProfileForm) => ({ ...prev, profilePicture: file }));
     
     // Créer une URL pour la prévisualisation
     const url = URL.createObjectURL(file);

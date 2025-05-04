@@ -54,7 +54,7 @@ export default function AuthPage() {
 
           <div className="space-y-4 max-w-sm">
             <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-              <FaGoogle className="mr-2" />
+              <FaGoogle className="mr-2" color="black" />
               S'inscrire avec Google
             </button>
 
