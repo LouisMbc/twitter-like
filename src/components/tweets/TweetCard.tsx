@@ -40,6 +40,21 @@ export default function TweetCard({ tweet, isComment = false }: TweetCardProps) 
   const firstName = tweet.profiles?.firstName;
   const isVerified = tweet.profiles?.verified || false;
   
+  // Format the date with error handling
+  const formattedDate = (() => {
+    try {
+      // Check if created_at is a valid date string
+      const dateObj = new Date(tweet.created_at);
+      if (isNaN(dateObj.getTime())) {
+        return "récemment";
+      }
+      return formatDistance(dateObj, new Date(), { locale: fr });
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "récemment";
+    }
+  })();
+  
   return (
     <div className={`p-4 ${!isComment && 'border-b'} border-gray-800 hover:bg-gray-900/30`}>
       <div className="flex">
@@ -73,7 +88,7 @@ export default function TweetCard({ tweet, isComment = false }: TweetCardProps) 
             )}
             <span className="mx-1 text-gray-500">•</span>
             <span className="text-gray-500 text-sm">
-              {formatDistance(new Date(tweet.created_at), new Date(), { locale: fr })}
+              {formattedDate}
             </span>
           </div>
           
