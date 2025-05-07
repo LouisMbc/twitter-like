@@ -1,3 +1,4 @@
+// src/app/profile/page.tsx
 "use client";
 
 import { useRouter } from 'next/navigation';
@@ -20,10 +21,21 @@ export default function ProfilePage() {
     followersCount,
     followingCount,
     loading,
-    currentProfileId // Ajout de currentProfileId
+    currentProfileId,
+    incrementFollowingCount,
+    decrementFollowingCount
   } = useProfile();
   
   useAuth();
+
+  // Fonction pour gérer le changement du nombre d'abonnements
+  const handleFollowingChange = (change: number) => {
+    if (change > 0) {
+      incrementFollowingCount();
+    } else {
+      decrementFollowingCount();
+    }
+  };
 
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
@@ -39,9 +51,9 @@ export default function ProfilePage() {
         profile={profile}
         followersCount={followersCount}
         followingCount={followingCount}
-        currentProfileId={currentProfileId} // Ajout de currentProfileId
-        isFollowing={false} // Pas nécessaire sur son propre profil
-        onFollowToggle={() => {}} // Fonction vide car pas nécessaire sur son propre profil
+        currentProfileId={currentProfileId}
+        isFollowing={false}
+        onFollowToggle={() => {}}
       />
       
       <ProfileTabs 

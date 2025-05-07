@@ -59,6 +59,15 @@ export const useProfile = () => {
     }
   }, [router]); // Ajoutez router comme dépendance
 
+  // Ajouter des méthodes pour mettre à jour les compteurs
+  const incrementFollowingCount = useCallback(() => {
+    setFollowingCount(prevCount => prevCount + 1);
+  }, []);
+
+  const decrementFollowingCount = useCallback(() => {
+    setFollowingCount(prevCount => Math.max(0, prevCount - 1));
+  }, []);
+
   // Chargement des données au montage du composant
   useEffect(() => {
     loadProfile();
@@ -74,6 +83,8 @@ export const useProfile = () => {
     followingCount,
     loading,
     currentProfileId,
-    refreshProfile: loadProfile // Exposer la fonction pour permettre le rafraîchissement
+    refreshProfile: loadProfile, // Exposer la fonction pour permettre le rafraîchissement
+    incrementFollowingCount,
+    decrementFollowingCount
   };
 };

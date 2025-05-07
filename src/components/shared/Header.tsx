@@ -3,24 +3,26 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { EnvelopeIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
 import supabase from '@/lib/supabase';
 import SearchBar from '@/components/searchBar/SearchBar';
 import { messageService } from '@/services/supabase/message';
+import { notificationService } from '@/services/supabase/notification';
 
 export default function Header() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [profileId, setProfileId] = useState<string | null>(null);
 
+  // Vérifier l'authentification et récupérer l'ID du profil
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       
       if (session) {
-        // Récupérer l'ID du profil si l'utilisateur est connecté
         const { data } = await supabase
           .from('Profile')
           .select('id')
@@ -38,7 +40,6 @@ export default function Header() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
       if (!session) {
-        // Réinitialiser profileId si l'utilisateur se déconnecte
         setProfileId(null);
       }
     });
@@ -48,27 +49,24 @@ export default function Header() {
     };
   }, []);
 
-  // Récupérer le nombre de messages non lus lorsque l'utilisateur est authentifié
+  // Récupérer le nombre de messages non lus
   useEffect(() => {
     if (!profileId) {
-      setUnreadCount(0);
+      setUnreadMessageCount(0);
       return;
     }
     
-    // Fonction pour récupérer le nombre de messages non lus
-    const fetchUnreadCount = async () => {
+    const fetchUnreadMessageCount = async () => {
       try {
         const { count } = await messageService.getUnreadCount(profileId);
-        setUnreadCount(count);
+        setUnreadMessageCount(count);
       } catch (error) {
         console.error("Erreur lors de la récupération des messages non lus:", error);
       }
     };
     
-    // Appeler une première fois
-    fetchUnreadCount();
+    fetchUnreadMessageCount();
     
-    // Mettre en place une écoute en temps réel pour les nouveaux messages
     const subscription = supabase
       .channel('messages-count')
       .on('postgres_changes', {
@@ -77,7 +75,7 @@ export default function Header() {
         table: 'Messages',
         filter: `recipient_id=eq.${profileId}`
       }, () => {
-        fetchUnreadCount(); // Recharger le compte à chaque nouveau message
+        fetchUnreadMessageCount();
       })
       .on('postgres_changes', {
         event: 'UPDATE',
@@ -85,7 +83,50 @@ export default function Header() {
         table: 'Messages',
         filter: `recipient_id=eq.${profileId}`
       }, () => {
-        fetchUnreadCount(); // Recharger le compte à chaque message marqué comme lu
+        fetchUnreadMessageCount();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [profileId]);
+
+  // Récupérer le nombre de notifications non lues
+  useEffect(() => {
+    if (!profileId) {
+      setUnreadNotificationCount(0);
+      return;
+    }
+    
+    const fetchUnreadNotificationCount = async () => {
+      try {
+        const { count } = await notificationService.getUnreadCount(profileId);
+        setUnreadNotificationCount(count);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des notifications non lues:", error);
+      }
+    };
+    
+    fetchUnreadNotificationCount();
+    
+    const subscription = supabase
+      .channel('notifications-count')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'Notifications',
+        filter: `user_id=eq.${profileId}`
+      }, () => {
+        fetchUnreadNotificationCount();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'Notifications',
+        filter: `user_id=eq.${profileId}`
+      }, () => {
+        fetchUnreadNotificationCount();
       })
       .subscribe();
     
@@ -135,12 +176,25 @@ export default function Header() {
                   >
                     Profil
                   </button>
+                  
+                  {/* Bouton Notifications */}
+                  <Link href="/notifications" className="flex items-center p-2 hover:bg-gray-100 rounded-md relative">
+                    <BellIcon className="h-5 w-5 mr-2" />
+                    <span>Notifications</span>
+                    {unreadNotificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                      </span>
+                    )}
+                  </Link>
+                  
+                  {/* Bouton Messages */}
                   <Link href="/messages" className="flex items-center p-2 hover:bg-gray-100 rounded-md relative">
                     <EnvelopeIcon className="h-5 w-5 mr-2" />
                     <span>Messages</span>
-                    {unreadCount > 0 && (
+                    {unreadMessageCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {unreadCount > 99 ? '99+' : unreadCount}
+                        {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
                       </span>
                     )}
                   </Link>

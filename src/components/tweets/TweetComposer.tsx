@@ -2,7 +2,11 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 
-export default function TweetComposer() {
+interface TweetComposerProps {
+  onSuccess?: () => void;
+}
+
+export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState('');
@@ -92,7 +96,13 @@ export default function TweetComposer() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      router.refresh();
+      
+      // Appeler la fonction onSuccess si elle est fournie
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.refresh();
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
