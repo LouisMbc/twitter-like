@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaGoogle, FaApple } from 'react-icons/fa';
 
+
 export default function Home() {
   const router = useRouter();
   const [status, setStatus] = useState<string>('Vérification de la connexion...');

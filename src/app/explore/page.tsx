@@ -43,7 +43,7 @@ export default function ExplorePage() {
         <nav className="flex-1">
           <ul className="space-y-4">
             <li>
-              <Link href="/" className="flex items-center p-2 rounded-full hover:bg-gray-800">
+              <Link href="/dashboard" className="flex items-center p-2 rounded-full hover:bg-gray-800">
                 <FaHome className="mr-4 text-2xl" />
                 <span className="text-xl">Accueil</span>
               </Link>
