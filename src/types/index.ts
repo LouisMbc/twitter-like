@@ -30,7 +30,7 @@ export interface Profile {
 export interface Tweet {
   id: string;
   content: string;
-  picture?: string | null;
+  picture?: string[] | null;
   published_at: string;
   view_count: number;
   retweet_id?: string | null;
