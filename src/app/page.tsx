@@ -64,7 +64,7 @@ export default function Home() {
 
             <div className="space-y-4">
                 <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-                <FaGoogle className="mr-2 text-lg" style={{ color: '#4285F4' }} /> {/* Google's blue color */}
+                <FaGoogle className="mr-2 text-lg" />
                 Inscrivez vous avec Google
                 </button>
 
