@@ -94,7 +94,12 @@ export default function UserProfilePage() {
 
       <div className="max-w-2xl mx-auto border-x border-gray-800">
         <ProfileHeader
-          profile={profile}
+          profile={{
+            ...profile,
+            username: profile.username || profile.full_name || 'User', // Ensure username is never undefined
+            full_name: profile.full_name || '', // Ensure full_name is always defined
+            languages: profile.languages || ((languages) => languages) // Ensure languages is a function
+          }}
           followersCount={followersCount}
           followingCount={followingCount}
           currentProfileId={currentProfileId}

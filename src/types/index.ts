@@ -45,6 +45,7 @@ export interface Tweet {
   view_count: number;
   retweet_id?: string | null;
   author: {
+    verified: any;
     id: string;
     nickname: string;
     profilePicture?: string | null;
