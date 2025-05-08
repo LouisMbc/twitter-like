@@ -12,6 +12,7 @@ import CommentList from '@/components/comments/CommentList';
 import { FaArrowLeft, FaCog } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
+import { error } from 'console';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -23,14 +24,10 @@ export default function ProfilePage() {
     followersCount,
     followingCount,
     loading,
-    currentProfileId,
-<<<<<<< HEAD
-    error
-=======
-    incrementFollowingCount,
-    decrementFollowingCount
->>>>>>> origin/louis
-  } = useProfile();
+  currentProfileId,
+  incrementFollowingCount,
+  decrementFollowingCount
+} = useProfile();
   
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
   
@@ -86,53 +83,27 @@ export default function ProfilePage() {
     );
   }
 
-  return (
-<<<<<<< HEAD
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <button 
-              onClick={() => router.back()} 
-              className="p-2 rounded-full hover:bg-gray-800 mr-4 md:hidden"
-            >
-              <FaArrowLeft />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold">{profile.full_name || profile.username}</h1>
-              <p className="text-sm text-gray-500">{tweets?.length || 0} publications</p>
-            </div>
+return (
+<div className="min-h-screen bg-black text-white">
+    {/* Header */}
+    <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
+      <div className="max-w-2xl mx-auto flex items-center justify-between">
+        <div className="flex items-center">
+          <button 
+            onClick={() => router.back()} 
+            className="p-2 rounded-full hover:bg-gray-800 mr-4 md:hidden"
+          >
+            <FaArrowLeft />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold">{profile.full_name || profile.username}</h1>
+            <p className="text-sm text-gray-500">{tweets?.length || 0} publications</p>
           </div>
-          <Link href="/profile/edit" className="p-2 rounded-full hover:bg-gray-800">
-            <FaCog />
-          </Link>
-=======
-    <div className="max-w-4xl mx-auto p-4">
-      <ProfileHeader 
-        profile={profile}
-        followersCount={followersCount}
-        followingCount={followingCount}
-        currentProfileId={currentProfileId}
-        isFollowing={false}
-        onFollowToggle={() => {}}
-      />
-      
-      <ProfileTabs 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab}
-      />
-
-      {activeTab === 'tweets' ? (
-        <div className="space-y-4">
-          {tweets.map(tweet => (
-            <TweetCard key={tweet.id} tweet={tweet} />
-          ))}
->>>>>>> origin/louis
         </div>
+        <Link href="/profile/edit" className="p-2 rounded-full hover:bg-gray-800">
+          <FaCog />
+        </Link>
       </div>
-
-      <div className="max-w-2xl mx-auto border-x border-gray-800">
         <ProfileHeader 
           profile={profile}
           followersCount={followersCount}
