@@ -6,7 +6,17 @@ export interface Comment {
     created_at: string;
     view_count: number;
     parent_comment_id?: string;
-    profile_picture?: string | null; // Utilisez null si c'est acceptable
-    Profile: Profile;
-  }
-  
+    author?: {
+      id: string;
+      nickname: string;
+      profilePicture: string | null;
+    };
+    replies?: Comment[];
+    tweet_id: string;
+    profile_picture?: string | null;
+    Profile?: Profile;
+    // Champs compatibles avec index.ts
+    nickname?: string;
+    first_name?: string;
+    last_name?: string;
+}

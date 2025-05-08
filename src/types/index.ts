@@ -16,6 +16,7 @@ export interface Comment {
   first_name?: string;
   last_name?: string;
   profile_picture?: string | null; // Same as author.profilePicture
+  Profile?: any; // For compatibility with comment.ts
 }
 
 export interface Profile {

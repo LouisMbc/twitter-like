@@ -91,11 +91,13 @@ export const addStory = async (
         
         await Promise.all(notificationPromises);
       }
+      
+      return data[0].id; // Retourner l'ID de la story créée
     }
-
-    return data;
+    
+    return null;
   } catch (error) {
-    console.error("Erreur générale lors de l'ajout de la story :", error);
+    console.error("Erreur lors de l'ajout de la story :", error);
     return null;
   }
 };
@@ -132,16 +134,32 @@ export const getStories = async () => {
 // 📌 Supprimer une Story
 export const deleteStory = async (storyId: string, mediaUrl: string) => {
   try {
-    // Supprimer le fichier du storage
-    const filePath = mediaUrl.split("/storage/v1/object/public/stories/")[1];
-
-    await supabase.storage.from("stories").remove([filePath]);
-
-    // Supprimer la story de la BDD
-    const { error } = await supabase.from("Stories").delete().eq("id", storyId);
-
-    if (error) throw error;
+    // Extraire le chemin du fichier à partir de l'URL
+    const urlParts = mediaUrl.split('/');
+    const filePath = urlParts.slice(urlParts.indexOf('stories')).join('/');
+    
+    // Supprimer le fichier du stockage
+    const { error: deleteStorageError } = await supabase.storage
+      .from('stories')
+      .remove([filePath]);
+    
+    if (deleteStorageError) {
+      console.error('Erreur lors de la suppression du fichier média:', deleteStorageError);
+    }
+    
+    // Supprimer l'entrée de la base de données
+    const { error: deleteDbError } = await supabase
+      .from('Stories')
+      .delete()
+      .eq('id', storyId);
+    
+    if (deleteDbError) {
+      throw deleteDbError;
+    }
+    
+    return true;
   } catch (error) {
-    console.error("Erreur lors de la suppression :", error);
+    console.error('Erreur lors de la suppression de la story:', error);
+    throw error;
   }
 };

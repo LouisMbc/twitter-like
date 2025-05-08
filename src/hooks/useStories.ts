@@ -1,25 +1,66 @@
-//Hook pour les stories
-import { useEffect, useState } from "react";
-import { getStories } from "@/services/supabase/story";
+import { useState, useEffect, useCallback } from 'react';
+import supabase from '@/lib/supabase';
+import { Story } from '@/types/story';
 
-export const useStories = () => {
-  const [stories, setStories] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+export function useStories() {
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchStories = async () => {
-    setLoading(true);
-    const data = await getStories();
-    setStories(data);
-    setLoading(false);
-  };
+  const fetchStories = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Récupérer toutes les stories qui ne sont pas encore expirées
+      const now = new Date();
+      
+      const { data, error } = await supabase
+        .from('Stories')
+        .select(`
+          id,
+          user_id,
+          content,
+          media_url,
+          media_type,
+          created_at,
+          expires_at,
+          Profile:user_id (
+            id,
+            nickname,
+            profilePicture
+          )
+        `)
+        .gt('expires_at', now.toISOString())
+        .order('created_at', { ascending: false });
 
-  useEffect(() => {
-    fetchStories();
+      if (error) {
+        throw error;
+      }
+
+      // Formater les données pour correspondre à l'interface Story
+      const formattedStories = data.map((story: any) => ({
+        ...story,
+        author: story.Profile
+      }));
+
+      setStories(formattedStories);
+    } catch (err) {
+      console.error('Erreur lors du chargement des stories:', err);
+      setError('Impossible de charger les stories');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { 
-    stories, 
-    loading,
-    refreshStories: fetchStories
-  };
-};
+  // Charger les stories au montage du composant
+  useEffect(() => {
+    fetchStories();
+  }, [fetchStories]);
+
+  // Fonction pour rafraîchir les stories
+  const refreshStories = useCallback(() => {
+    fetchStories();
+  }, [fetchStories]);
+
+  return { stories, loading, error, refreshStories };
+}

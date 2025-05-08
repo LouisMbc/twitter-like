@@ -17,17 +17,25 @@ import { error } from 'console';
 export default function ProfilePage() {
   const router = useRouter();
   const auth = useAuth();
-  const {
+const {
     profile,
     tweets,
     comments,
     followersCount,
     followingCount,
     loading,
-  currentProfileId,
-  incrementFollowingCount,
-  decrementFollowingCount
+    currentProfileId
 } = useProfile();
+  
+const [localFollowingCount, setLocalFollowingCount] = useState(followingCount);
+
+const incrementFollowingCount = () => {
+  setLocalFollowingCount(prev => prev + 1);
+};
+
+const decrementFollowingCount = () => {
+  setLocalFollowingCount(prev => prev - 1);
+};
   
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
   
@@ -84,7 +92,7 @@ export default function ProfilePage() {
   }
 
 return (
-<div className="min-h-screen bg-black text-white">
+  <div className="min-h-screen bg-black text-white">
     {/* Header */}
     <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
       <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -96,64 +104,62 @@ return (
             <FaArrowLeft />
           </button>
           <div>
-            <h1 className="text-xl font-bold">{profile.full_name || profile.username}</h1>
-            <p className="text-sm text-gray-500">{tweets?.length || 0} publications</p>
+            <h1 className="text-xl font-bold">{profile.name || profile.username}</h1>
           </div>
         </div>
-        <Link href="/profile/edit" className="p-2 rounded-full hover:bg-gray-800">
-          <FaCog />
-        </Link>
       </div>
-        <ProfileHeader 
-          profile={profile}
-          followersCount={followersCount}
-          followingCount={followingCount}
-          currentProfileId={currentProfileId}
-          isFollowing={false}
-          onFollowToggle={() => {}}
-        />
-        
-        <ProfileTabs 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab}
-        />
+    </div>
+    
+    <div className="max-w-2xl mx-auto px-4">
+      <ProfileHeader 
+        profile={profile}
+        followersCount={followersCount}
+        followingCount={localFollowingCount}
+        currentProfileId={currentProfileId}
+        isFollowing={false}
+        onFollowToggle={() => {}}
+      />
+      
+      <ProfileTabs 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+      />
 
-        {activeTab === 'tweets' ? (
-          <div>
-            {!tweets?.length ? (
-              <div className="text-center text-gray-400 py-12 px-4">
-                <h3 className="text-xl font-bold mb-2">Aucun post publié</h3>
+      {activeTab === 'tweets' ? (
+        <div>
+          {!tweets?.length ? (
+            <div className="text-center text-gray-400 py-12 px-4">
+              <h3 className="text-xl font-bold mb-2">Aucun post publié</h3>
+              <button 
+                onClick={() => router.push('/tweets/create')} 
+                className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center mx-auto"
+              >
+                <span className="mr-1">+</span> Ajouter un post
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex justify-center my-4">
                 <button 
                   onClick={() => router.push('/tweets/create')} 
-                  className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center mx-auto"
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center"
                 >
                   <span className="mr-1">+</span> Ajouter un post
                 </button>
               </div>
-            ) : (
-              <>
-                <div className="flex justify-center my-4">
-                  <button 
-                    onClick={() => router.push('/tweets/create')} 
-                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center"
-                  >
-                    <span className="mr-1">+</span> Ajouter un post
-                  </button>
-                </div>
-                {tweets.map(tweet => (
-                  <TweetCard key={tweet.id} tweet={tweet} />
-                ))}
-              </>
-            )}
-          </div>
-        ) : activeTab === 'comments' ? (
-          <CommentList comments={comments || []} />
-        ) : (
-          <div className="text-center text-gray-400 py-12 px-4">
-            <h3 className="text-xl font-bold mb-2">Aucun contenu</h3>
-          </div>
-        )}
-      </div>
+              {tweets.map(tweet => (
+                <TweetCard key={tweet.id} tweet={tweet} />
+              ))}
+            </>
+          )}
+        </div>
+      ) : activeTab === 'comments' ? (
+        <CommentList comments={comments || []} />
+      ) : (
+        <div className="text-center text-gray-400 py-12 px-4">
+          <h3 className="text-xl font-bold mb-2">Aucun contenu</h3>
+        </div>
+      )}
     </div>
-  );
-}
+  </div>
+);

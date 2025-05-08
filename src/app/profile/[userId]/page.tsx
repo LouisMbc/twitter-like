@@ -9,20 +9,14 @@ import ProfileTabs from '@/components/profile/ProfileTabs';
 import TweetCard from '@/components/tweets/TweetCard';
 import CommentList from '@/components/comments/CommentList';
 import { FaArrowLeft } from 'react-icons/fa';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 export default function UserProfilePage() {
-<<<<<<< HEAD
   const router = useRouter();
   const params = useParams();
   const userId = params.userId as string;
 
-=======
-  const params = useParams();
-  const userId = params.userId as string;
-  
->>>>>>> origin/louis
   const {
     profile,
     tweets,
@@ -37,7 +31,12 @@ export default function UserProfilePage() {
     setActiveTab
   } = useUserProfile(userId);
 
-<<<<<<< HEAD
+  // Fonction pour gérer le changement du nombre d'abonnements
+  const handleFollowingChange = (change: number) => {
+    // Cette fonction peut rester vide car c'est le profil d'un autre utilisateur
+    // Le compteur d'abonnements de l'utilisateur courant est géré par handleFollowToggle
+  };
+
   if (!userId) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -45,13 +44,6 @@ export default function UserProfilePage() {
       </div>
     );
   }
-=======
-  // Fonction pour gérer le changement du nombre d'abonnements
-  const handleFollowingChange = (change: number) => {
-    // Cette fonction peut rester vide car c'est le profil d'un autre utilisateur
-    // Le compteur d'abonnements de l'utilisateur courant est géré par handleFollowToggle
-  };
->>>>>>> origin/louis
 
   if (loading) {
     return (
@@ -110,7 +102,6 @@ export default function UserProfilePage() {
           onFollowToggle={handleFollowToggle}
         />
 
-<<<<<<< HEAD
         <ProfileTabs
           activeTab={activeTab}
           onTabChange={(tab) => {
@@ -123,7 +114,9 @@ export default function UserProfilePage() {
 
         <div className="space-y-4">
           {activeTab === 'tweets' ? (
-            <TweetList tweets={tweets} />
+            tweets.map(tweet => (
+              <TweetCard key={tweet.id} tweet={tweet} />
+            ))
           ) : (
             <CommentList comments={comments.map(comment => {
               // Create a new object without the potentially null profile_picture
@@ -144,16 +137,6 @@ export default function UserProfilePage() {
             })} />
           )}
         </div>
-=======
-      <div className="space-y-4">
-        {activeTab === 'tweets' ? (
-          tweets.map(tweet => (
-            <TweetCard key={tweet.id} tweet={tweet} />
-          ))
-        ) : (
-          <CommentList comments={comments} />
-        )}
->>>>>>> origin/louis
       </div>
     </div>
   );
