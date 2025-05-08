@@ -2,11 +2,17 @@
 import React, { useEffect, useState } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
-import Sidebar from "@/components/layout/Sidebar";
-import SearchBar from "@/components/searchBar/SearchBar";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
-import { FaArrowLeft } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { 
+  FaHome, 
+  FaSearch, 
+  FaBell, 
+  FaEnvelope, 
+  FaUser,
+  FaEllipsisH,
+  FaPlus,
+  FaArrowLeft
+} from 'react-icons/fa';
 
 interface Notification {
     id: string;
@@ -63,91 +69,164 @@ export default function NotificationsPage() {
     }, []);
 
     return (
-        <div className="flex min-h-screen bg-white dark:bg-gray-900 dark:text-white">
-            {/* Sidebar */}
-            <Sidebar />
-            
-            {/* Main content */}
-            <div className="flex-1 ml-64">
-                {/* Top header */}
-                <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 py-2 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-                    <div className="max-w-md">
-                        <SearchBar />
+        <div className="min-h-screen flex bg-black text-white">
+            {/* Left Sidebar */}
+            <div className="w-[250px] p-4 border-r border-gray-800 flex flex-col h-screen fixed left-0">
+                <div className="mb-8">
+                    <Link href="/">
+                        <Image
+                            src="/logo_Flow.png"
+                            alt="Flow Logo"
+                            width={100}
+                            height={50}
+                            className="object-contain"
+                        />
+                    </Link>
+                </div>
+
+                <nav className="flex-1">
+                    <ul className="space-y-4">
+                        <li>
+                            <Link href="/dashboard" className="flex items-center p-2 rounded-full hover:bg-gray-800">
+                                <FaHome className="mr-4 text-2xl" />
+                                <span className="text-xl">Accueil</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/explore" className="flex items-center p-2 rounded-full hover:bg-gray-800">
+                                <FaSearch className="mr-4 text-2xl" />
+                                <span className="text-xl">Explorer</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/notifications" className="flex items-center p-2 rounded-full bg-gray-800">
+                                <FaBell className="mr-4 text-2xl" />
+                                <span className="text-xl">Notifications</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/messages" className="flex items-center p-2 rounded-full hover:bg-gray-800">
+                                <FaEnvelope className="mr-4 text-2xl" />
+                                <span className="text-xl">Messages</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/profile" className="flex items-center p-2 rounded-full hover:bg-gray-800">
+                                <FaUser className="mr-4 text-2xl" />
+                                <span className="text-xl">Profil</span>
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
+
+                {/* Add post button */}
+                <div className="mt-4 mb-8">
+                    <button className="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full py-3 flex items-center justify-center">
+                        <FaPlus className="mr-2" />
+                        Ajouter un post
+                    </button>
+                </div>
+
+                {/* User profile at bottom */}
+                <div className="flex items-center p-2 rounded-full hover:bg-gray-800 cursor-pointer">
+                    <div className="w-10 h-10 bg-gray-500 rounded-full mr-3 flex items-center justify-center">
+                        <span>VP</span>
                     </div>
-                    <div className="flex items-center">
-                        <ThemeToggle />
+                    <span className="flex-1">Votre_pseudo</span>
+                    <FaEllipsisH />
+                </div>
+            </div>
+
+            {/* Main content area */}
+            <div className="ml-[250px] flex-1">
+                {/* Search bar */}
+                <div className="sticky top-0 bg-black z-10 p-2 border-b border-gray-800">
+                    <div className="max-w-md mx-auto relative">
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="text-gray-400" />
+                            </div>
+                            <input
+                                type="search"
+                                className="block w-full pl-10 pr-3 py-2 rounded-full bg-gray-800 text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-500"
+                                placeholder="Parcourir le flow..."
+                            />
+                        </div>
                     </div>
                 </div>
-                
-                {/* Notifications content */}
-                <div className="max-w-2xl mx-auto px-4 py-4">
-                    <h1 className="text-2xl font-bold mb-4">Notifications</h1>
-                    
-                    {/* Tabs */}
-                    <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
+
+                {/* Notification Tabs */}
+                <div className="border-b border-gray-800">
+                    <div className="flex overflow-x-auto">
                         <button
-                            className={`py-2 px-4 font-medium ${activeTab === 'tous' ? 'border-b-2 border-red-500' : 'text-gray-500 dark:text-gray-400'}`}
+                            className={`px-4 py-3 text-sm font-medium ${activeTab === 'tous' ? 'border-b-2 border-red-500' : ''}`}
                             onClick={() => setActiveTab('tous')}
                         >
                             Tous
                         </button>
                         <button
-                            className={`py-2 px-4 font-medium ${activeTab === 'mention' ? 'border-b-2 border-red-500' : 'text-gray-500 dark:text-gray-400'}`}
+                            className={`px-4 py-3 text-sm font-medium ${activeTab === 'mention' ? 'border-b-2 border-red-500' : ''}`}
                             onClick={() => setActiveTab('mention')}
                         >
                             Mention
                         </button>
                     </div>
-                    
-                    {/* Notifications list */}
-                    {loading ? (
-                        <div className="flex justify-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
-                        </div>
-                    ) : notifications.length > 0 ? (
-                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {notifications.map((notification) => (
-                                <div 
-                                    key={notification.id}
-                                    className={`p-4 ${notification.read ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}`}
-                                >
-                                    <div className="flex">
-                                        <div className="mr-3 flex-shrink-0">
-                                            {notification.profilePicture && (
-                                                <Link href={`/profile/${notification.profileId}`}>
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden">
-                                                        <img
-                                                            src={notification.profilePicture}
-                                                            alt={notification.profileName || "User"}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
+                </div>
+                
+                {/* Notifications list */}
+                {loading ? (
+                    <div className="flex justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
+                    </div>
+                ) : notifications.length > 0 ? (
+                    <div className="divide-y divide-gray-800">
+                        {notifications.map((notification) => (
+                            <div 
+                                key={notification.id}
+                                className={`p-4 hover:bg-gray-900/50 transition-colors ${notification.read ? '' : 'bg-gray-900/30'}`}
+                            >
+                                <div className="flex">
+                                    <div className="mr-3 flex-shrink-0">
+                                        {notification.profilePicture && (
+                                            <Link href={`/profile/${notification.profileId}`}>
+                                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600">
+                                                    <img
+                                                        src={notification.profilePicture}
+                                                        alt={notification.profileName || "User"}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            </Link>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-medium">
+                                            {notification.profileName && (
+                                                <Link href={`/profile/${notification.profileId}`} className="hover:underline">
+                                                    {notification.profileName}
                                                 </Link>
                                             )}
                                         </div>
-                                        <div>
-                                            <div className="font-medium">
-                                                {notification.profileName && (
-                                                    <Link href={`/profile/${notification.profileId}`} className="hover:underline">
-                                                        {notification.profileName}
-                                                    </Link>
-                                                )}
-                                            </div>
-                                            <p className="text-gray-800 dark:text-gray-200">{notification.message}</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                {new Date(notification.timestamp).toLocaleString()}
-                                            </p>
-                                        </div>
+                                        <p className="text-gray-300">{notification.message}</p>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {new Date(notification.timestamp).toLocaleString()}
+                                        </p>
+                                    </div>
+                                    {/* Three dots menu button */}
+                                    <div className="ml-2">
+                                        <button className="text-gray-500 hover:text-gray-300 p-1">
+                                            <FaEllipsisH />
+                                        </button>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            Aucune notification pour le moment.
-                        </div>
-                    )}
-                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 text-gray-500">
+                        Aucune notification pour le moment.
+                    </div>
+                )}
             </div>
         </div>
     );

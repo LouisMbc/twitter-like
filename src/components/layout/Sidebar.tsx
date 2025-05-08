@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Search, Bell, Mail, User, Plus, LogOut } from 'lucide-react';
 import supabase from '@/lib/supabase';
@@ -37,103 +38,109 @@ export default function Sidebar() {
     await supabase.auth.signOut();
     router.push('/auth/login');
   };
-  
-  const navigateTo = (path: string) => {
-    router.push(path);
-  };
-
-  const navItems = [
-    { path: '/dashboard', label: 'Accueil', icon: <Home className="mr-4" /> },
-    { path: '/explore', label: 'Explorer', icon: <Search className="mr-4" /> },
-    { path: '/notifications', label: 'Notifications', icon: <Bell className="mr-4" /> },
-    { path: '/messages', label: 'Messages', icon: <Mail className="mr-4" /> },
-  ];
 
   return (
-    <div className="w-64 fixed h-full border-r border-gray-800">
-      <div className="p-4">
-        <div 
-          onClick={() => navigateTo('/dashboard')}
-          className="cursor-pointer mb-8"
-        >
-          <Image 
-            src="/logo_Flow.png" 
-            alt="Flow" 
-            width={100} 
-            height={34} 
-            priority
+    <div className="w-[250px] p-4 border-r border-gray-800 flex flex-col h-screen fixed left-0">
+      <div className="mb-8">
+        <Link href="/dashboard">
+          <Image
+            src="/logo_Flow.png"
+            alt="Flow Logo"
+            width={100}
+            height={50}
+            className="object-contain"
           />
-        </div>
-        
-        <nav className="space-y-3">
-          {navItems.map(item => (
-            <div 
-              key={item.path}
-              onClick={() => navigateTo(item.path)}
-              className={`flex items-center p-3 text-lg text-white ${
-                pathname === item.path ? 'font-semibold bg-gray-800' : ''
-              } rounded-full hover:bg-gray-800 cursor-pointer`}
-            >
-              {item.icon}
-              {item.label}
-            </div>
-          ))}
-          
-          {profile && (
-            <div 
-              onClick={() => navigateTo(`/profile/${profile.id}`)}
-              className={`flex items-center p-3 text-lg text-white ${
-                pathname.includes('/profile/') ? 'font-semibold bg-gray-800' : ''
-              } rounded-full hover:bg-gray-800 cursor-pointer`}
-            >
-              <User className="mr-4" />
-              Profil
-            </div>
-          )}
-        </nav>
-        
-        <button 
-          onClick={() => navigateTo('/tweets/new')}
-          className="mt-8 bg-red-500 text-white rounded-full py-3 px-4 flex items-center justify-center w-full font-semibold cursor-pointer hover:bg-red-600"
-        >
-          <Plus className="mr-1" size={18} />
-          Ajouter un post
-        </button>
-        
-        {profile && (
-          <div 
-            onClick={() => navigateTo(`/profile/${profile.id}`)}
-            className="absolute bottom-16 w-full pr-8"
-          >
-            <div className="flex items-center p-3 hover:bg-gray-800 rounded-full cursor-pointer">
-              {profile.profilePicture ? (
-                <img 
-                  src={profile.profilePicture} 
-                  alt={profile.nickname || 'User'} 
-                  className="w-10 h-10 rounded-full object-cover mr-2"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-2">
-                  <span>{profile.nickname?.charAt(0) || profile.firstName?.charAt(0) || '?'}</span>
-                </div>
-              )}
-              <span className="text-sm ml-2 text-white">
-                {profile.nickname || 'Votre_pseudo'}
-              </span>
-            </div>
-          </div>
-        )}
-        
-        <div className="absolute bottom-4 w-full pr-8">
-          <button 
-            onClick={handleSignOut}
-            className="flex items-center p-3 text-red-500 hover:bg-gray-800 rounded-full w-full cursor-pointer"
-          >
-            <LogOut className="mr-4" size={18} />
-            <span>Déconnexion</span>
-          </button>
-        </div>
+        </Link>
       </div>
+
+      <nav className="flex-1">
+        <ul className="space-y-4">
+          <li>
+            <Link 
+              href="/dashboard" 
+              className={`flex items-center p-2 rounded-full ${pathname === '/dashboard' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
+            >
+              <Home className="mr-4 text-2xl" />
+              <span className="text-xl">Accueil</span>
+            </Link>
+          </li>
+          <li>
+            <Link 
+              href="/explore" 
+              className={`flex items-center p-2 rounded-full ${pathname === '/explore' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
+            >
+              <Search className="mr-4 text-2xl" />
+              <span className="text-xl">Explorer</span>
+            </Link>
+          </li>
+          <li>
+            <Link 
+              href="/notifications" 
+              className={`flex items-center p-2 rounded-full ${pathname === '/notifications' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
+            >
+              <Bell className="mr-4 text-2xl" />
+              <span className="text-xl">Notifications</span>
+            </Link>
+          </li>
+          <li>
+            <Link 
+              href="/messages" 
+              className={`flex items-center p-2 rounded-full ${pathname === '/messages' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
+            >
+              <Mail className="mr-4 text-2xl" />
+              <span className="text-xl">Messages</span>
+            </Link>
+          </li>
+          {profile && (
+            <li>
+              <Link 
+                href={`/profile/${profile.id}`} 
+                className={`flex items-center p-2 rounded-full ${pathname.includes('/profile/') ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
+              >
+                <User className="mr-4 text-2xl" />
+                <span className="text-xl">Profil</span>
+              </Link>
+            </li>
+          )}
+        </ul>
+      </nav>
+
+      <Link 
+        href="/tweets/new"
+        className="mt-8 bg-red-500 text-white rounded-full py-3 px-4 flex items-center justify-center w-full font-semibold hover:bg-red-600"
+      >
+        <Plus className="mr-1" size={18} />
+        Ajouter un post
+      </Link>
+
+      {profile && (
+        <div className="mt-auto mb-4">
+          <Link href={`/profile/${profile.id}`} className="flex items-center p-3 hover:bg-gray-800 rounded-full">
+            {profile.profilePicture ? (
+              <img 
+                src={profile.profilePicture} 
+                alt={profile.nickname || 'User'} 
+                className="w-10 h-10 rounded-full object-cover mr-2"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-2">
+                <span>{profile.nickname?.charAt(0) || profile.firstName?.charAt(0) || '?'}</span>
+              </div>
+            )}
+            <span className="text-sm ml-2 text-white">
+              {profile.nickname || 'Votre_pseudo'}
+            </span>
+          </Link>
+        </div>
+      )}
+      
+      <button 
+        onClick={handleSignOut}
+        className="flex items-center p-3 text-red-500 hover:bg-gray-800 rounded-full w-full cursor-pointer"
+      >
+        <LogOut className="mr-4" size={18} />
+        <span>Déconnexion</span>
+      </button>
     </div>
   );
 }

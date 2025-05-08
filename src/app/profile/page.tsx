@@ -23,9 +23,10 @@ export default function ProfilePage() {
     followersCount,
     followingCount,
     loading,
-    currentProfileId,
-    error
+    currentProfileId
   } = useProfile();
+  
+  const [error, setError] = useState<boolean>(false);
   
   const [localFollowingCount, setLocalFollowingCount] = useState(followingCount);
 
@@ -73,8 +74,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  if (error || !profile) {
+  if (!profile) {
     return (
       <div className="min-h-screen bg-black text-white">
         <div className="text-center py-20">

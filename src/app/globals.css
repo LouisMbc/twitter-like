@@ -4,23 +4,58 @@
 @tailwind utilities;
 
 :root {
+  /* Light theme colors */
   --background: #ffffff;
   --foreground: #171717;
+  --sidebar-bg: #ffffff;
+  --primary: #F31D1D; /* Red accent color from the image */
+  --secondary: #E2E8F0;
+  --text-primary: #171717;
+  --text-secondary: #64748B;
+  --border-color: #E2E8F0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme='dark'] {
+  /* Dark theme colors as shown in the image */
+  --background: #000000;
+  --foreground: #ffffff;
+  --sidebar-bg: #121212;
+  --primary: #F31D1D; /* Same red accent color */
+  --secondary: #1F2937;
+  --text-primary: #ffffff;
+  --text-secondary: #94A3B8;
+  --border-color: #374151;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #000;
-  color: #fff;
+}
+
+.dark body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Active tab styling */
+.active-tab {
+  border-bottom: 2px solid var(--primary);
+  font-weight: 600;
+}
+
+/* Notification styling */
+.notification-item {
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-unread {
+  background-color: rgba(243, 29, 29, 0.05); 
 }
 
 /* Styles spécifiques pour la page d'authentification */
