@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import supabase from '@/lib/supabase';
 import { Tweet } from '@/types';
+import { tweetService } from '@/services/supabase/tweet';
 
 export default function useFeed() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
@@ -75,25 +76,25 @@ export default function useFeed() {
       }
       
       const query = supabase
-      .from('Tweets')
-      .select(`
-        id,
-        content,
-        picture,
-        published_at,
-        view_count,
-        retweet_id,
-        author_id,
-        author:author_id (
+        .from('Tweets')
+        .select(`
           id,
-          nickname,
-          profilePicture
-        )
-      `)
-      .in('author_id', userIds)
-      .order('published_at', { ascending: false });
+          content,
+          picture,
+          published_at,
+          view_count,
+          retweet_id,
+          author_id,
+          author:author_id (
+            id,
+            nickname,
+            profilePicture
+          )
+        `)
+        .in('author_id', userIds)
+        .order('published_at', { ascending: false });
 
-        console.log('Requête préparée:', query);
+      console.log('Requête préparée:', query);
 
       const { data: allTweets, error: tweetsError } = await query;
       
@@ -161,7 +162,55 @@ export default function useFeed() {
         });
         
         console.log('Tweets formatés avec succès:', formattedTweets.length);
-        setTweets(formattedTweets);
+
+        // Pour chaque retweet, récupérer le tweet original
+        const enrichTweetsWithOriginals = async (tweets) => {
+          // D'abord, collectez tous les retweet_ids
+          const retweetIds = tweets
+            .filter(tweet => tweet.retweet_id)
+            .map(tweet => tweet.retweet_id);
+          
+          // Si aucun retweet, retourner les tweets tels quels
+          if (retweetIds.length === 0) {
+            return tweets;
+          }
+          
+          // Récupérer tous les tweets originaux en une seule requête
+          const { data: originalTweets } = await supabase
+            .from('Tweets')
+            .select(`
+              id,
+              content,
+              picture,
+              published_at,
+              view_count,
+              author:Profile!author_id (
+                id,
+                nickname,
+                profilePicture
+              )
+            `)
+            .in('id', retweetIds);
+          
+          // Créer un mapping pour un accès facile
+          const originalsMap = {};
+          if (originalTweets) {
+            originalTweets.forEach(original => {
+              originalsMap[original.id] = original;
+            });
+          }
+          
+          // Enrichir les tweets
+          return tweets.map(tweet => {
+            if (tweet.retweet_id && originalsMap[tweet.retweet_id]) {
+              tweet.originalTweet = originalsMap[tweet.retweet_id];
+            }
+            return tweet;
+          });
+        };
+
+        const enrichedTweets = await enrichTweetsWithOriginals(formattedTweets);
+        setTweets(enrichedTweets);
       } catch (formatError) {
         console.error('Erreur lors du formatage des tweets:', formatError);
         throw formatError;

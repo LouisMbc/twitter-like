@@ -51,6 +51,10 @@ export default function TweetPage() {
     );
   }
 
+  const loadComments = () => {
+    router.refresh();
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -66,6 +70,7 @@ export default function TweetPage() {
         </div>
       </div>
 
+<<<<<<< HEAD
       <div className="max-w-2xl mx-auto border-x border-gray-800 min-h-screen pb-20">
         <div className="border-b border-gray-800">
           <TweetCard tweet={tweet} detailed />
@@ -80,6 +85,16 @@ export default function TweetPage() {
 
         <div>
           {tweet.id && <CommentList tweetId={tweet.id} />}
+=======
+      <div id="comments" className="bg-white rounded-lg shadow p-4">
+        <h2 className="text-xl font-semibold mb-4">Commentaires</h2>
+        <CommentForm 
+          tweetId={tweet.id} 
+          onCommentAdded={loadComments} 
+        />
+        <div className="mt-6">
+          <CommentList tweetId={tweet.id} />
+>>>>>>> origin/louis
         </div>
       </div>
     </div>

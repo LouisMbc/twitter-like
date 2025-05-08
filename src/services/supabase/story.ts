@@ -1,4 +1,5 @@
 import supabase from '@/lib/supabase';
+import { notificationService } from '@/services/supabase/notification';
 
 export const addStory = async (
   userId: string, 
@@ -56,6 +57,40 @@ export const addStory = async (
     if (error) {
       console.error("Erreur lors de l'ajout de la story :", error.message);
       return null;
+    }
+
+    // Si la story est créée avec succès, créer des notifications pour les abonnés
+    if (data) {
+      // Récupérer les followers pour envoyer des notifications
+      const { data: followers } = await supabase
+        .from('Following')
+        .select('follower_id')
+        .eq('following_id', userId);
+      
+      if (followers && followers.length > 0) {
+        // Récupérer les informations sur l'auteur pour le message
+        const { data: authorData } = await supabase
+          .from('Profile')
+          .select('nickname')
+          .eq('id', userId)
+          .single();
+        
+        const authorName = authorData ? authorData.nickname : 'Un utilisateur';
+        
+        // Créer une notification pour chaque follower
+        const notificationPromises = followers.map(follower => 
+          notificationService.createNotification({
+            user_id: follower.follower_id,
+            sender_id: userId,
+            content_id: data[0].id,
+            content_type: 'story',
+            type: 'new_story',
+            message: `a publié une nouvelle story`
+          })
+        );
+        
+        await Promise.all(notificationPromises);
+      }
     }
 
     return data;

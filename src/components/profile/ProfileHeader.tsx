@@ -3,13 +3,17 @@
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Profile } from "@/types";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { addStory } from "@/services/supabase/story";
 import supabase from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { useStories } from "@/hooks/useStories";
 import Story from "@/components/stories/Story";
+<<<<<<< HEAD
+=======
+import { messageService } from '@/services/supabase/message';
+>>>>>>> origin/louis
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -34,6 +38,7 @@ export default function ProfileHeader({
   const { stories, loading: storiesLoading, refreshStories } = useStories();
   const [isViewingStories, setIsViewingStories] = useState(false);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const [canMessage, setCanMessage] = useState(false);
   
   // Filtrer les stories du profil actuel
   const userStories = stories.filter(story => story.user_id === profile.id);
@@ -69,6 +74,54 @@ export default function ProfileHeader({
     }
   };
 
+<<<<<<< HEAD
+=======
+  const handleStoryClick = () => {
+    // Au lieu de rediriger vers une page dédiée
+    // router.push("/stories");
+    
+    // Définir directement l'index de la story à afficher
+    if (hasStories && userStories.length > 0) {
+      setIsViewingStories(true);
+      setCurrentStoryIndex(0);
+    }
+  };
+
+  // Fonction pour ouvrir l'uploader de fichiers
+  const handleAddStoryClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Ajout de la vérification pour la messagerie
+  useEffect(() => {
+    // Vérifier si l'utilisateur peut envoyer un message à ce profil
+    const checkMessagingPermission = async () => {
+      if (!currentProfileId || !profile.id || profile.id === currentProfileId) {
+        return;
+      }
+      
+      console.log("Vérification des permissions de messagerie");
+      console.log("currentProfileId:", currentProfileId);
+      console.log("profile.id:", profile.id);
+      
+      try {
+        const { canMessage: canSendMessage, error } = await messageService.canMessage(currentProfileId, profile.id);
+        console.log("Résultat canMessage:", canSendMessage, error);
+        setCanMessage(canSendMessage);
+      } catch (err) {
+        console.error("Erreur lors de la vérification des permissions de messagerie:", err);
+        setCanMessage(false);
+      }
+    };
+    
+    if (currentProfileId && profile.id) {
+      checkMessagingPermission();
+    }
+  }, [currentProfileId, profile.id]);
+
+>>>>>>> origin/louis
   return (
     <div className="bg-white p-4 border-b border-gray-200">
       <div className="flex items-center justify-between mb-4">
@@ -140,6 +193,81 @@ export default function ProfileHeader({
             </button>
           )}
         </div>
+<<<<<<< HEAD
+=======
+
+        {/* Profile Info */}
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold">{profile.nickname}</h1>
+              <p className="text-gray-600">
+                {profile.firstName} {profile.lastName}
+              </p>
+              {profile.bio && <p className="text-gray-700 mt-2">{profile.bio}</p>}
+              <p className="text-sm text-gray-500 mt-1">
+                Membre depuis{" "}
+                {formatDistance(new Date(profile.created_at), new Date(), {
+                  addSuffix: true,
+                  locale: fr,
+                })}
+              </p>
+            </div>
+
+            <div className="flex">
+              {/* Bouton pour éditer le profil (si c'est notre profil) */}
+              {currentProfileId === profile.id && (
+                <button
+                  onClick={() => router.push('/profile/edit')}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
+                >
+                  Éditer le profil
+                </button>
+              )}
+
+              {/* Bouton suivre/ne plus suivre (si ce n'est pas notre profil) */}
+              {currentProfileId !== profile.id && (
+                <button
+                  onClick={onFollowToggle}
+                  className={`px-4 py-2 rounded-full transition-colors ${
+                    isFollowing
+                      ? "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
+                >
+                  {isFollowing ? "Ne plus suivre" : "Suivre"}
+                </button>
+              )}
+
+              {/* Bouton Message (si ce n'est pas notre profil et qu'on peut s'envoyer des messages) */}
+              {canMessage && profile.id !== currentProfileId && (
+                <button
+                  onClick={() => router.push(`/messages/${profile.id}`)}
+                  className="ml-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition"
+                >
+                  Message
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="flex space-x-6 mt-4">
+            <div>
+              <span className="font-bold">{followersCount}</span>
+              <span className="text-gray-600 ml-1">Abonnés</span>
+            </div>
+            <div>
+              <span className="font-bold">{followingCount}</span>
+              <span className="text-gray-600 ml-1">Abonnements</span>
+            </div>
+            <div>
+              <span className="font-bold">{userStories.length}</span>
+              <span className="text-gray-600 ml-1">Stories</span>
+            </div>
+          </div>
+        </div>
+>>>>>>> origin/louis
       </div>
       
       <div className="text-sm text-gray-600 mb-3">

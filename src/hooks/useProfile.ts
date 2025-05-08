@@ -96,11 +96,22 @@ const useProfile = () => {
     }
   }, [router]); // Ajoutez router comme dépendance
 
+<<<<<<< HEAD
   // Sélectionne une langue aléatoire (utile pour MultiluinguiX)
   const getRandomLanguage = (languages: string[]) => {
     const randomIndex = Math.floor(Math.random() * languages.length);
     return languages[randomIndex];
   };
+=======
+  // Ajouter des méthodes pour mettre à jour les compteurs
+  const incrementFollowingCount = useCallback(() => {
+    setFollowingCount(prevCount => prevCount + 1);
+  }, []);
+
+  const decrementFollowingCount = useCallback(() => {
+    setFollowingCount(prevCount => Math.max(0, prevCount - 1));
+  }, []);
+>>>>>>> origin/louis
 
   // Chargement des données au montage du composant
   useEffect(() => {
@@ -115,9 +126,15 @@ const useProfile = () => {
     followingCount,
     loading,
     currentProfileId,
+<<<<<<< HEAD
     loadProfileData,
     getRandomLanguage,
     refreshProfile: loadProfile // Exposer la fonction pour permettre le rafraîchissement
+=======
+    refreshProfile: loadProfile, // Exposer la fonction pour permettre le rafraîchissement
+    incrementFollowingCount,
+    decrementFollowingCount
+>>>>>>> origin/louis
   };
 };
 
