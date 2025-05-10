@@ -126,7 +126,7 @@ const Story = ({
           }}
         >
           <div className="w-full h-full bg-gray-700 flex items-center justify-center text-white">
-            {story.Profile?.nickname?.charAt(0).toUpperCase()}
+            {story.user_id?.charAt(0).toUpperCase() || '?'}
           </div>
         </div>
       ))}
@@ -183,7 +183,7 @@ const Story = ({
           </div>
           
           {/* Afficher StoryActions seulement si l'utilisateur est propriétaire de la story */}
-          {currentUserId === currentStory.user_id && (
+          {currentStory && currentStory.user_id && currentUserId === currentStory.user_id && (
             <StoryActions 
               storyId={currentStory.id} 
               mediaUrl={currentStory.media_url}

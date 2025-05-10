@@ -11,6 +11,7 @@ import LoadingSpinner from '@/components/layout/LoadingSpinner'
 import Link from 'next/link';
 import { FaHome, FaSearch, FaBell, FaEnvelope, FaUser, FaPlus } from 'react-icons/fa';
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import Story from '@/components/stories/Story';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -127,6 +128,12 @@ export default function DashboardPage() {
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
           </div>
+        </div>
+        
+        {/* Stories section - ajouté juste après la barre de recherche */}
+        <div className="py-4 px-4 border-b border-gray-800">
+          <h2 className="text-xl font-semibold mb-3">Stories</h2>
+          <Story />
         </div>
         
         {/* Content area */}
