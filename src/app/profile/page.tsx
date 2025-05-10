@@ -9,8 +9,7 @@ import TweetCard from '@/components/tweets/TweetCard';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileTabs from '@/components/profile/ProfileTabs';
 import CommentList from '@/components/comments/CommentList';
-import { FaArrowLeft, FaCog } from 'react-icons/fa';
-import Link from 'next/link';
+import { FaArrowLeft } from 'react-icons/fa';
 import Image from 'next/image';
 
 export default function ProfilePage() {
@@ -26,7 +25,7 @@ export default function ProfilePage() {
     currentProfileId
   } = useProfile();
   
-  const [error, setError] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
   
   const [localFollowingCount, setLocalFollowingCount] = useState(followingCount);
 
@@ -38,23 +37,12 @@ export default function ProfilePage() {
     setLocalFollowingCount(prev => prev - 1);
   };
   
-  const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
-  
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!auth.loading && !auth.user) {
       router.push('/login');
     }
   }, [auth.loading, auth.user, router]);
-
-  // Fonction pour gérer le changement du nombre d'abonnements
-  const handleFollowingChange = (change: number) => {
-    if (change > 0) {
-      incrementFollowingCount();
-    } else {
-      decrementFollowingCount();
-    }
-  };
 
   if (loading) {
     return (
@@ -112,12 +100,23 @@ export default function ProfilePage() {
       
       <div className="max-w-2xl mx-auto px-4">
         <ProfileHeader 
-          profile={{...profile, username: profile.username || ''}}
+          profile={{
+            ...profile,
+            username: profile.username || '', 
+            full_name: `${profile.firstName} ${profile.lastName}`.trim() || profile.name || '',
+            languages: profile.languages || ((languages) => languages)
+          }}
           followersCount={followersCount}
           followingCount={localFollowingCount}
           currentProfileId={currentProfileId}
           isFollowing={false}
-          onFollowToggle={() => {}}
+          onFollowToggle={(isFollowing) => {
+            if (isFollowing) {
+              incrementFollowingCount();
+            } else {
+              decrementFollowingCount();
+            }
+          }}
         />
         
         <ProfileTabs 

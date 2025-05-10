@@ -7,18 +7,30 @@ interface ProfileSetupFormProps {
     nickname: string;
     bio: string;
     profilePicture: File | null;
+    password: string;
+    confirmPassword: string; // Ajout du champ de confirmation du mot de passe
   };
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: (e: React.FormEvent) => void;
   loading: boolean;
   error: string | null;
+  session?: any; // Ajout d'une prop session optionnelle
 }
 
-const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ formData, setFormData, onSubmit, loading, error }) => {
+const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ 
+  formData, 
+  setFormData, 
+  onSubmit, 
+  loading, 
+  error,
+  session 
+}) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
+
+  const inputStyle = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black bg-white";
 
   return (
     <form onSubmit={onSubmit}>
@@ -32,7 +44,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ formData, setFormDa
           id="firstName"
           value={formData.firstName}
           onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className={inputStyle}
         />
       </div>
       <div className="mb-4">
@@ -45,7 +57,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ formData, setFormDa
           id="lastName"
           value={formData.lastName}
           onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className={inputStyle}
         />
       </div>
       <div className="mb-4">
@@ -58,7 +70,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ formData, setFormDa
           id="nickname"
           value={formData.nickname}
           onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className={inputStyle}
         />
       </div>
       <div className="mb-4">
@@ -70,7 +82,33 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ formData, setFormDa
           id="bio"
           value={formData.bio}
           onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className={inputStyle}
+        />
+      </div>
+      <div className="mb-4">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          Mot de passe
+        </label>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          value={formData.password}
+          onChange={handleChange}
+          className={inputStyle}
+        />
+      </div>
+      <div className="mb-4">
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+          Confirmer le mot de passe
+        </label>
+        <input
+          type="password"
+          name="confirmPassword"
+          id="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          className={inputStyle}
         />
       </div>
       <div className="mb-4">
@@ -82,7 +120,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ formData, setFormDa
           name="profilePicture"
           id="profilePicture"
           onChange={(e) => setFormData((prev: any) => ({ ...prev, profilePicture: e.target.files?.[0] || null }))}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className={inputStyle}
         />
       </div>
       {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
