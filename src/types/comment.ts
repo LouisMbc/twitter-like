@@ -11,6 +11,7 @@ export interface Comment {
       nickname: string;
       profilePicture: string | null;
     };
+    author_id?: string; // Add author_id field to match database
     replies?: Comment[];
     tweet_id: string;
     profile_picture?: string | null;

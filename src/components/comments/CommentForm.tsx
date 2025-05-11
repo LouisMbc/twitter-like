@@ -22,59 +22,47 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) throw new Error('Non authentifié');
   
-        // Vérifier d'abord si le profil existe
+        // Rechercher le profil dans la table Profile (la table principale)
         let { data: profileData, error: profileError } = await supabase
           .from('Profile')
           .select('id')
           .eq('user_id', session.user.id)
           .single();
-  
-        // Si le profil n'existe pas ou il y a une erreur, essayer avec le nom de table au pluriel
+
+        console.log('Recherche dans Profile:', { profileData, profileError });
+        
+        // Si le profil n'est pas trouvé dans Profile, créer un nouveau profil
         if (profileError || !profileData) {
-          console.log('Tentative avec la table "Profiles"');
-          ({ data: profileData, error: profileError } = await supabase
-            .from('Profiles')
+          console.log('Profil non trouvé dans la table Profile, création d\'un nouveau profil...');
+          
+          // Créer un nouveau profil dans la table Profile
+          const { data: newProfile, error: createError } = await supabase
+            .from('Profile')
+            .insert([{
+              user_id: session.user.id,
+              nickname: session.user.email?.split('@')[0] || `user_${Date.now()}`,
+              firstName: session.user.user_metadata?.first_name || '',
+              lastName: session.user.user_metadata?.last_name || '',
+              profilePicture: session.user.user_metadata?.avatar_url || null,
+              bio: '',
+              // Ajouter des valeurs par défaut pour les champs obligatoires
+              follower_count: 0,
+              following_count: 0
+            }])
             .select('id')
-            .eq('user_id', session.user.id)
-            .single());
+            .single();
             
-          // Si toujours pas de profil, en créer un
-          if (profileError || !profileData) {
-            console.log('Création d\'un nouveau profil pour l\'utilisateur');
-            const { data: newProfile, error: createError } = await supabase
-              .from('Profile') // Essayer d'abord avec 'Profile'
-              .insert([{
-                user_id: session.user.id,
-                username: session.user.email?.split('@')[0] || `user_${Date.now()}`,
-                display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Nouvel utilisateur',
-                avatar_url: session.user.user_metadata?.avatar_url || null
-              }])
-              .select('id')
-              .single();
-              
-            if (createError) {
-              // Si échec avec 'Profile', essayer avec 'Profiles'
-              const { data: newProfilePlural, error: createErrorPlural } = await supabase
-                .from('Profiles')
-                .insert([{
-                  user_id: session.user.id,
-                  username: session.user.email?.split('@')[0] || `user_${Date.now()}`,
-                  display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Nouvel utilisateur',
-                  avatar_url: session.user.user_metadata?.avatar_url || null
-                }])
-                .select('id')
-                .single();
-                
-              if (createErrorPlural) {
-                console.error('Impossible de créer un profil:', createErrorPlural);
-                throw new Error('Impossible de créer un profil utilisateur');
-              }
-              
-              profileData = newProfilePlural;
-            } else {
-              profileData = newProfile;
-            }
+          if (createError) {
+            console.error('Erreur détaillée lors de la création du profil:', {
+              code: createError.code,
+              message: createError.message,
+              details: createError.details
+            });
+            throw new Error(`Impossible de créer un profil utilisateur: ${createError.message}`);
           }
+          
+          profileData = newProfile;
+          console.log('Nouveau profil créé:', profileData);
         }
         
         if (!profileData || !profileData.id) {
@@ -82,10 +70,10 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
           throw new Error('Profil incomplet ou invalide');
         }
         
-        console.log('ID de profil trouvé ou créé:', profileData.id);
+        console.log('ID de profil utilisé pour le commentaire:', profileData.id);
 
         // Créer le commentaire avec l'ID du profil
-        const { error } = await supabase
+        const { error: commentError } = await supabase
           .from('Comments')
           .insert([{
             content,
@@ -94,15 +82,15 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
             parent_comment_id: parentCommentId || null
           }]);
   
-        if (error) {
+        if (commentError) {
           const errorDetails = {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
+            code: commentError.code,
+            message: commentError.message,
+            details: commentError.details,
+            hint: commentError.hint
           };
           console.error('Erreur d\'insertion dans Comments:', JSON.stringify(errorDetails));
-          throw new Error(`Erreur d'insertion: ${error.message || 'Erreur inconnue'}`);
+          throw new Error(`Erreur d'insertion: ${commentError.message || 'Erreur inconnue'}`);
         }
   
         setContent('');
@@ -115,8 +103,10 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
         // Message d'erreur plus convivial pour la violation de contrainte de clé étrangère
         if (errorMessage.includes('foreign key constraint') && errorMessage.includes('fk_comments_profiles')) {
           console.error('Erreur: Le profil utilisateur n\'existe pas ou n\'est pas correctement lié.');
+          alert('Une erreur est survenue lors de la publication de votre commentaire. Veuillez rafraîchir la page et réessayer.');
         } else {
           console.error('Erreur lors de l\'envoi du commentaire:', errorMessage);
+          alert('Impossible de publier votre commentaire: ' + errorMessage);
         }
       } finally {
         setLoading(false);

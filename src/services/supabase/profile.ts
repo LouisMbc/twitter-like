@@ -4,7 +4,7 @@ import supabase from '@/lib/supabase';
 export const profileService = {
   updateProfile: async (userId: string, data: Partial<Profile>) => {
     const { error } = await supabase
-      .from('profiles')  // Changed from 'Profile' to 'profiles'
+      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
       .update(data)
       .eq('user_id', userId);
     return { error };
@@ -30,7 +30,7 @@ export const profileService = {
 
   getProfile: async (userId: string) => {
     const { data, error } = await supabase
-      .from('profiles')  // Changed from 'Profile' to 'profiles'
+      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
       .select('*')
       .eq('user_id', userId)
       .single();
@@ -40,9 +40,11 @@ export const profileService = {
 
   createProfile: async (userId: string, profileData: Partial<Profile>) => {
     const { data, error } = await supabase
-      .from('profiles')  // Changed from 'Profile' to 'profiles'
+      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
       .insert([{
         user_id: userId,
+        follower_count: 0,  // Add default values for required fields
+        following_count: 0,
         ...profileData
       }])
       .select()
@@ -53,7 +55,7 @@ export const profileService = {
 
   getUserProfile: async (userId: string) => {
     const { data, error } = await supabase
-      .from('profiles')  // Changed from 'Profile' to 'profiles'
+      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
       .select('*, follower_count, following_count')
       .eq('user_id', userId)
       .single();
