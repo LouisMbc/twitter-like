@@ -117,11 +117,11 @@ export default function ProfileHeader({
   }, [currentProfileId, profile.id]);
 
   return (
-    <div className="bg-white p-4 border-b border-gray-200">
+    <div className="bg-black p-4 border-b border-gray-800">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <div className="w-16 h-16 md:w-20 md:h-20 relative">
-            <div className={`w-full h-full rounded-full overflow-hidden bg-gray-200 ${hasStories ? 'border-2 border-red-500' : ''}`}>
+            <div className={`w-full h-full rounded-full overflow-hidden bg-gray-800 ${hasStories ? 'border-2 border-red-500' : ''}`}>
               {profile.profilePicture ? (
                 <img
                   src={profile.profilePicture}
@@ -138,7 +138,7 @@ export default function ProfileHeader({
             {currentProfileId === profile.id && (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                className="absolute bottom-0 right-0 bg-red-600 text-white p-1 rounded-full"
                 title="Ajouter une story"
                 disabled={isUploading}
               >
@@ -157,7 +157,7 @@ export default function ProfileHeader({
           </div>
           
           <div className="ml-3">
-            <h1 className="font-bold text-lg">{profile.nickname}</h1>
+            <h1 className="font-bold text-lg text-white">{profile.nickname}</h1>
             <div className="flex text-sm text-gray-500">
               <span>{profile.firstName} {profile.lastName}</span>
               <span className="mx-1">•</span>
@@ -170,7 +170,7 @@ export default function ProfileHeader({
           {currentProfileId === profile.id ? (
             <button
               onClick={() => router.push('/profile/edit')}
-              className="px-4 py-1 border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50"
+              className="px-4 py-1 bg-gray-800 border border-gray-700 rounded-full text-sm font-medium hover:bg-gray-700 text-white"
             >
               Modifier le profil
             </button>
@@ -179,8 +179,8 @@ export default function ProfileHeader({
               onClick={onFollowToggle}
               className={`px-4 py-1 rounded-full text-sm font-medium ${
                 isFollowing
-                  ? "bg-white text-black border border-gray-300"
-                  : "bg-black text-white"
+                  ? "bg-gray-800 text-white border border-gray-700 hover:bg-gray-700"
+                  : "bg-red-600 text-white hover:bg-red-700"
               }`}
             >
               {isFollowing ? "Ne plus suivre" : "Suivre"}
@@ -191,11 +191,11 @@ export default function ProfileHeader({
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-2xl font-bold">{profile.nickname}</h1>
-                <p className="text-gray-600">
+                <h1 className="text-2xl font-bold text-white">{profile.nickname}</h1>
+                <p className="text-gray-400">
                   {profile.firstName} {profile.lastName}
                 </p>
-                {profile.bio && <p className="text-gray-700 mt-2">{profile.bio}</p>}
+                {profile.bio && <p className="text-gray-300 mt-2">{profile.bio}</p>}
                 <p className="text-sm text-gray-500 mt-1">
                   Membre depuis{" "}
                   {formatDistance(new Date(profile.created_at), new Date(), {
@@ -210,7 +210,7 @@ export default function ProfileHeader({
                 {currentProfileId === profile.id && (
                   <button
                     onClick={() => router.push('/profile/edit')}
-                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
+                    className="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition-colors"
                   >
                     Éditer le profil
                   </button>
@@ -222,8 +222,8 @@ export default function ProfileHeader({
                     onClick={onFollowToggle}
                     className={`px-4 py-2 rounded-full transition-colors ${
                       isFollowing
-                        ? "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
-                        : "bg-blue-500 text-white hover:bg-blue-600"
+                        ? "bg-gray-800 text-white border border-gray-700 hover:bg-gray-700"
+                        : "bg-red-600 text-white hover:bg-red-700"
                     }`}
                   >
                     {isFollowing ? "Ne plus suivre" : "Suivre"}
@@ -234,7 +234,7 @@ export default function ProfileHeader({
                 {canMessage && profile.id !== currentProfileId && (
                   <button
                     onClick={() => router.push(`/messages/${profile.id}`)}
-                    className="ml-2 px-4 py-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition"
+                    className="ml-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition"
                   >
                     Message
                   </button>
@@ -245,37 +245,37 @@ export default function ProfileHeader({
             {/* Stats */}
             <div className="flex space-x-6 mt-4">
               <div>
-                <span className="font-bold">{followersCount}</span>
-                <span className="text-gray-600 ml-1">Abonnés</span>
+                <span className="font-bold text-white">{followersCount}</span>
+                <span className="text-gray-400 ml-1">Abonnés</span>
               </div>
               <div>
-                <span className="font-bold">{followingCount}</span>
-                <span className="text-gray-600 ml-1">Abonnements</span>
+                <span className="font-bold text-white">{followingCount}</span>
+                <span className="text-gray-400 ml-1">Abonnements</span>
               </div>
               <div>
-                <span className="font-bold">{userStories.length}</span>
-                <span className="text-gray-600 ml-1">Stories</span>
+                <span className="font-bold text-white">{userStories.length}</span>
+                <span className="text-gray-400 ml-1">Stories</span>
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      <div className="text-sm text-gray-600 mb-3">
+      <div className="text-sm text-gray-400 mb-3">
         {profile.bio || "Aucune bio"}
       </div>
       
-      <div className="flex border-t border-gray-200 mt-4">
-        <button className="flex-1 py-3 font-medium border-b-2 border-red-500">
+      <div className="flex border-t border-gray-800 mt-4">
+        <button className="flex-1 py-3 font-medium border-b-2 border-red-600 text-white">
           Posts
         </button>
-        <button className="flex-1 py-3 text-gray-500">
+        <button className="flex-1 py-3 text-gray-500 hover:bg-gray-800">
           Réponses
         </button>
-        <button className="flex-1 py-3 text-gray-500">
+        <button className="flex-1 py-3 text-gray-500 hover:bg-gray-800">
           Médias
         </button>
-        <button className="flex-1 py-3 text-gray-500">
+        <button className="flex-1 py-3 text-gray-500 hover:bg-gray-800">
           J'aime
         </button>
       </div>

@@ -9,7 +9,7 @@ export default function AuthPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen text-white flex" style={{ backgroundColor: '#282325' }}>
+    <div className="min-h-screen bg-black text-white flex" style={{ backgroundColor: '#282325' }}>
       {/* Left side - Hero Image */}
       <div className="hidden lg:block lg:w-1/2 relative bg-red-600">
         <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-800">
@@ -71,7 +71,7 @@ export default function AuthPage() {
 
             <button
               onClick={() => router.push('/auth/register')}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold rounded-full py-3 transition-colors"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full py-3 transition-colors"
             >
               S'inscrire avec un email
             </button>
@@ -87,7 +87,7 @@ export default function AuthPage() {
           <p className="font-bold mb-5">Vous avez déjà un compte?</p>
           <button
             onClick={() => router.push('/auth/login')}
-            className="w-full md:w-auto border border-gray-600 hover:border-red-500 hover:bg-red-500/10 text-red-700 font-medium rounded-full py-2.5 px-6 transition-colors"
+            className="w-full md:w-auto border border-gray-700 bg-transparent hover:bg-gray-800 text-white font-medium rounded-full py-2.5 px-6 transition-colors"
           >
             Se connecter
           </button>

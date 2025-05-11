@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
-import LoadingSpinner from '@/components/layout/LoadingSpinner';
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -39,7 +38,8 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
-      <LoadingSpinner message="Connexion en cours..." />
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>
+      <div className="text-lg text-white">Connexion en cours...</div>
     </div>
   );
 }

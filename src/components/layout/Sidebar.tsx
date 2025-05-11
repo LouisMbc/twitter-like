@@ -40,7 +40,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-[250px] p-4 border-r border-gray-800 flex flex-col h-screen fixed left-0">
+    <div className="w-[250px] p-4 border-r border-gray-800 flex flex-col h-screen fixed left-0 bg-black text-white">
       <div className="mb-8">
         <Link href="/dashboard">
           <Image
@@ -107,7 +107,7 @@ export default function Sidebar() {
 
       <Link 
         href="/tweets/new"
-        className="mt-8 bg-red-500 text-white rounded-full py-3 px-4 flex items-center justify-center w-full font-semibold hover:bg-red-600"
+        className="mt-8 bg-red-600 text-white rounded-full py-3 px-4 flex items-center justify-center w-full font-semibold hover:bg-red-700"
       >
         <Plus className="mr-1" size={18} />
         Ajouter un post

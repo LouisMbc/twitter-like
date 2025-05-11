@@ -34,11 +34,11 @@ export default function RegisterPage() {
           <div className="flex items-center mb-8">
             <button
               onClick={() => router.back()}
-              className="p-2 rounded-full hover:bg-gray-800 mr-4"
+              className="p-2 rounded-full hover:bg-gray-800 mr-4 text-white"
             >
               <FaArrowLeft />
             </button>
-            <div className="text-xl font-bold">Créer un compte</div>
+            <div className="text-xl font-bold text-white">Créer un compte</div>
           </div>
 
           <RegisterForm />

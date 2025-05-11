@@ -137,13 +137,13 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+      <header className="fixed top-0 left-0 right-0 bg-black bg-opacity-90 backdrop-blur-sm z-50 border-b border-gray-800">
         <div className="max-w-6xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             {/* Ajout du lien vers le feed avec logo Twitter Like */}
             <div className="flex items-center">
               <Link href="/dashboard" className="mr-4 flex items-center">
-                <span className="font-bold text-blue-500 text-xl">Twitter Like</span>
+                <span className="font-bold text-red-500 text-xl">Flow</span>
               </Link>
               <SearchBar />
             </div>
@@ -154,7 +154,7 @@ export default function Header() {
                 <>
                   <button 
                     onClick={() => router.push('/tweets')}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 flex items-center"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center"
                   >
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
@@ -172,13 +172,13 @@ export default function Header() {
                   </button>
                   <button
                     onClick={() => router.push('/profile')}
-                    className="px-4 py-2 rounded-full hover:bg-gray-100"
+                    className="px-4 py-2 rounded-full hover:bg-gray-800 text-white"
                   >
                     Profil
                   </button>
                   
                   {/* Bouton Notifications */}
-                  <Link href="/notifications" className="flex items-center p-2 hover:bg-gray-100 rounded-md relative">
+                  <Link href="/notifications" className="flex items-center p-2 hover:bg-gray-800 rounded-md relative text-white">
                     <BellIcon className="h-5 w-5 mr-2" />
                     <span>Notifications</span>
                     {unreadNotificationCount > 0 && (
@@ -189,7 +189,7 @@ export default function Header() {
                   </Link>
                   
                   {/* Bouton Messages */}
-                  <Link href="/messages" className="flex items-center p-2 hover:bg-gray-100 rounded-md relative">
+                  <Link href="/messages" className="flex items-center p-2 hover:bg-gray-800 rounded-md relative text-white">
                     <EnvelopeIcon className="h-5 w-5 mr-2" />
                     <span>Messages</span>
                     {unreadMessageCount > 0 && (
@@ -204,17 +204,17 @@ export default function Header() {
                       await supabase.auth.signOut();
                       router.push('/auth/login');
                     }}
-                    className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    className="px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700"
                   >
                     Déconnexion
                   </button>
                 </>
               ) : (
                 <>
-                  <Link href="/auth/login" className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+                  <Link href="/auth/login" className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700">
                     Connexion
                   </Link>
-                  <Link href="/auth/register" className="px-4 py-2 border border-blue-500 text-blue-500 rounded-full hover:bg-blue-50">
+                  <Link href="/auth/register" className="px-4 py-2 border border-gray-600 text-white rounded-full hover:bg-gray-800">
                     Inscription
                   </Link>
                 </>

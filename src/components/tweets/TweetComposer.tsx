@@ -116,7 +116,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Quoi de neuf ?"
-        className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
+        className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
         rows={4}
         maxLength={280}
         required

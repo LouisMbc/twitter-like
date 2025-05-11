@@ -130,7 +130,7 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={parentCommentId ? "Répondre au commentaire..." : "Poster votre réponse..."}
-            className="flex-1 p-2 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-2 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
             rows={2}
             required
           />

@@ -90,100 +90,102 @@ export default function ConversationPage() {
 
   // Si le chargement est en cours, afficher un indicateur
   if (loading || checkingPermissions) {
-    return <div className="p-4 text-center">Chargement de la conversation...</div>;
+    return <div className="p-4 text-center text-white bg-black">Chargement de la conversation...</div>;
   }
 
   // Si une erreur s'est produite, l'afficher
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return <div className="p-4 text-red-500 bg-black">{error}</div>;
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* En-tête */}
-      <div className="bg-white border-b p-4 flex items-center">
-        <Link href="/messages" className="mr-4">
-          <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
-        </Link>
-        {currentContact && (
-          <div className="flex items-center">
-            <Image 
-              src={currentContact.profilePicture || '/default-avatar.png'} 
-              alt={currentContact.nickname} 
-              width={40} 
-              height={40} 
-              className="rounded-full"
-            />
-            <div className="ml-3">
-              <h2 className="font-semibold">{currentContact.nickname}</h2>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        {!canMessageUser ? (
-          <div className="text-center p-4 bg-yellow-100 rounded-lg">
-            <p>Vous ne pouvez pas échanger de messages avec cet utilisateur.</p>
-            <p className="text-sm mt-2">Vous devez vous suivre mutuellement pour pouvoir communiquer.</p>
-          </div>
-        ) : currentMessages.length === 0 ? (
-          <div className="text-center p-4 text-gray-500">
-            <p>Aucun message dans cette conversation.</p>
-            <p className="text-sm mt-2">Envoyez le premier message pour commencer à discuter!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {currentMessages.map((msg) => (
-              <div 
-                key={msg.id} 
-                className={`flex ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'}`}
-              >
-                <div 
-                  className={`max-w-[70%] p-3 rounded-lg ${
-                    msg.sender_id === profile?.id 
-                      ? 'bg-blue-500 text-white rounded-br-none' 
-                      : 'bg-white text-gray-800 rounded-bl-none border'
-                  }`}
-                >
-                  <p>{msg.content}</p>
-                  <p className={`text-xs mt-1 ${
-                    msg.sender_id === profile?.id ? 'text-blue-100' : 'text-gray-500'
-                  }`}>
-                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
+    <>
+      <div className="flex flex-col h-screen bg-black">
+        {/* En-tête */}
+        <div className="bg-gray-900 border-b border-gray-800 p-4 flex items-center">
+          <Link href="/messages" className="mr-4 text-white hover:bg-gray-800 p-2 rounded-full">
+            <ArrowLeftIcon className="w-6 h-6" />
+          </Link>
+          {currentContact && (
+            <div className="flex items-center">
+              <Image 
+                src={currentContact.profilePicture || '/default-avatar.png'} 
+                alt={currentContact.nickname} 
+                width={40} 
+                height={40} 
+                className="rounded-full"
+              />
+              <div className="ml-3">
+                <h2 className="font-semibold text-white">{currentContact.nickname}</h2>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+            </div>
+          )}
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 bg-black">
+          {!canMessageUser ? (
+            <div className="text-center p-4 bg-gray-900 rounded-lg text-white border border-gray-800">
+              <p>Vous ne pouvez pas échanger de messages avec cet utilisateur.</p>
+              <p className="text-sm mt-2 text-gray-300">Vous devez vous suivre mutuellement pour pouvoir communiquer.</p>
+            </div>
+          ) : currentMessages.length === 0 ? (
+            <div className="text-center p-4 text-gray-400">
+              <p>Aucun message dans cette conversation.</p>
+              <p className="text-sm mt-2">Envoyez le premier message pour commencer à discuter!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {currentMessages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className={`flex ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div 
+                    className={`max-w-[70%] p-3 rounded-lg ${
+                      msg.sender_id === profile?.id 
+                        ? 'bg-red-600 text-white rounded-br-none' 
+                        : 'bg-gray-800 text-white rounded-bl-none border border-gray-700'
+                    }`}
+                  >
+                    <p>{msg.content}</p>
+                    <p className={`text-xs mt-1 ${
+                      msg.sender_id === profile?.id ? 'text-red-200' : 'text-gray-400'
+                    }`}>
+                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Formulaire d'envoi */}
+        {canMessageUser && (
+          <form onSubmit={handleSendMessage} className="border-t border-gray-800 p-4 bg-black">
+            <div className="flex">
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Écrivez votre message..."
+                className="flex-1 border border-gray-700 rounded-l-lg px-4 py-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+                disabled={sendingMessage}
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="bg-red-600 text-white px-4 py-2 rounded-r-lg hover:bg-red-700 disabled:bg-gray-700"
+                disabled={sendingMessage || !message.trim()}
+              >
+                Envoyer
+              </button>
+            </div>
+          </form>
         )}
       </div>
-
-      {/* Formulaire d'envoi - Toujours affiché si messages vides et canMessageUser est true */}
-      {canMessageUser && (
-        <form onSubmit={handleSendMessage} className="border-t p-4 bg-white">
-          <div className="flex">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Écrivez votre message..."
-              className="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={sendingMessage}
-              autoFocus // Ajouter l'auto-focus pour faciliter l'entrée de texte
-            />
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 disabled:bg-blue-300"
-              disabled={sendingMessage || !message.trim()}
-            >
-              Envoyer
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
+    </>
   );
 }

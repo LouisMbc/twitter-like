@@ -147,30 +147,33 @@ export default function RetweetPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-8">
-        <div className="text-center">Chargement...</div>
+      <div className="min-h-screen bg-black p-8 text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600 mx-auto"></div>
+          <div className="mt-4">Chargement...</div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen p-8">
+      <div className="min-h-screen bg-black p-8">
         <div className="text-red-500 text-center">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-6">
+    <div className="max-w-2xl mx-auto p-4 space-y-6 bg-black text-white">
       <h1 className="text-2xl font-bold">Retweeter</h1>
       
-      <form onSubmit={handleSubmit} className="mb-4 p-4 bg-white rounded-lg shadow">
+      <form onSubmit={handleSubmit} className="mb-4 p-4 bg-gray-900 rounded-lg shadow border border-gray-800">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Ajouter un commentaire..."
-          className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-4 border border-gray-700 rounded-lg bg-white text-black resize-none focus:ring-2 focus:ring-red-500"
           rows={3}
           maxLength={280}
         />
@@ -191,7 +194,7 @@ export default function RetweetPage() {
                     setImages(images.filter((_, i) => i !== index));
                     setPreview(preview.filter((_, i) => i !== index));
                   }}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6"
+                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 hover:bg-red-700"
                 >
                   ×
                 </button>
@@ -214,7 +217,7 @@ export default function RetweetPage() {
             />
             <label
               htmlFor="image-input"
-              className="cursor-pointer text-blue-500 hover:text-blue-600"
+              className="cursor-pointer text-red-500 hover:text-red-400"
             >
               📷 Ajouter des photos
             </label>
@@ -227,7 +230,7 @@ export default function RetweetPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="px-4 py-2 bg-blue-500 text-white rounded-full disabled:opacity-50"
+            className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 disabled:opacity-50"
           >
             {submitting ? 'Envoi...' : 'Retweeter'}
           </button>
@@ -240,11 +243,11 @@ export default function RetweetPage() {
       
       {/* Tweet original */}
       {originalTweet && (
-        <div className="border border-gray-200 rounded-lg">
+        <div className="border border-gray-800 rounded-lg bg-gray-900">
           <TweetCard 
             tweet={originalTweet} 
             detailed={true}
-            showRetweetButton={false} // Ne pas afficher le bouton Retweeter ici
+            showRetweetButton={false}
           />
         </div>
       )}

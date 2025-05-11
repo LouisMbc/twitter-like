@@ -54,47 +54,68 @@ export const useProfile = () => {
 
   // Utilisez useCallback pour éviter les re-créations inutiles de la fonction
   const loadProfile = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        router.push('/auth/login');
+        // Ajouter une vérification explicite si l'utilisateur n'est pas connecté
+        console.info('Aucune session utilisateur trouvée - utilisateur non connecté');
+        setProfile(null);
+        setLoading(false);
         return;
       }
 
-      const userId = session.user.id;
-      
-      const { data: profileData, error } = await profileService.getUserProfile(userId);
-      
-      if (error) {
-        throw error;
+      // Récupérer les informations du profil
+      const { data: profileData, error: profileError } = await supabase
+        .from('Profile')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (profileError) {
+        // Améliorer l'affichage de l'erreur avec plus de détails
+        console.error('Erreur lors de la récupération du profil :', {
+          code: profileError.code,
+          message: profileError.message,
+          details: profileError.details
+        });
+        
+        // Vérifier si c'est une erreur de "profil non trouvé"
+        if (profileError.code === 'PGRST116') {
+          console.warn('Profil non trouvé pour l\'utilisateur actuel - création nécessaire');
+        }
+        throw profileError;
       }
-      
+
       if (!profileData) {
-        console.error('Profil non trouvé');
+        console.warn('Aucune donnée de profil reçue - le profile est peut-être manquant');
+        setProfile(null);
+        setLoading(false);
         return;
       }
-      
-      setProfile(profileData);
-      setCurrentProfileId(profileData.id);
 
-      // Chargement parallèle des tweets et commentaires pour de meilleures performances
-      const [tweetsResponse, commentsResponse] = await Promise.all([
-        profileService.getUserTweets(profileData.id),
-        profileService.getUserComments(profileData.id)
-      ]);
-      
-      setTweets(tweetsResponse.data || []);
-      setComments(commentsResponse.data || []);
-      setFollowersCount(profileData.follower_count || 0);
+      // Reste du code pour configurer le profil
+      setProfile(profileData);
+      setTweets(profileData.tweets || []);
+      setFollowersCount(profileData.followers_count || 0);
       setFollowingCount(profileData.following_count || 0);
     } catch (error) {
-      console.error('Erreur lors du chargement du profil connecté :', error);
+      // Améliorer la gestion des erreurs pour obtenir plus d'informations
+      const errorDetails = error instanceof Error 
+        ? { name: error.name, message: error.message, stack: error.stack }
+        : { error };
+        
+      console.error('Erreur lors du chargement du profil connecté :', errorDetails);
+      
+      // Vérifier si c'est une erreur d'authentification
+      if (error instanceof Error && error.message.includes('auth')) {
+        console.warn('Possible problème d\'authentification - vérifiez que l\'utilisateur est connecté');
+      }
     } finally {
       setLoading(false);
     }
-  }, [router]); // Ajoutez router comme dépendance
+  }, []);
 
   // Sélectionne une langue aléatoire (utile pour MultiluinguiX)
   const getRandomLanguage = (languages: string[]) => {
