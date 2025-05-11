@@ -1,18 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { 
-  FaHome, 
-  FaSearch, 
-  FaBell, 
-  FaEnvelope, 
-  FaUser,
-  FaEllipsisH,
-  FaPlus
-} from 'react-icons/fa';
+import { FaSearch, FaEllipsisH } from 'react-icons/fa';
+import Sidebar from '@/components/layout/Sidebar';
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -26,75 +17,10 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen flex bg-black text-white">
-      {/* Left Sidebar */}
-      <div className="w-[250px] p-4 border-r border-gray-800 flex flex-col h-screen fixed left-0">
-        <div className="mb-8">
-          <Link href="/">
-            <Image
-              src="/logo_Flow.png"
-              alt="Flow Logo"
-              width={100}
-              height={50}
-              className="object-contain"
-            />
-          </Link>
-        </div>
-
-        <nav className="flex-1">
-          <ul className="space-y-4">
-            <li>
-              <Link href="/dashboard" className="flex items-center p-2 rounded-full hover:bg-gray-800">
-                <FaHome className="mr-4 text-2xl" />
-                <span className="text-xl">Accueil</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/explore" className="flex items-center p-2 rounded-full bg-gray-800">
-                <FaSearch className="mr-4 text-2xl" />
-                <span className="text-xl">Explorer</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/notifications" className="flex items-center p-2 rounded-full hover:bg-gray-800">
-                <FaBell className="mr-4 text-2xl" />
-                <span className="text-xl">Notifications</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/messages" className="flex items-center p-2 rounded-full hover:bg-gray-800">
-                <FaEnvelope className="mr-4 text-2xl" />
-                <span className="text-xl">Messages</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/profile" className="flex items-center p-2 rounded-full hover:bg-gray-800">
-                <FaUser className="mr-4 text-2xl" />
-                <span className="text-xl">Profil</span>
-              </Link>
-            </li>
-          </ul>
-        </nav>
-
-        {/* Add post button */}
-        <div className="mt-4 mb-8">
-          <button className="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full py-3 flex items-center justify-center">
-            <FaPlus className="mr-2" />
-            Ajouter un post
-          </button>
-        </div>
-
-        {/* User profile at bottom */}
-        <div className="flex items-center p-2 rounded-full hover:bg-gray-800 cursor-pointer">
-          <div className="w-10 h-10 bg-gray-500 rounded-full mr-3 flex items-center justify-center">
-            <span>VP</span>
-          </div>
-          <span className="flex-1">Votre_pseudo</span>
-          <FaEllipsisH />
-        </div>
-      </div>
+      <Sidebar />
 
       {/* Main content area */}
-      <div className="ml-[250px] flex-1">
+      <div className="ml-64 flex-1">
         {/* Search bar */}
         <div className="sticky top-0 bg-black z-10 p-2 border-b border-gray-800">
           <div className="max-w-md mx-auto relative">

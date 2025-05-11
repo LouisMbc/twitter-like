@@ -11,6 +11,7 @@ import ProfileTabs from '@/components/profile/ProfileTabs';
 import CommentList from '@/components/comments/CommentList';
 import { FaArrowLeft } from 'react-icons/fa';
 import Image from 'next/image';
+import Sidebar from '@/components/layout/Sidebar';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -76,78 +77,82 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
-        <div className="max-w-xl mx-auto flex items-center">
-          <button 
-            onClick={() => router.back()} 
-            className="p-2 rounded-full hover:bg-gray-800 mr-4"
-            aria-label="Retour"
-          >
-            <FaArrowLeft />
-          </button>
-          <div>
-            <h1 className="text-xl font-bold">{profile.nickname || profile.name || 'Profil'}</h1>
-            <p className="text-sm text-gray-500">{tweets?.length || 0} posts</p>
+    <div className="min-h-screen flex bg-black text-white">
+      <Sidebar />
+      
+      <div className="ml-64 flex-1">
+        {/* Header */}
+        <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
+          <div className="max-w-xl mx-auto flex items-center">
+            <button 
+              onClick={() => router.back()} 
+              className="p-2 rounded-full hover:bg-gray-800 mr-4"
+              aria-label="Retour"
+            >
+              <FaArrowLeft />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold">{profile.nickname || profile.name || 'Profil'}</h1>
+              <p className="text-sm text-gray-500">{tweets?.length || 0} posts</p>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="max-w-xl mx-auto border-x border-gray-800">
-        <ProfileHeader 
-          profile={{
-            ...profile,
-            username: profile.username || '', 
-            full_name: `${profile.firstName} ${profile.lastName}`.trim() || profile.name || '',
-            languages: profile.languages || ((languages) => languages)
-          }}
-          followersCount={followersCount}
-          followingCount={followingCount}
-          currentProfileId={currentProfileId}
-          isFollowing={isFollowing}
-          onFollowToggle={handleFollowToggle}
-        />
         
-        <ProfileTabs 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+        <div className="max-w-xl mx-auto">
+          <ProfileHeader 
+            profile={{
+              ...profile,
+              username: profile.username || '', 
+              full_name: `${profile.firstName} ${profile.lastName}`.trim() || profile.name || '',
+              languages: profile.languages || ((languages) => languages)
+            }}
+            followersCount={followersCount}
+            followingCount={followingCount}
+            currentProfileId={currentProfileId}
+            isFollowing={isFollowing}
+            onFollowToggle={handleFollowToggle}
+          />
+          
+          <ProfileTabs 
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
 
-        <div className="divide-y divide-gray-800">
-          {activeTab === 'tweets' ? (
-            tweets && tweets.length > 0 ? (
-              tweets.map(tweet => (
-                <div key={tweet.id} className="py-3">
-                  <TweetCard tweet={tweet} />
+          <div className="divide-y divide-gray-800">
+            {activeTab === 'tweets' ? (
+              tweets && tweets.length > 0 ? (
+                tweets.map(tweet => (
+                  <div key={tweet.id} className="py-3">
+                    <TweetCard tweet={tweet} />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  <p className="mb-2">Aucun post publié</p>
+                  {currentProfileId === profile.id && (
+                    <button 
+                      onClick={() => router.push('/tweets/create')}
+                      className="mt-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-full"
+                    >
+                      Créer un post
+                    </button>
+                  )}
                 </div>
-              ))
+              )
+            ) : activeTab === 'comments' ? (
+              comments && comments.length > 0 ? (
+                <CommentList comments={comments} />
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  Aucune réponse
+                </div>
+              )
             ) : (
               <div className="text-center text-gray-500 py-8">
-                <p className="mb-2">Aucun post publié</p>
-                {currentProfileId === profile.id && (
-                  <button 
-                    onClick={() => router.push('/tweets/create')}
-                    className="mt-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-full"
-                  >
-                    Créer un post
-                  </button>
-                )}
+                {activeTab === 'media' ? 'Aucun média' : 'Aucun contenu à afficher'}
               </div>
-            )
-          ) : activeTab === 'comments' ? (
-            comments && comments.length > 0 ? (
-              <CommentList comments={comments} />
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                Aucune réponse
-              </div>
-            )
-          ) : (
-            <div className="text-center text-gray-500 py-8">
-              {activeTab === 'media' ? 'Aucun média' : 'Aucun contenu à afficher'}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

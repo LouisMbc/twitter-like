@@ -8,6 +8,7 @@ import { useTweetDetails } from '@/hooks/useTweetDetails';
 import { FaArrowLeft } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
+import Sidebar from '@/components/layout/Sidebar';
 
 export default function TweetPage() {
   const params = useParams();
@@ -56,35 +57,39 @@ export default function TweetPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
-        <div className="max-w-2xl mx-auto flex items-center">
-          <button 
-            onClick={() => router.back()} 
-            className="p-2 rounded-full hover:bg-gray-800 mr-4"
-          >
-            <FaArrowLeft />
-          </button>
-          <h1 className="text-xl font-bold">Tweet</h1>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto border-x border-gray-800 min-h-screen pb-20">
-        <div className="border-b border-gray-800">
-          <TweetCard tweet={tweet} detailed />
+    <div className="flex min-h-screen bg-black text-white">
+      <Sidebar />
+      
+      <div className="ml-64 flex-1">
+        {/* Header */}
+        <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
+          <div className="max-w-2xl mx-auto flex items-center">
+            <button 
+              onClick={() => router.back()} 
+              className="p-2 rounded-full hover:bg-gray-800 mr-4"
+            >
+              <FaArrowLeft />
+            </button>
+            <h1 className="text-xl font-bold">Tweet</h1>
+          </div>
         </div>
 
-        <div className="p-4 border-b border-gray-800">
-          <h2 className="text-xl font-semibold mb-4">Commentaires</h2>
-          <CommentForm 
-            tweetId={tweet.id} 
-            onCommentAdded={loadComments}
-          />
-        </div>
+        <div className="max-w-2xl mx-auto border-x border-gray-800 min-h-screen pb-20">
+          <div className="border-b border-gray-800">
+            <TweetCard tweet={tweet} detailed />
+          </div>
 
-        <div className="mt-6 px-4">
-          {tweet.id && <CommentList tweetId={tweet.id} />}
+          <div className="p-4 border-b border-gray-800">
+            <h2 className="text-xl font-semibold mb-4">Commentaires</h2>
+            <CommentForm 
+              tweetId={tweet.id} 
+              onCommentAdded={loadComments}
+            />
+          </div>
+
+          <div className="mt-6 px-4">
+            {tweet.id && <CommentList tweetId={tweet.id} />}
+          </div>
         </div>
       </div>
     </div>

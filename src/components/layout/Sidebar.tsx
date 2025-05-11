@@ -40,107 +40,74 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-[250px] p-4 border-r border-gray-800 flex flex-col h-screen fixed left-0 bg-black text-white">
-      <div className="mb-8">
-        <Link href="/dashboard">
-          <Image
-            src="/logo_Flow.png"
-            alt="Flow Logo"
-            width={100}
-            height={50}
-            className="object-contain"
-          />
-        </Link>
-      </div>
-
-      <nav className="flex-1">
-        <ul className="space-y-4">
-          <li>
-            <Link 
-              href="/dashboard" 
-              className={`flex items-center p-2 rounded-full ${pathname === '/dashboard' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
-            >
-              <Home className="mr-4 text-2xl" />
-              <span className="text-xl">Accueil</span>
+    <div className="flex min-h-screen bg-black text-white">
+      {/* Sidebar with dark background */}
+      <div className="fixed left-0 top-0 h-full w-64 bg-black border-r border-gray-800">
+        <div className="p-4">
+          <div className="mb-6">
+            <Image 
+              src="/logo_Flow.png" 
+              alt="Flow Logo" 
+              width={90} 
+              height={30} 
+              className="object-contain" 
+            />
+          </div>
+          
+          <nav className="space-y-1">
+            <Link href="/dashboard" className="flex items-center px-4 py-3 text-white bg-gray-900 rounded-md">
+              <Home className="mr-4" />
+              <span className="text-lg font-bold">Accueil</span>
             </Link>
-          </li>
-          <li>
-            <Link 
-              href="/explore" 
-              className={`flex items-center p-2 rounded-full ${pathname === '/explore' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
-            >
-              <Search className="mr-4 text-2xl" />
-              <span className="text-xl">Explorer</span>
+            <Link href="/explore" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
+              <Search className="mr-4" />
+              <span className="text-lg">Explorer</span>
             </Link>
-          </li>
-          <li>
-            <Link 
-              href="/notifications" 
-              className={`flex items-center p-2 rounded-full ${pathname === '/notifications' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
-            >
-              <Bell className="mr-4 text-2xl" />
-              <span className="text-xl">Notifications</span>
+            <Link href="/notifications" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
+              <Bell className="mr-4" />
+              <span className="text-lg">Notifications</span>
             </Link>
-          </li>
-          <li>
-            <Link 
-              href="/messages" 
-              className={`flex items-center p-2 rounded-full ${pathname === '/messages' ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
-            >
-              <Mail className="mr-4 text-2xl" />
-              <span className="text-xl">Messages</span>
+            <Link href="/messages" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
+              <Mail className="mr-4" />
+              <span className="text-lg">Messages</span>
             </Link>
-          </li>
-          {profile && (
-            <li>
-              <Link 
-                href={`/profile/${profile.id}`} 
-                className={`flex items-center p-2 rounded-full ${pathname.includes('/profile/') ? 'bg-gray-800' : 'hover:bg-gray-800'}`}
-              >
-                <User className="mr-4 text-2xl" />
-                <span className="text-xl">Profil</span>
-              </Link>
-            </li>
-          )}
-        </ul>
-      </nav>
-
-      <Link 
-        href="/tweets/new"
-        className="mt-8 bg-red-600 text-white rounded-full py-3 px-4 flex items-center justify-center w-full font-semibold hover:bg-red-700"
-      >
-        <Plus className="mr-1" size={18} />
-        Ajouter un post
-      </Link>
-
-      {profile && (
-        <div className="mt-auto mb-4">
-          <Link href={`/profile/${profile.id}`} className="flex items-center p-3 hover:bg-gray-800 rounded-full">
-            {profile.profilePicture ? (
-              <img 
-                src={profile.profilePicture} 
-                alt={profile.nickname || 'User'} 
-                className="w-10 h-10 rounded-full object-cover mr-2"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-2">
-                <span>{profile.nickname?.charAt(0) || profile.firstName?.charAt(0) || '?'}</span>
+            <Link href="/profile" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
+              <User className="mr-4" />
+              <span className="text-lg">Profil</span>
+            </Link>
+          </nav>
+          
+          <button 
+            onClick={() => router.push('/tweets/new')}
+            className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700"
+          >
+            <div className="flex items-center justify-center">
+              <Plus className="mr-2" size={16} />
+              <span>Ajouter un post</span>
+            </div>
+          </button>
+          
+          {/* User profile at bottom */}
+          <div className="absolute bottom-16 left-0 right-0 px-4">
+            <div className="flex items-center p-2 hover:bg-gray-800 rounded-full cursor-pointer">
+              <div className="w-10 h-10 bg-gray-600 rounded-full mr-3 flex items-center justify-center">
+                <span>VP</span>
               </div>
-            )}
-            <span className="text-sm ml-2 text-white">
-              {profile.nickname || 'Votre_pseudo'}
-            </span>
-          </Link>
+              <span className="text-sm">Votre_pseudo</span>
+            </div>
+          </div>
+          
+          {/* Theme toggle and logout */}
+          <div className="absolute bottom-4 left-0 right-0 px-4">
+            <div className="flex items-center justify-between p-2">
+              <button onClick={handleSignOut} className="flex items-center text-red-500">
+                <LogOut className="mr-2" size={16} />
+                <span>Déconnexion</span>
+              </button>
+            </div>
+          </div>
         </div>
-      )}
-      
-      <button 
-        onClick={handleSignOut}
-        className="flex items-center p-3 text-red-500 hover:bg-gray-800 rounded-full w-full cursor-pointer"
-      >
-        <LogOut className="mr-4" size={18} />
-        <span>Déconnexion</span>
-      </button>
+      </div>
     </div>
   );
 }

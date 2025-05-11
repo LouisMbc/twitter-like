@@ -8,11 +8,11 @@ import TweetComposer from '@/components/tweets/TweetComposer';
 import TweetList from '@/components/tweets/TweetList';
 import useFeed from '@/hooks/useFeed';
 import LoadingSpinner from '@/components/layout/LoadingSpinner'
-import Link from 'next/link';
-import { FaHome, FaSearch, FaBell, FaEnvelope, FaUser, FaPlus } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import Story from '@/components/stories/Story';
 import Footer from '@/components/shared/Footer';
+import Sidebar from '@/components/layout/Sidebar';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -48,70 +48,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-black text-white">
-      {/* Sidebar with dark background */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-black border-r border-gray-800">
-        <div className="p-4">
-          <div className="mb-6">
-            <Image 
-              src="/logo_Flow.png" 
-              alt="Flow Logo" 
-              width={90} 
-              height={30} 
-              className="object-contain" 
-            />
-          </div>
-          
-          <nav className="space-y-1">
-            <Link href="/dashboard" className="flex items-center px-4 py-3 text-white bg-gray-900 rounded-md">
-              <FaHome className="mr-4" />
-              <span className="text-lg font-bold">Accueil</span>
-            </Link>
-            <Link href="/explore" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
-              <FaSearch className="mr-4" />
-              <span className="text-lg">Explorer</span>
-            </Link>
-            <Link href="/notifications" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
-              <FaBell className="mr-4" />
-              <span className="text-lg">Notifications</span>
-            </Link>
-            <Link href="/messages" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
-              <FaEnvelope className="mr-4" />
-              <span className="text-lg">Messages</span>
-            </Link>
-            <Link href="/profile" className="flex items-center px-4 py-3 text-white hover:bg-gray-900 rounded-md">
-              <FaUser className="mr-4" />
-              <span className="text-lg">Profil</span>
-            </Link>
-          </nav>
-          
-          <button 
-            onClick={() => router.push('/tweets/new')}
-            className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700"
-          >
-            <div className="flex items-center justify-center">
-              <FaPlus className="mr-2" size={16} />
-              <span>Ajouter un post</span>
-            </div>
-          </button>
-          
-          {/* User profile at bottom */}
-          <div className="absolute bottom-16 left-0 right-0 px-4">
-            <div className="flex items-center p-2 hover:bg-gray-800 rounded-full cursor-pointer">
-              <div className="w-10 h-10 bg-gray-600 rounded-full mr-3 flex items-center justify-center">
-                <span>VP</span>
-              </div>
-              <span className="text-sm">Votre_pseudo</span>
-            </div>
-          </div>
-          
-          {/* Theme toggle and logout */}
-          <div className="absolute bottom-4 left-0 right-0 px-4">
-            <div className="flex items-center justify-between p-2">
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </div>
+      <Sidebar />
       
       {/* Main content */}
       <div className="ml-64 flex-1">
@@ -131,7 +68,7 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        {/* Stories section - ajouté juste après la barre de recherche */}
+        {/* Stories section */}
         <div className="py-4 px-4 border-b border-gray-800">
           <h2 className="text-xl font-semibold mb-3">Stories</h2>
           <Story />

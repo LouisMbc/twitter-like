@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaTimes } from 'react-icons/fa';
 import { FC, useState } from 'react';
 import React from 'react';
+import Sidebar from '@/components/layout/Sidebar';
 
 interface TweetComposerProps {
   onSuccess?: () => void;
@@ -56,8 +57,10 @@ export default function CreateTweetPage() {
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-black text-white">
+    <div className="flex min-h-screen bg-black text-white">
+      <Sidebar />
+      
+      <div className="ml-64 flex-1">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -80,6 +83,6 @@ export default function CreateTweetPage() {
           <TweetComposer onSuccess={onTweetCreated} />
         </div>
       </div>
-    </>
+    </div>
   );
 }
