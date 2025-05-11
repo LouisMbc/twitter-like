@@ -24,6 +24,7 @@ export function useStories() {
           media_type,
           created_at,
           expires_at,
+          duration,
           Profile:user_id (
             id,
             nickname,
@@ -34,19 +35,40 @@ export function useStories() {
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error('Erreur Supabase:', error);
         throw error;
+      }
+      
+      console.log('Données brutes des stories:', data);
+
+      // S'assurer que les données ne sont pas null/undefined
+      if (!data || data.length === 0) {
+        console.log('Aucune story trouvée');
+        setStories([]);
+        return;
       }
 
       // Formater les données pour correspondre à l'interface Story
-      const formattedStories = data.map((story: any) => ({
-        ...story,
-        author: story.Profile
-      }));
+      const formattedStories = data.map((story: any) => {
+        // Log pour chaque story pour vérifier sa structure
+        console.log('Story brute:', story);
+        
+        return {
+          ...story,
+          author: story.Profile || {
+            id: 'unknown',
+            nickname: 'Utilisateur',
+            profilePicture: null
+          }
+        };
+      });
 
+      console.log('Stories formatées:', formattedStories);
       setStories(formattedStories);
     } catch (err) {
       console.error('Erreur lors du chargement des stories:', err);
       setError('Impossible de charger les stories');
+      setStories([]); // S'assurer d'avoir un tableau vide en cas d'erreur
     } finally {
       setLoading(false);
     }

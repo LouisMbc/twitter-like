@@ -26,15 +26,11 @@ export default function ProfilePage() {
   } = useProfile();
   
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
-  
-  const [localFollowingCount, setLocalFollowingCount] = useState(followingCount);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-  const incrementFollowingCount = () => {
-    setLocalFollowingCount(prev => prev + 1);
-  };
-
-  const decrementFollowingCount = () => {
-    setLocalFollowingCount(prev => prev - 1);
+  const handleFollowToggle = () => {
+    setIsFollowing(!isFollowing);
+    // Add actual follow/unfollow logic here
   };
   
   // Redirect to login if not authenticated
@@ -68,7 +64,6 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-black text-white">
         <div className="text-center py-20">
           <h2 className="text-2xl font-bold mb-4">Profil non trouvé</h2>
-          <p className="text-gray-400 mb-6">Le profil que vous recherchez n'existe pas ou n'est pas accessible.</p>
           <button 
             onClick={() => router.push('/dashboard')} 
             className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors"
@@ -84,22 +79,22 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <button 
-              onClick={() => router.back()} 
-              className="p-2 rounded-full hover:bg-gray-800 mr-4 md:hidden"
-            >
-              <FaArrowLeft />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold">{profile.name || profile.username}</h1>
-            </div>
+        <div className="max-w-xl mx-auto flex items-center">
+          <button 
+            onClick={() => router.back()} 
+            className="p-2 rounded-full hover:bg-gray-800 mr-4"
+            aria-label="Retour"
+          >
+            <FaArrowLeft />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold">{profile.nickname || profile.name || 'Profil'}</h1>
+            <p className="text-sm text-gray-500">{tweets?.length || 0} posts</p>
           </div>
         </div>
       </div>
       
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-xl mx-auto border-x border-gray-800">
         <ProfileHeader 
           profile={{
             ...profile,
@@ -108,60 +103,52 @@ export default function ProfilePage() {
             languages: profile.languages || ((languages) => languages)
           }}
           followersCount={followersCount}
-          followingCount={localFollowingCount}
+          followingCount={followingCount}
           currentProfileId={currentProfileId}
-          isFollowing={false}
-          onFollowToggle={(isFollowing) => {
-            if (isFollowing) {
-              incrementFollowingCount();
-            } else {
-              decrementFollowingCount();
-            }
-          }}
+          isFollowing={isFollowing}
+          onFollowToggle={handleFollowToggle}
         />
         
-        {/* Utilisation du composant ProfileTabs importé */}
         <ProfileTabs 
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
 
-        {activeTab === 'tweets' ? (
-          <div>
-            {!tweets?.length ? (
-              <div className="text-center text-gray-400 py-12 px-4">
-                <h3 className="text-xl font-bold mb-2">Aucun post publié</h3>
-                <button 
-                  onClick={() => router.push('/tweets/create')} 
-                  className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center mx-auto"
-                >
-                  <span className="mr-1">+</span> Ajouter un post
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-center my-4">
-                  <button 
-                    onClick={() => router.push('/tweets/create')} 
-                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors flex items-center justify-center"
-                  >
-                    <span className="mr-1">+</span> Ajouter un post
-                  </button>
+        <div className="divide-y divide-gray-800">
+          {activeTab === 'tweets' ? (
+            tweets && tweets.length > 0 ? (
+              tweets.map(tweet => (
+                <div key={tweet.id} className="py-3">
+                  <TweetCard tweet={tweet} />
                 </div>
-                {tweets.map(tweet => (
-                  <TweetCard key={tweet.id} tweet={tweet} />
-                ))}
-              </>
-            )}
-          </div>
-        ) : activeTab === 'comments' ? (
-          <CommentList comments={comments || []} />
-        ) : (
-          <div className="text-center text-gray-400 py-12 px-4">
-            <h3 className="text-xl font-bold mb-2">Aucun contenu</h3>
-            <p>Aucun {activeTab === 'media' ? 'média' : 'contenu'} à afficher pour le moment.</p>
-          </div>
-        )}
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-8">
+                <p className="mb-2">Aucun post publié</p>
+                {currentProfileId === profile.id && (
+                  <button 
+                    onClick={() => router.push('/tweets/create')}
+                    className="mt-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-full"
+                  >
+                    Créer un post
+                  </button>
+                )}
+              </div>
+            )
+          ) : activeTab === 'comments' ? (
+            comments && comments.length > 0 ? (
+              <CommentList comments={comments} />
+            ) : (
+              <div className="text-center text-gray-500 py-8">
+                Aucune réponse
+              </div>
+            )
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              {activeTab === 'media' ? 'Aucun média' : 'Aucun contenu à afficher'}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

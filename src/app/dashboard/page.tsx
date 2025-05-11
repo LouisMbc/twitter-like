@@ -132,10 +132,10 @@ export default function DashboardPage() {
         </div>
         
         {/* Stories section - ajouté juste après la barre de recherche */}
-        {/* <div className="py-4 px-4 border-b border-gray-800">
+        <div className="py-4 px-4 border-b border-gray-800">
           <h2 className="text-xl font-semibold mb-3">Stories</h2>
           <Story />
-        </div> */}
+        </div>
         
         {/* Content area */}
         <div className="p-4">

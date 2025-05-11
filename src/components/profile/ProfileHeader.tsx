@@ -3,15 +3,13 @@
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Profile } from "@/types";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { addStory } from "@/services/supabase/story";
 import supabase from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
+import Image from "next/image";
 import { useStories } from "@/hooks/useStories";
-import Story from "@/components/stories/Story";
-import { messageService } from '@/services/supabase/message';
-import { FaHome, FaSearch, FaBell, FaEnvelope, FaBookmark, FaCog, FaHashtag, FaSignOutAlt } from 'react-icons/fa';
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -33,16 +31,14 @@ export default function ProfileHeader({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { stories, loading: storiesLoading, refreshStories } = useStories();
-  const [isViewingStories, setIsViewingStories] = useState(false);
-  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
-  const [canMessage, setCanMessage] = useState(false);
+  const { stories, refreshStories } = useStories();
+  const isCurrentUser = currentProfileId === profile.id;
 
   // Filtrer les stories du profil actuel
   const userStories = stories.filter(story => story.user_id === profile.id);
   const hasStories = userStories.length > 0;
 
-  // Gestion de l'upload
+  // Gestion de l'upload de la story
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -59,291 +55,110 @@ export default function ProfileHeader({
 
       const success = await addStory(profile.id, file, mediaType);
       if (success) {
-        alert("Story ajoutée !");
         refreshStories();
-      } else {
-        alert("Erreur lors de l'ajout de la story.");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("Erreur lors de l'ajout de la story");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleStoryClick = () => {
-    // Au lieu de rediriger vers une page dédiée
-    // router.push("/stories");
-
-    // Définir directement l'index de la story à afficher
-    if (hasStories && userStories.length > 0) {
-      setIsViewingStories(true);
-      setCurrentStoryIndex(0);
-    }
-  };
-
-  // Fonction pour ouvrir l'uploader de fichiers
-  const handleAddStoryClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  // Ajout de la vérification pour la messagerie
-  useEffect(() => {
-    // Vérifier si l'utilisateur peut envoyer un message à ce profil
-    const checkMessagingPermission = async () => {
-      if (!currentProfileId || !profile.id || profile.id === currentProfileId) {
-        return;
-      }
-
-      console.log("Vérification des permissions de messagerie");
-      console.log("currentProfileId:", currentProfileId);
-      console.log("profile.id:", profile.id);
-
-      try {
-        const { canMessage: canSendMessage, error } = await messageService.canMessage(currentProfileId, profile.id);
-        console.log("Résultat canMessage:", canSendMessage, error);
-        setCanMessage(canSendMessage);
-      } catch (err) {
-        console.error("Erreur lors de la vérification des permissions de messagerie:", err);
-        setCanMessage(false);
-      }
-    };
-
-    if (currentProfileId && profile.id) {
-      checkMessagingPermission();
-    }
-  }, [currentProfileId, profile.id]);
-
-  // Structure pour la sidebar
-  const sidebarItems = [
-    { icon: <FaHome className="w-6 h-6" />, label: "Accueil", path: "/dashboard" },
-    { icon: <FaHashtag className="w-6 h-6" />, label: "Explorer", path: "/explore" },
-    { icon: <FaBell className="w-6 h-6" />, label: "Notifications", path: "/notifications" },
-    { icon: <FaEnvelope className="w-6 h-6" />, label: "Messages", path: "/messages" },
-    { icon: <FaBookmark className="w-6 h-6" />, label: "Signets", path: "/bookmarks" },
-    { icon: <FaCog className="w-6 h-6" />, label: "Paramètres", path: "/settings" }
-  ];
-
-  // Fonction pour déconnexion
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
-      router.push('/');
-    }
-  };
-
   return (
-    <div className="flex">
-      {/* Sidebar */}
-      <div className="w-20 md:w-64 h-screen bg-black border-r border-gray-800 fixed left-0 top-0 overflow-y-auto pt-4">
-        <div className="flex flex-col items-center md:items-start px-2 md:px-4">
-          {/* Logo */}
-          <Link href="/dashboard" className="mb-6 flex justify-center md:justify-start w-full">
-            <Image
-              src="/logo_Flow.png"
-              alt="Flow Logo"
-              width={120}
-              height={40}
-              priority
-              className="object-contain"
-            />
-          </Link>
-
-          {/* Navigation Items */}
-          <nav className="w-full">
-            <ul className="space-y-2">
-              {sidebarItems.map((item, index) => (
-                <li key={index}>
-                  <Link
-                    href={item.path}
-                    className="flex items-center py-3 px-2 md:px-4 rounded-full hover:bg-gray-800 transition-colors text-white"
-                  >
-                    <span className="flex justify-center md:justify-start w-full md:w-auto">
-                      {item.icon}
-                      <span className="hidden md:block ml-4">{item.label}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-              <li className="mt-6">
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center py-3 px-2 md:px-4 rounded-full hover:bg-red-900/20 text-red-500 w-full transition-colors"
-                >
-                  <span className="flex justify-center md:justify-start w-full md:w-auto">
-                    <FaSignOutAlt className="w-6 h-6" />
-                    <span className="hidden md:block ml-4">Déconnexion</span>
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-
-      {/* Main Content - Existing ProfileHeader */}
-      <div className="ml-20 md:ml-64 w-[calc(100%-5rem)] md:w-[calc(100%-16rem)]">
-        <div className="bg-black p-4 border-b border-gray-800">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <div className="w-16 h-16 md:w-20 md:h-20 relative">
-                <div className={`w-full h-full rounded-full overflow-hidden bg-gray-800 ${hasStories ? 'border-2 border-red-500' : ''}`}>
-                  {profile.profilePicture ? (
-                    <img
-                      src={profile.profilePicture}
-                      alt={`${profile.firstName} ${profile.lastName}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <span className="text-2xl">{profile.firstName?.charAt(0)}</span>
-                    </div>
-                  )}
-                </div>
-
-                {currentProfileId === profile.id && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-0 right-0 bg-red-600 text-white p-1 rounded-full"
-                    title="Ajouter une story"
-                    disabled={isUploading}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*,video/*"
-                      className="hidden"
-                      onChange={handleFileChange}
-                    />
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-
-              <div className="ml-3">
-                <h1 className="font-bold text-lg text-white">{profile.nickname}</h1>
-                <div className="flex text-sm text-gray-500">
-                  <span>{profile.firstName} {profile.lastName}</span>
-                  <span className="mx-1">•</span>
-                  <span>{followersCount} abonnés</span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              {currentProfileId === profile.id ? (
-                <button
-                  onClick={() => router.push('/profile/edit')}
-                  className="px-4 py-1 bg-gray-800 border border-gray-700 rounded-full text-sm font-medium hover:bg-gray-700 text-white"
-                >
-                  Modifier le profil
-                </button>
-              ) : (
-                <button
-                  onClick={onFollowToggle}
-                  className={`px-4 py-1 rounded-full text-sm font-medium ${
-                    isFollowing
-                      ? "bg-gray-800 text-white border border-gray-700 hover:bg-gray-700"
-                      : "bg-red-600 text-white hover:bg-red-700"
-                  }`}
-                >
-                  {isFollowing ? "Ne plus suivre" : "Suivre"}
-                </button>
-              )}
-
-              {/* Profile Info */}
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h1 className="text-2xl font-bold text-white">{profile.nickname}</h1>
-                    <p className="text-gray-400">
-                      {profile.firstName} {profile.lastName}
-                    </p>
-                    {profile.bio && <p className="text-gray-300 mt-2">{profile.bio}</p>}
-                    <p className="text-sm text-gray-500 mt-1">
-                      Membre depuis{" "}
-                      {formatDistance(new Date(profile.created_at), new Date(), {
-                        addSuffix: true,
-                        locale: fr,
-                      })}
-                    </p>
-                  </div>
-
-                  <div className="flex">
-                    {/* Bouton pour éditer le profil (si c'est notre profil) */}
-                    {currentProfileId === profile.id && (
-                      <button
-                        onClick={() => router.push('/profile/edit')}
-                        className="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition-colors"
-                      >
-                        Éditer le profil
-                      </button>
-                    )}
-
-                    {/* Bouton suivre/ne plus suivre (si ce n'est pas notre profil) */}
-                    {currentProfileId !== profile.id && (
-                      <button
-                        onClick={onFollowToggle}
-                        className={`px-4 py-2 rounded-full transition-colors ${
-                          isFollowing
-                            ? "bg-gray-800 text-white border border-gray-700 hover:bg-gray-700"
-                            : "bg-red-600 text-white hover:bg-red-700"
-                        }`}
-                      >
-                        {isFollowing ? "Ne plus suivre" : "Suivre"}
-                      </button>
-                    )}
-
-                    {/* Bouton Message (si ce n'est pas notre profil et qu'on peut s'envoyer des messages) */}
-                    {canMessage && profile.id !== currentProfileId && (
-                      <button
-                        onClick={() => router.push(`/messages/${profile.id}`)}
-                        className="ml-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition"
-                      >
-                        Message
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="flex space-x-6 mt-4">
-                  <div>
-                    <span className="font-bold text-white">{followersCount}</span>
-                    <span className="text-gray-400 ml-1">Abonnés</span>
-                  </div>
-                  <div>
-                    <span className="font-bold text-white">{followingCount}</span>
-                    <span className="text-gray-400 ml-1">Abonnements</span>
-                  </div>
-                  <div>
-                    <span className="font-bold text-white">{userStories.length}</span>
-                    <span className="text-gray-400 ml-1">Stories</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-sm text-gray-400 mb-3">
-            {profile.bio || "Aucune bio"}
-          </div>
-
-          {/* Stories Modal */}
-          {isViewingStories && (
-            <div className="fixed inset-0 z-50">
-              <Story
-                userId={profile.id}
-                initialStoryIndex={currentStoryIndex}
-                onClose={() => setIsViewingStories(false)}
+    <div className="bg-black text-white">
+      {/* Cover Image - Grey placeholder */}
+      <div className="h-32 bg-gray-700 w-full"></div>
+      
+      <div className="px-4">
+        {/* Profile Picture & Buttons */}
+        <div className="flex justify-between items-start">
+          {/* Profile Picture */}
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-black -mt-12 relative">
+            {profile.profilePicture ? (
+              <img
+                src={profile.profilePicture}
+                alt={`${profile.firstName} ${profile.lastName}`}
+                className="w-full h-full object-cover"
               />
-            </div>
+            ) : (
+              <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white">
+                <span className="text-2xl font-bold">
+                  {profile.firstName?.charAt(0) || profile.nickname?.charAt(0) || '?'}
+                </span>
+              </div>
+            )}
+            
+            {/* Story indicator ring */}
+            {hasStories && (
+              <div className="absolute inset-0 border-2 border-red-500 rounded-full pointer-events-none"></div>
+            )}
+            
+            {/* Add story button for current user */}
+            {isCurrentUser && (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                disabled={isUploading}
+              >
+                <span className="text-xs">+</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </button>
+            )}
+          </div>
+          
+          {/* Buttons */}
+          <div className="mt-2">
+            {isCurrentUser ? (
+              <button
+                onClick={() => router.push('/profile/edit')}
+                className="border border-gray-600 text-white px-4 py-1.5 rounded-full text-sm font-medium"
+              >
+                Modifier le profil
+              </button>
+            ) : (
+              <button
+                onClick={onFollowToggle}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+                  isFollowing
+                    ? "bg-transparent border border-gray-600 text-white"
+                    : "bg-red-500 text-white"
+                }`}
+              >
+                {isFollowing ? "Ne plus suivre" : "Suivre"}
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {/* Profile Info */}
+        <div className="mt-3">
+          <h1 className="text-xl font-bold">{profile.nickname || profile.username}</h1>
+          <p className="text-gray-500 text-sm">@{profile.username || profile.nickname}</p>
+          
+          {profile.bio && (
+            <p className="mt-2 text-white">{profile.bio}</p>
           )}
+          
+          <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+            <span>Membre depuis {formatDistance(new Date(profile.created_at || new Date()), new Date(), { locale: fr, addSuffix: true })}</span>
+          </div>
+          
+          <div className="flex space-x-5 mt-3">
+            <Link href="#following" className="text-sm">
+              <span className="font-bold text-white">{followingCount}</span>{" "}
+              <span className="text-gray-500">Abonnements</span>
+            </Link>
+            <Link href="#followers" className="text-sm">
+              <span className="font-bold text-white">{followersCount}</span>{" "}
+              <span className="text-gray-500">Abonnés</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

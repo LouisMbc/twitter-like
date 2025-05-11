@@ -132,7 +132,7 @@ const Story = ({
       ))}
 
       {/* Affichage en plein écran de la Story sélectionnée */}
-      {currentStory !== null && (
+      {currentStory !== null && currentStory !== undefined && currentStory.id && (
         <div
           className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-80 flex items-center justify-center z-50"
         >

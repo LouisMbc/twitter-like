@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useUserProfile } from '@/hooks/useUserProfile'; // Assurez-vous que ce hook existe
+import { useUserProfile } from '@/hooks/useUserProfile';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileTabs from '@/components/profile/ProfileTabs';
 import TweetCard from '@/components/tweets/TweetCard';
@@ -30,12 +30,6 @@ export default function UserProfilePage() {
     activeTab,
     setActiveTab
   } = useUserProfile(userId);
-
-  // Fonction pour gérer le changement du nombre d'abonnements
-  const handleFollowingChange = (change: number) => {
-    // Cette fonction peut rester vide car c'est le profil d'un autre utilisateur
-    // Le compteur d'abonnements de l'utilisateur courant est géré par handleFollowToggle
-  };
 
   if (!userId) {
     return (
@@ -72,8 +66,6 @@ export default function UserProfilePage() {
     );
   }
 
-  const isCurrentUser = currentProfileId === profile.id;
-
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -82,6 +74,7 @@ export default function UserProfilePage() {
           <button
             onClick={() => router.back()}
             className="p-2 rounded-full hover:bg-gray-800 mr-4"
+            aria-label="Retour"
           >
             <FaArrowLeft />
           </button>
@@ -96,9 +89,9 @@ export default function UserProfilePage() {
         <ProfileHeader
           profile={{
             ...profile,
-            username: profile.username || profile.full_name || 'User', // Ensure username is never undefined
-            full_name: profile.full_name || '', // Ensure full_name is always defined
-            languages: profile.languages || ((languages) => languages) // Ensure languages is a function
+            username: profile.username || profile.full_name || 'User',
+            full_name: profile.full_name || '',
+            languages: profile.languages || ((languages) => languages)
           }}
           followersCount={followersCount}
           followingCount={followingCount}
@@ -113,24 +106,23 @@ export default function UserProfilePage() {
             if (tab === 'tweets' || tab === 'comments') {
               setActiveTab(tab);
             }
-            // Handle 'languages' tab if needed in the future
           }}
         />
 
         <div className="space-y-4">
           {activeTab === 'tweets' ? (
-            tweets.map(tweet => (
-              <TweetCard key={tweet.id} tweet={tweet} />
-            ))
+            tweets.length > 0 ? (
+              tweets.map(tweet => (
+                <TweetCard key={tweet.id} tweet={tweet} />
+              ))
+            ) : (
+              <div className="p-4 text-center text-gray-500">Aucune publication</div>
+            )
           ) : (
-            <CommentList comments={comments.map(comment => {
-              // Create a new object without the potentially null profile_picture
-              const { profile_picture, ...rest } = comment;
-              
-              return {
-                ...rest,
-                // Add back profile_picture as undefined if null
-                profile_picture: profile_picture || undefined,
+            comments.length > 0 ? (
+              <CommentList comments={comments.map(comment => ({
+                ...comment,
+                profile_picture: comment.profile_picture || undefined,
                 profiles: {
                   id: comment.id || '',
                   nickname: comment.nickname || '',
@@ -138,8 +130,10 @@ export default function UserProfilePage() {
                   lastName: comment.last_name || '',
                   profilePicture: comment.profile_picture || undefined
                 }
-              };
-            })} />
+              }))} />
+            ) : (
+              <div className="p-4 text-center text-gray-500">Aucun commentaire</div>
+            )
           )}
         </div>
       </div>

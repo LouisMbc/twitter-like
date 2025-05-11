@@ -30,6 +30,10 @@ export const addStory = async (
 
     // Ajouter durée par défaut pour les images (60s) et durée réelle pour les vidéos
     const storyDuration = duration || 60;
+    
+    // Calcul de la date d'expiration (24 heures après création)
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
 
     // Ajout du log de débogage ici pour vérifier les données avant insertion
     console.log("Tentative d'insertion avec les données:", {
@@ -37,7 +41,8 @@ export const addStory = async (
       media_url: mediaUrl,
       media_type: mediaType,
       duration: storyDuration,
-      content: ''
+      content: '',
+      expires_at: expiresAt.toISOString()
     });
 
     // Enregistrer dans la base de données
@@ -46,8 +51,9 @@ export const addStory = async (
         user_id: userId, 
         media_url: mediaUrl, 
         media_type: mediaType,
-        duration: storyDuration, // Nouvelle colonne pour la durée
-        content: '' // Champ obligatoire selon votre schéma
+        duration: storyDuration,
+        content: '', // Champ obligatoire selon votre schéma
+        expires_at: expiresAt.toISOString() // Ajout de la date d'expiration
       }
     ]).select();
 
