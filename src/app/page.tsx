@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import supabase from "../lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
-import { FaGoogle, FaApple } from "react-icons/fa";
 import Footer from "@/components/shared/Footer";
 
 export default function Home() {
@@ -24,6 +23,8 @@ export default function Home() {
 
         if (session) {
           setIsLoggedIn(true);
+          // Rediriger les utilisateurs connectés vers leur fil d'actualité
+          router.push('/dashboard');
         } else {
           setIsLoggedIn(false);
         }
@@ -35,20 +36,17 @@ export default function Home() {
     }
 
     checkAuth();
-  }, []);
+  }, [router]);
 
   return (
     <div
       className="min-h-screen text-white bg-black"
       style={{ backgroundColor: "#282325" }}
     >
-      <div className="flex flex-col md:flex-row h-screen">
-        {/* Left side - Logo and tagline */}
+      <div className="flex flex-col md:flex-row min-h-screen">
+        {/* Left side - Logo and presentation */}
         <div className="w-full md:w-1/2 flex items-center justify-center p-6">
           <div className="max-w-md">
-            <h1 className="text-2xl md:text-2xl lg:text-4xl font-bold mb-10 text-center md:text-left whitespace-nowrap">
-              L'essentiel de l'information est ici
-            </h1>
             <div className="flex justify-center md:justify-start mb-8">
               <Image
                 src="/logo_Flow.png"
@@ -59,70 +57,47 @@ export default function Home() {
                 className="object-contain hover:scale-105 transition-transform duration-300"
               />
             </div>
+            <h1 className="text-2xl md:text-2xl lg:text-4xl font-bold mb-6 text-center md:text-left">
+              L'essentiel de l'information est ici
+            </h1>
+            <p className="text-lg mb-8 text-gray-300">
+              Rejoignez la communauté Flow pour découvrir et partager les actualités 
+              qui comptent vraiment. Une nouvelle façon de rester connecté au monde.
+            </p>
           </div>
         </div>
 
-        {/* Right side - Sign up options */}
+        {/* Right side - Call to action */}
         <div className="w-full md:w-1/2 p-8 flex items-center justify-center" style={{ backgroundColor: '#282325' }}>
-          <div className="w-full max-w-md space-y-6">
-            <h2 className="text-2xl font-bold mb-8">Inscrivez vous</h2>
-
-            <div className="space-y-4">
-              <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-                <FaGoogle className="mr-2 text-lg" />
-                Inscrivez vous avec Google
-              </button>
-
-              <button className="w-full flex items-center justify-center bg-white text-black rounded-full py-3 px-4 font-medium hover:bg-gray-100 transition-colors">
-                <FaApple className="mr-2 text-lg" />
-                Inscrivez vous avec Apple
-              </button>
-
-              <div
-                className="flex items-center my-4"
-                style={{
-                  width: "412px",
-                  height: "23.99px",
-                  position: "relative",
-                }}
-              >
-                <div className="flex-grow h-px #FFFFFF border #FFFFFF"></div>
-                <span className="px-4 text-lg text-white ">ou</span>
-                <div className="flex-grow h-px #FFFFFF border #FFFFFF"></div>
-              </div>
-
-              <button
-                onClick={() => router.push("/auth/register")}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full py-3 transition-colors"
-              >
-                Créer un compte
-              </button>
-
-              <p className="text-gray-500 text-xs mt-2">
-                En vous inscrivant, vous acceptez les{" "}
-                <Link href="#" className="text-red-500">
-                  Conditions d'utilisation
-                </Link>{" "}
-                et la{" "}
-                <Link href="#" className="text-red-500">
-                  Politique de confidentialité
-                </Link>
-                , notamment l'
-                <Link href="#" className="text-red-500">
-                  Utilisation des cookies
-                </Link>
-                .
-              </p>
+          <div className="w-full max-w-md space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold mb-3">Bienvenue sur Flow</h2>
+              <p className="text-gray-300 mb-8">Votre plateforme de partage d'idées et d'actualités</p>
             </div>
 
-            <div className="mt-8">
-              <p className="font-medium mb-3">Vous avez déjà un compte?</p>
+            <div className="space-y-5">
+              <button
+                onClick={() => router.push("/auth")}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full py-4 text-lg transition-colors"
+              >
+                Commencer maintenant
+              </button>
+
               <button
                 onClick={() => router.push("/auth/login")}
-                className="w-full border border-gray-600 text-white font-medium rounded-full py-3 transition-colors hover:bg-white/10"
+                className="w-full border border-gray-600 text-white font-medium rounded-full py-3.5 transition-colors hover:bg-white/10"
               >
-                Se connecter
+                Déjà membre ? Se connecter
               </button>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <p className="text-gray-400">
+                Découvrez comment Flow transforme la façon dont nous partageons l'information
+              </p>
+              <Link href="/about" className="text-red-500 hover:underline mt-2 inline-block">
+                En savoir plus →
+              </Link>
             </div>
           </div>
         </div>

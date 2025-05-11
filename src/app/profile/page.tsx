@@ -62,6 +62,7 @@ export default function ProfilePage() {
       </div>
     );
   }
+
   if (!profile) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -119,8 +120,9 @@ export default function ProfilePage() {
           }}
         />
         
+        {/* Utilisation du composant ProfileTabs importé */}
         <ProfileTabs 
-          activeTab={activeTab} 
+          activeTab={activeTab}
           onTabChange={setActiveTab}
         />
 
@@ -157,6 +159,7 @@ export default function ProfilePage() {
         ) : (
           <div className="text-center text-gray-400 py-12 px-4">
             <h3 className="text-xl font-bold mb-2">Aucun contenu</h3>
+            <p>Aucun {activeTab === 'media' ? 'média' : 'contenu'} à afficher pour le moment.</p>
           </div>
         )}
       </div>
