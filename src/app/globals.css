@@ -79,3 +79,24 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Style for the orange notification badge */
+.notif-badge {
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #F31D1D;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: bold;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 0 0 2px #000;
+  border: 2px solid #000;
+}

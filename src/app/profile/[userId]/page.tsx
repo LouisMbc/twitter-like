@@ -1,16 +1,14 @@
 // src/app/profile/[userId]/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileTabs from '@/components/profile/ProfileTabs';
 import TweetCard from '@/components/tweets/TweetCard';
 import CommentList from '@/components/comments/CommentList';
-import { FaArrowLeft } from 'react-icons/fa';
+import Header from '@/components/shared/Header';
 import Image from 'next/image';
-import Sidebar from '@/components/layout/Sidebar';
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -31,6 +29,14 @@ export default function UserProfilePage() {
     setActiveTab
   } = useUserProfile(userId);
 
+  // Function to handle following count changes
+  const handleFollowingChange = (change: number) => {
+    // This function can remain empty as it's another user's profile
+    // The current user's subscription counter is managed by handleFollowToggle
+  };
+
+  const isCurrentUser = currentProfileId === profile?.id;
+
   if (!userId) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -47,8 +53,8 @@ export default function UserProfilePage() {
             <Image
               src="/logo_Flow.png"
               alt="Flow Logo"
-              width={120}
-              height={40}
+              width={520}
+              height={240}
               priority
             />
           </div>
@@ -68,26 +74,8 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen flex bg-black text-white">
-      <Sidebar />
-      
+      <Header />
       <div className="ml-64 flex-1">
-        {/* Header */}
-        <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
-          <div className="max-w-2xl mx-auto flex items-center">
-            <button
-              onClick={() => router.back()}
-              className="p-2 rounded-full hover:bg-gray-800 mr-4"
-              aria-label="Retour"
-            >
-              <FaArrowLeft />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold">{profile.full_name || profile.username}</h1>
-              <p className="text-sm text-gray-500">{tweets.length} publications</p>
-            </div>
-          </div>
-        </div>
-
         <div className="max-w-2xl mx-auto">
           <ProfileHeader
             profile={{
@@ -101,6 +89,7 @@ export default function UserProfilePage() {
             currentProfileId={currentProfileId}
             isFollowing={isFollowing}
             onFollowToggle={handleFollowToggle}
+            isCurrentUser={isCurrentUser}
           />
 
           <ProfileTabs

@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { profileService } from '@/services/supabase/profile';
-import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/shared/Header';
 
 interface ContactType {
   id: string;
@@ -99,7 +99,7 @@ export default function ConversationPage() {
 
   return (
     <div className="flex min-h-screen bg-black text-white">
-      <Sidebar />
+      <Header />
       
       <div className="ml-64 flex-1">
         <div className="flex flex-col h-screen">

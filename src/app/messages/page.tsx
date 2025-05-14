@@ -3,7 +3,7 @@
 
 import { useProfile } from '@/hooks/useProfile';
 import ConversationList from '@/components/messages/ConversationList';
-import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/shared/Header';
 
 export default function MessagesPage() {
   const { profile, loading } = useProfile();
@@ -18,7 +18,7 @@ export default function MessagesPage() {
 
   return (
     <div className="min-h-screen flex bg-black text-white">
-      <Sidebar />
+      <Header />
       
       <div className="ml-64 flex-1">
         <div className="max-w-2xl mx-auto bg-black text-white rounded-lg shadow border-gray-800 border">

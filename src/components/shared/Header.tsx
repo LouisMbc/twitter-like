@@ -1,20 +1,25 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
+import { Home, Search, Bell, Mail, User, Plus, LogOut } from 'lucide-react';
 import supabase from '@/lib/supabase';
 import SearchBar from '@/components/searchBar/SearchBar';
 import { messageService } from '@/services/supabase/message';
 import { notificationService } from '@/services/supabase/notification';
 
 export default function Header() {
+  const pathname = usePathname();
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<any>(null);
 
   // Vérifier l'authentification et récupérer l'ID du profil
   useEffect(() => {
@@ -23,16 +28,19 @@ export default function Header() {
       setIsAuthenticated(!!session);
       
       if (session) {
+        // Get profile data
         const { data } = await supabase
           .from('Profile')
-          .select('id')
+          .select('*')
           .eq('user_id', session.user.id)
           .single();
         
         if (data) {
           setProfileId(data.id);
+          setProfile(data);
         }
       }
+      setIsAuthChecked(true);
     };
 
     checkAuth();
@@ -41,6 +49,7 @@ export default function Header() {
       setIsAuthenticated(!!session);
       if (!session) {
         setProfileId(null);
+        setProfile(null);
       }
     });
 
@@ -135,97 +144,110 @@ export default function Header() {
     };
   }, [profileId]);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+  };
+
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 bg-black bg-opacity-90 backdrop-blur-sm z-50 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 py-2">
-          <div className="flex items-center justify-between">
-            {/* Ajout du lien vers le feed avec logo Twitter Like */}
-            <div className="flex items-center">
-              <Link href="/dashboard" className="mr-4 flex items-center">
-                <span className="font-bold text-red-500 text-xl">Flow</span>
-              </Link>
-              <SearchBar />
+      {!isAuthChecked ? null : (
+        <div className="flex min-h-screen bg-black text-white">
+          {/* Sidebar */}
+          {isAuthenticated && (
+            <div className="fixed left-0 top-0 h-full w-64 bg-black border-r border-gray-800">
+              <div className="p-4">
+                <div className="mb-6">
+                  <Image 
+                    src="/logo_Flow.png" 
+                    alt="Flow Logo" 
+                    width={90} 
+                    height={30} 
+                    className="object-contain" 
+                  />
+                </div>
+                
+                <nav className="space-y-1">
+                  <Link href="/dashboard">
+                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/dashboard' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                      <Home className="mr-4" />
+                      <span className="text-lg font-bold">Accueil</span>
+                    </div>
+                  </Link>
+                  <Link href="/explore">
+                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/explore' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                      <Search className="mr-4" />
+                      <span className="text-lg">Explorer</span>
+                    </div>
+                  </Link>
+                  <Link href="/notifications">
+                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/notifications' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
+                      <span className="relative mr-4">
+                        <Bell />
+                        {unreadNotificationCount > 0 && (
+                          <span className="notif-badge">
+                            {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-lg">Notifications</span>
+                    </div>
+                  </Link>
+                  <Link href="/messages">
+                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/messages' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
+                      <Mail className="mr-4" />
+                      <span className="text-lg">Messages</span>
+                      {unreadMessageCount > 0 && (
+                        <span className="absolute left-7 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                  <Link href="/profile">
+                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/profile' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                      <User className="mr-4" />
+                      <span className="text-lg">Profil</span>
+                    </div>
+                  </Link>
+                </nav>
+                
+                <button 
+                  onClick={() => router.push('/tweets')}
+                  className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700"
+                >
+                  <div className="flex items-center justify-center">
+                    <Plus className="mr-2" size={16} />
+                    <span>Ajouter un post</span>
+                  </div>
+                </button>
+                
+                {/* User profile at bottom */}
+                <div className="absolute bottom-16 left-0 right-0 px-4">
+                  <div className="flex items-center p-2 hover:bg-gray-800 rounded-full cursor-pointer">
+                    <div className="w-10 h-10 bg-gray-600 rounded-full mr-3 flex items-center justify-center">
+                      <span>{profile?.username?.substring(0, 2) || 'VP'}</span>
+                    </div>
+                    <span className="text-sm">{profile?.username || 'Votre_pseudo'}</span>
+                  </div>
+                </div>
+                
+                {/* Theme toggle and logout */}
+                <div className="absolute bottom-4 left-0 right-0 px-4">
+                  <div className="flex items-center justify-between p-2">
+                    <button onClick={handleSignOut} className="flex items-center text-red-500">
+                      <LogOut className="mr-2" size={16} />
+                      <span>Déconnexion</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
 
-            <nav className="flex items-center space-x-4">
-              
-              {isAuthenticated ? (
-                <>
-                  <button 
-                    onClick={() => router.push('/tweets')}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center"
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-5 w-5 mr-2" 
-                      viewBox="0 0 20 20" 
-                      fill="currentColor"
-                    >
-                      <path 
-                        fillRule="evenodd" 
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" 
-                        clipRule="evenodd" 
-                      />
-                    </svg>
-                    Poster
-                  </button>
-                  <button
-                    onClick={() => router.push('/profile')}
-                    className="px-4 py-2 rounded-full hover:bg-gray-800 text-white"
-                  >
-                    Profil
-                  </button>
-                  
-                  {/* Bouton Notifications */}
-                  <Link href="/notifications" className="flex items-center p-2 hover:bg-gray-800 rounded-md relative text-white">
-                    <BellIcon className="h-5 w-5 mr-2" />
-                    <span>Notifications</span>
-                    {unreadNotificationCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
-                      </span>
-                    )}
-                  </Link>
-                  
-                  {/* Bouton Messages */}
-                  <Link href="/messages" className="flex items-center p-2 hover:bg-gray-800 rounded-md relative text-white">
-                    <EnvelopeIcon className="h-5 w-5 mr-2" />
-                    <span>Messages</span>
-                    {unreadMessageCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
-                      </span>
-                    )}
-                  </Link>
-                  
-                  <button
-                    onClick={async () => {
-                      await supabase.auth.signOut();
-                      router.push('/auth/login');
-                    }}
-                    className="px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700"
-                  >
-                    Déconnexion
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link href="/auth/login" className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700">
-                    Connexion
-                  </Link>
-                  <Link href="/auth/register" className="px-4 py-2 border border-gray-600 text-white rounded-full hover:bg-gray-800">
-                    Inscription
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
+          <div className="pt-16"></div>
         </div>
-      </header>
-      
-      {/* Espace pour que le contenu ne soit pas caché par le header */}
-      <div className="pt-16"></div>
+      )}
     </>
   );
 }

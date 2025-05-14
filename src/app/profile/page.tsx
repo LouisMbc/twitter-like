@@ -11,7 +11,7 @@ import ProfileTabs from '@/components/profile/ProfileTabs';
 import CommentList from '@/components/comments/CommentList';
 import { FaArrowLeft } from 'react-icons/fa';
 import Image from 'next/image';
-import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/shared/Header';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -78,26 +78,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex bg-black text-white">
-      <Sidebar />
+      <Header />
       
       <div className="ml-64 flex-1">
-        {/* Header */}
-        <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
-          <div className="max-w-xl mx-auto flex items-center">
-            <button 
-              onClick={() => router.back()} 
-              className="p-2 rounded-full hover:bg-gray-800 mr-4"
-              aria-label="Retour"
-            >
-              <FaArrowLeft />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold">{profile.nickname || profile.name || 'Profil'}</h1>
-              <p className="text-sm text-gray-500">{tweets?.length || 0} posts</p>
-            </div>
-          </div>
-        </div>
-        
         <div className="max-w-xl mx-auto">
           <ProfileHeader 
             profile={{

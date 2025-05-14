@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { FaSearch, FaEllipsisH } from 'react-icons/fa';
 import Link from 'next/link';
-import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/shared/Header';
 
 interface Notification {
     id: string;
@@ -61,7 +61,7 @@ export default function NotificationsPage() {
 
     return (
         <div className="min-h-screen flex bg-black text-white">
-            <Sidebar />
+            <Header />
 
             {/* Main content area */}
             <div className="ml-64 flex-1">

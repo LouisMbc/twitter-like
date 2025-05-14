@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaSearch, FaEllipsisH } from 'react-icons/fa';
-import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/shared/Header';
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen flex bg-black text-white">
-      <Sidebar />
+      <Header />
 
       {/* Main content area */}
       <div className="ml-64 flex-1">

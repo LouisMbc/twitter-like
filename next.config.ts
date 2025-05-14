@@ -1,38 +1,9 @@
-import type { NextConfig } from 'next';
-import type { Configuration as WebpackConfig } from 'webpack';
-
 /** @type {import('next').NextConfig} */
-// Define interfaces for typing
-interface HeaderObject {
-  key: string;
-  value: string;
-}
 
-interface HeaderConfig {
-  source: string;
-  headers: HeaderObject[];
-}
 
-interface CustomNextConfig extends NextConfig {
-  webpack: (config: WebpackConfig) => WebpackConfig;
-  images: {
-    domains: string[];
-  };
-  headers: () => Promise<HeaderConfig[]>;
-  eslint: {
-    ignoreDuringBuilds: boolean;
-  };
-  typescript: {
-    ignoreBuildErrors: boolean;
-  };
-  experimental: {
-    serverComponents: boolean;
-    serverActions: boolean;
-  };
-}
 
-const nextConfig: CustomNextConfig = {
-  webpack: (config: WebpackConfig): WebpackConfig => {
+const nextConfig = {
+  webpack: (config: { resolve: { alias: any; fallback: any; }; }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       'fs': false,
@@ -51,7 +22,7 @@ const nextConfig: CustomNextConfig = {
   images: {
     domains: ['ekpximtmuwwxdkhrepna.supabase.co'],
   },
-  headers: async (): Promise<HeaderConfig[]> => {
+  headers: async () => {
     return [
       {
         source: '/:path*',

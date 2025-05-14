@@ -7,12 +7,11 @@ import supabase from '@/lib/supabase';
 import TweetComposer from '@/components/tweets/TweetComposer';
 import TweetList from '@/components/tweets/TweetList';
 import useFeed from '@/hooks/useFeed';
-import LoadingSpinner from '@/components/layout/LoadingSpinner'
 import { FaSearch } from 'react-icons/fa';
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import Story from '@/components/stories/Story';
 import Footer from '@/components/shared/Footer';
-import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/shared/Header';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -48,7 +47,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-black text-white">
-      <Sidebar />
+      <Header />
       
       {/* Main content */}
       <div className="ml-64 flex-1">
