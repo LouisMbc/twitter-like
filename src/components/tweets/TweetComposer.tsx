@@ -22,7 +22,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       return;
     }
     setImages(files);
-    
+
     // Créer les previews
     const previews = files.map(file => URL.createObjectURL(file));
     setPreview(previews);
@@ -51,7 +51,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
-    
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Non authentifié');
@@ -80,7 +80,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       // Upload les images si présentes
       if (images.length > 0) {
         const imageUrls = await uploadImages(tweet.id);
-        
+
         // Mettre à jour le tweet avec les URLs des images
         const { error: updateError } = await supabase
           .from('Tweets')
@@ -96,7 +96,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      
+
       // Appeler la fonction onSuccess si elle est fournie
       if (onSuccess) {
         onSuccess();
@@ -182,4 +182,4 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       )}
     </form>
   );
-};
+}
