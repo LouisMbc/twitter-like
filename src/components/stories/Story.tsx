@@ -12,16 +12,17 @@ const STORY_DURATION = 60; // Durée en secondes (1 minute)
 
 const Story = ({ 
   userId, 
-  initialStoryIndex = 0,
+  initialStoryIndex = null, // Changer à null au lieu de 0
   onClose 
 }: { 
   userId?: string | null;
-  initialStoryIndex?: number;
+  initialStoryIndex?: number | null; // Ajouter null comme type possible
   onClose?: () => void;
 }) => {
-  const { stories, loading, refreshStories } = useStories(); // Assurez-vous d'ajouter refreshStories à votre hook useStories
+  const { stories, loading, refreshStories } = useStories();
+  // Uniquement initialiser avec initialStoryIndex si explicitement fourni
   const [currentStoryIndex, setCurrentStoryIndex] = useState<number | null>(
-    initialStoryIndex !== undefined ? initialStoryIndex : null
+    initialStoryIndex !== undefined && initialStoryIndex !== null ? initialStoryIndex : null
   );
   const [timeRemaining, setTimeRemaining] = useState(STORY_DURATION);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);

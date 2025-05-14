@@ -3,39 +3,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default to dark theme for all elements */
 :root {
-  /* Light theme colors */
-  --background: #ffffff;
-  --foreground: #171717;
-  --sidebar-bg: #ffffff;
-  --primary: #F31D1D; /* Red accent color from the image */
-  --secondary: #E2E8F0;
-  --text-primary: #171717;
-  --text-secondary: #64748B;
-  --border-color: #E2E8F0;
-}
-
-[data-theme='dark'] {
-  /* Dark theme colors as shown in the image */
+  /* Dark theme colors as default */
   --background: #000000;
   --foreground: #ffffff;
   --sidebar-bg: #121212;
-  --primary: #F31D1D; /* Same red accent color */
+  --primary: #F31D1D;
   --secondary: #1F2937;
   --text-primary: #ffffff;
   --text-secondary: #94A3B8;
   --border-color: #374151;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+/* Light theme colors only when explicitly set */
+[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #171717;
+  --sidebar-bg: #ffffff;
+  --primary: #F31D1D;
+  --secondary: #E2E8F0;
+  --text-primary: #171717;
+  --text-secondary: #64748B;
+  --border-color: #E2E8F0;
 }
 
-.dark body {
-  background-color: var(--background);
-  color: var(--foreground);
+@layer base {
+  html {
+    @apply bg-black text-white;
+  }
+  body {
+    color: var(--foreground);
+    background: var(--background);
+  }
 }
 
 /* Active tab styling */
@@ -58,6 +58,25 @@ body {
   background-color: rgba(243, 29, 29, 0.05); 
 }
 
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  left: 12px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #F31D1D;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 0 0 2px #000;
+}
+
 /* Styles spécifiques pour la page d'authentification */
 .auth-logo {
   filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
@@ -78,25 +97,4 @@ body {
 .hide-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
-}
-
-/* Style for the orange notification badge */
-.notif-badge {
-  position: absolute;
-  top: -8px;
-  left: 12px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  background: #F31D1D;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: bold;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  box-shadow: 0 0 0 2px #000;
-  border: 2px solid #000;
 }

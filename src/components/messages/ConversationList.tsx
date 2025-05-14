@@ -4,8 +4,27 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
+// Ajout du type Conversation pour éviter les erreurs TS
+type Conversation = {
+  user: {
+    id: string | number;
+    profilePicture: string | null;
+    nickname: string;
+  };
+  lastMessage: {
+    created_at: string | Date;
+    sender_id: string | number;
+    content: string;
+  };
+  unreadCount: number;
+};
+
 export default function ConversationList() {
-  const { conversations, loading, error } = useMessages();
+  const { conversations, loading, error } = useMessages() as {
+    conversations: Conversation[];
+    loading: boolean;
+    error: string | null;
+  };
   const [formattedDates, setFormattedDates] = useState<string[]>([]);
 
   useEffect(() => {
@@ -66,11 +85,11 @@ export default function ConversationList() {
               </span>
             )}
           </div>
-          <div className="ml-4 flex-1">
+            <div className="ml-4 flex-1">
             <div className="flex justify-between">
-              <h3 className="font-semibold">{conversation.user.nickname}</h3>
+              <h3 className="font-semibold text-white hover:text-black">{conversation.user.nickname}</h3>
               <span className="text-sm text-gray-500">
-                {formattedDates[idx] || ''}
+              {formattedDates[idx] || ''}
               </span>
             </div>
             <p className="text-sm text-gray-600 truncate">

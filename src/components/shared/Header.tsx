@@ -169,46 +169,46 @@ export default function Header() {
                 
                 <nav className="space-y-1">
                   <Link href="/dashboard">
-                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/dashboard' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md cursor-pointer`}>
-                      <Home className="mr-4" />
-                      <span className="text-lg font-bold">Accueil</span>
-                    </div>
+                  <div className={`flex items-center px-4 py-3 ${pathname === '/dashboard' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                    <Home className="mr-4" />
+                    <span className="text-lg">Accueil</span>
+                  </div>
                   </Link>
                   <Link href="/explore">
-                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/explore' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md cursor-pointer`}>
-                      <Search className="mr-4" />
-                      <span className="text-lg">Explorer</span>
-                    </div>
+                  <div className={`flex items-center px-4 py-3 ${pathname === '/explore' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                    <Search className="mr-4" />
+                    <span className="text-lg">Explorer</span>
+                  </div>
                   </Link>
                   <Link href="/notifications">
-                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/notifications' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
-                      <span className="relative mr-4">
-                        <Bell />
-                        {unreadNotificationCount > 0 && (
-                          <span className="notif-badge">
-                            {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
-                          </span>
-                        )}
+                  <div className={`flex items-center px-4 py-3 ${pathname === '/notifications' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
+                    <span className="relative mr-4">
+                    <Bell />
+                    {unreadNotificationCount > 0 && (
+                      <span className="notif-badge">
+                      {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
                       </span>
-                      <span className="text-lg">Notifications</span>
-                    </div>
+                    )}
+                    </span>
+                    <span className="text-lg">Notifications</span>
+                  </div>
                   </Link>
                   <Link href="/messages">
-                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/messages' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
-                      <Mail className="mr-4" />
-                      <span className="text-lg">Messages</span>
-                      {unreadMessageCount > 0 && (
-                        <span className="absolute left-7 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                          {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
-                        </span>
-                      )}
-                    </div>
+                  <div className={`flex items-center px-4 py-3 ${pathname === '/messages' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
+                    <Mail className="mr-4" />
+                    <span className="text-lg">Messages</span>
+                    {unreadMessageCount > 0 && (
+                    <span className="absolute left-7 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                    </span>
+                    )}
+                  </div>
                   </Link>
                   <Link href="/profile">
-                    <div className={`flex items-center px-4 py-3 text-white ${pathname === '/profile' ? 'bg-gray-900' : 'hover:bg-gray-900'} rounded-md cursor-pointer`}>
-                      <User className="mr-4" />
-                      <span className="text-lg">Profil</span>
-                    </div>
+                  <div className={`flex items-center px-4 py-3 ${pathname === '/profile' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                    <User className="mr-4" />
+                    <span className="text-lg">Profil</span>
+                  </div>
                   </Link>
                 </nav>
                 

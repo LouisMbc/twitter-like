@@ -5,10 +5,10 @@ import TweetCard from '@/components/tweets/TweetCard';
 import CommentForm from '@/components/comments/CommentForm';
 import CommentList from '@/components/comments/CommentList';
 import { useTweetDetails } from '@/hooks/useTweetDetails';
-import { FaArrowLeft } from 'react-icons/fa';
-import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/shared/Header';
+
+
 
 export default function TweetPage() {
   const params = useParams();
@@ -73,7 +73,6 @@ export default function TweetPage() {
               onCommentAdded={loadComments}
             />
           </div>
-
           <div className="mt-6 px-4">
             {tweet.id && <CommentList tweetId={tweet.id} />}
           </div>

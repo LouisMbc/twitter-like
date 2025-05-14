@@ -50,7 +50,7 @@ export default function ConversationPage() {
     currentMessagesLength: currentMessages?.length || 0
   });
 
-  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!message.trim() || !canMessageUser) return;
     
@@ -82,7 +82,16 @@ export default function ConversationPage() {
         if (data) {
           console.log("Profil chargé:", data);
           fetchMessages(data);
+        } else {
+          console.log("Profil non trouvé pour ID:", userId);
         }
+        
+        console.log("Vérification des permissions de messagerie entre", profile.id, "et", userId);
+        const canMessage = await checkCanMessage(userId as string);
+        console.log("Résultat canMessage:", canMessage);
+        setCanMessageUser(canMessage);
+      } catch (err) {
+        console.error("Erreur lors du chargement:", err);
       } finally {
         setCheckingPermissions(false);
       }
@@ -97,13 +106,30 @@ export default function ConversationPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentMessages]);
 
+  if (loading || checkingPermissions) {
+    return (
+      <div className="flex min-h-screen bg-black text-white">
+        <Header />
+        <div className="ml-64 flex-1 p-4 text-center">Chargement de la conversation...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-black text-white">
+        <Header />
+        <div className="ml-64 flex-1 p-4 text-red-500">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-black text-white">
       <Header />
       
       <div className="ml-64 flex-1">
         <div className="flex flex-col h-screen">
-          {/* En-tête */}
           <div className="bg-black border-b border-gray-800 p-4 flex items-center">
             <Link href="/messages" className="mr-4 text-white hover:bg-gray-800 p-2 rounded-full">
               <ArrowLeftIcon className="w-6 h-6" />
@@ -125,7 +151,6 @@ export default function ConversationPage() {
             )}
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 bg-black">
             {!canMessageUser ? (
               <div className="text-center p-4 bg-gray-900 rounded-lg text-white border border-gray-800">
@@ -176,7 +201,6 @@ export default function ConversationPage() {
             )}
           </div>
 
-          {/* Formulaire d'envoi */}
           {canMessageUser && (
             <form onSubmit={handleSendMessage} className="border-t border-gray-800 p-3 bg-black">
               <div className="flex items-center">

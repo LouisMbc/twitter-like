@@ -23,7 +23,10 @@ export default function SetupProfilePage() {
           Complétez votre profil
         </h2>
         <ProfileSetupForm
-          formData={formData}
+          formData={{
+            ...formData,
+            profilePicture: formData.profilePicture ?? null
+          }}
           setFormData={setFormData}
           onSubmit={handleSubmit}
           loading={loading}
