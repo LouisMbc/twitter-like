@@ -245,10 +245,12 @@ export default function Header() {
                 {/* Theme toggle and logout */}
                 <div className="absolute bottom-4 left-0 right-0 px-4">
                   <div className="flex items-center justify-between p-2">
-                    <button onClick={handleSignOut} className="flex items-center text-red-500">
+                  <button onClick={handleSignOut} className="flex items-center text-red-500">
+                    <>
                       <LogOut className="mr-2" size={16} />
                       <span>Déconnexion</span>
-                    </button>
+                    </>
+                  </button>
                   </div>
                 </div>
               </div>

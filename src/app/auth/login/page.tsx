@@ -15,7 +15,6 @@ export default function LoginPage() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // If already authenticated, redirect to dashboard
         router.push('/dashboard');
       }
     };

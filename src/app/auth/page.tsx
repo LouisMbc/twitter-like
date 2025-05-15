@@ -1,89 +1,94 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import supabase from "../../lib/supabase";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Footer from "@/components/shared/Footer";
 
-export default function Home() {
+export default function AuthPage() {
   const router = useRouter();
 
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session) {
-          // Rediriger les utilisateurs connectés vers leur fil d'actualité
-          router.push('/dashboard');
-        }
-      } catch (err) {
-        console.error("Erreur d'authentification:", (err as Error).message);
-      }
+  // Fonction pour l'auth Google
+  const handleGoogleSignUp = async () => {
+    // Utilise Supabase pour l'auth Google
+    const { data, error } = await (await import("@/lib/supabase")).default.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback`
+          : undefined,
+      },
+    });
+    if (error) {
+      alert("Erreur lors de la connexion Google");
     }
-
-    checkAuth();
-  }, [router]);
+  };
 
   return (
-    <div
-      className="min-h-screen text-white bg-black"
-      style={{ backgroundColor: "#282325" }}
-    >
-      <div className="flex flex-col md:flex-row min-h-screen">
-        {/* Left side - Logo and presentation */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-6">
-          <div className="max-w-md">
-            <div className="flex justify-center md:justify-start mb-8">
-              <Image
-                src="/logo_Flow.png"
-                alt="Flow Logo"
-                width={400}
-                height={300}
-                priority
-                className="object-contain hover:scale-105 transition-transform duration-300"
-              />
+    <div className="min-h-screen flex flex-col justify-between bg-[#282325] text-white">
+      <div className="w-full py-10">
+        <h1 className="text-4xl md:text-5xl font-bold text-center">
+          L'essentiel de l'information est ici
+        </h1>
+      </div>
+      {/* Contenu principal */}
+      <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-0 md:gap-0">
+        <div className="flex flex-1 flex-col items-center justify-center mb-8 md:mb-0">
+          <Image
+            src="/logo_Flow.png"
+            alt="Flow Logo"
+            width={300}
+            height={300}
+            priority
+            className="object-contain"
+          />
+        </div>
+        {/* Formulaire d'inscription à droite */}
+        <div className="flex flex-1 flex-col items-center justify-center">
+          <div className="bg-[#231f20] rounded-xl shadow-lg px-8 py-10 w-full max-w-[370px] flex flex-col items-center">
+            <div className="w-full space-y-3">
+              <p className="text-center text-lg font-semibold mb-2">Inscrivez vous</p>
+              <button
+                className="w-full flex items-center justify-center gap-2 bg-white text-black font-medium rounded-full py-2.5 hover:bg-gray-100 transition"
+                onClick={handleGoogleSignUp}
+              >
+                <Image src="/google.png" alt="Google" width={22} height={22} />
+                Inscrivez-vous avec Google
+              </button>
+              <button
+                className="w-full flex items-center justify-center gap-2 bg-white text-black font-medium rounded-full py-2.5 hover:bg-gray-100 transition"
+                onClick={() => {/* TODO: Auth Apple */}}
+              >
+                <Image src="/apple.png" alt="Apple" width={22} height={22} />
+                Inscrivez-vous avec Apple
+              </button>
+              <div className="flex items-center my-2">
+                <div className="flex-1 h-px bg-gray-700" />
+                <span className="mx-3 text-gray-400 font-bold">OU</span>
+                <div className="flex-1 h-px bg-gray-700" />
+              </div>
+              <button
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full py-2.5 transition"
+                onClick={() => router.push("/auth/register")}
+              >
+                Créer un compte
+              </button>
             </div>
-            <h1 className="text-2xl md:text-2xl lg:text-4xl font-bold mb-6 text-center md:text-left">
-              L'essentiel de l'information est ici
-            </h1>
-            <p className="text-lg mb-8 text-gray-300">
-              Rejoignez la communauté Flow pour découvrir et partager les actualités 
-              qui comptent vraiment. Une nouvelle façon de rester connecté au monde.
-            </p>
+            <div className="mt-8 w-full text-center">
+              <p className="text-gray-400 mb-2">Vous avez déjà un compte ?</p>
+              <button
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full py-2.5 transition"
+                onClick={() => router.push("/auth/login")}
+              >
+                Se connecter
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Right side - Call to action */}
-        <div className="w-full md:w-1/2 p-8 flex items-center justify-center" style={{ backgroundColor: '#282325' }}>
-          <div className="w-full max-w-md space-y-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-3">Bienvenue sur Flow</h2>
-              <p className="text-gray-300 mb-8">Votre plateforme de partage d'idées et d'actualités</p>
-            </div>
-
-            <div className="space-y-5">
-              <button
-                onClick={() => router.push("/auth")}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full py-4 text-lg transition-colors"
-              >
-                Commencer maintenant
-              </button>
-
-              <button
-                onClick={() => router.push("/auth/login")}
-                className="w-full border border-gray-600 text-white font-medium rounded-full py-3.5 transition-colors hover:bg-white/10"
-              >
-                Déjà membre ? Se connecter
-              </button>
-            </div>
-        </div>
       </div>
+      {/* Séparateur au-dessus du footer */}
+      <div className="w-full h-px bg-gray-700 mt-8" />
+      {/* Footer */}
       <Footer />
     </div>
-  </div>
   );
 }
