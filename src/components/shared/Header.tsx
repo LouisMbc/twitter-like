@@ -4,12 +4,22 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
 import { Home, Search, Bell, Mail, User, Plus, LogOut } from 'lucide-react';
 import supabase from '@/lib/supabase';
-import SearchBar from '@/components/searchBar/SearchBar';
 import { messageService } from '@/services/supabase/message';
 import { notificationService } from '@/services/supabase/notification';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
+
+export function Navbar() {
+  return (
+    <nav className="p-4 flex justify-between items-center">
+      <div>Logo</div>
+      <div className="flex items-center gap-4">
+        <ThemeToggle />
+      </div>
+    </nav>
+  );
+}
 
 export default function Header() {
   const pathname = usePathname();

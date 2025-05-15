@@ -4,28 +4,20 @@
 @tailwind utilities;
 
 /* Default to dark theme for all elements */
+/* Dans votre fichier CSS global (par ex. globals.css) */
 :root {
-  /* Dark theme colors as default */
-  --background: #000000;
-  --foreground: #ffffff;
-  --sidebar-bg: #121212;
-  --primary: #F31D1D;
-  --secondary: #1F2937;
-  --text-primary: #ffffff;
-  --text-secondary: #94A3B8;
-  --border-color: #374151;
+  --background: #ffffff;
+  --text: #0f172a;
 }
 
-/* Light theme colors only when explicitly set */
-[data-theme='light'] {
-  --background: #ffffff;
-  --foreground: #171717;
-  --sidebar-bg: #ffffff;
-  --primary: #F31D1D;
-  --secondary: #E2E8F0;
-  --text-primary: #171717;
-  --text-secondary: #64748B;
-  --border-color: #E2E8F0;
+.dark {
+  --background: #1e293b;
+  --text: #f8fafc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
 }
 
 @layer base {
