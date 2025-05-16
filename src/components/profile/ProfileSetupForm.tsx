@@ -1,35 +1,39 @@
 import React from 'react';
-import { ProfileForm } from '@/types';
+import { ProfileForm } from '@/types'; // Modifié: Importer ProfileForm depuis @/types
 
 interface ProfileSetupFormProps {
-  formData: ProfileForm;
-  setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>;
+  formData: ProfileForm; // Modifié: Utiliser ProfileForm
+  setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>; // Modifié: Utiliser ProfileForm
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
 
-const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ 
-  formData, 
-  setFormData, 
-  handleSubmit, 
-  loading, 
-  error
+const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
+  formData,
+  setFormData,
+  handleSubmit,
+  loading,
+  error,
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: ProfileForm) => ({ ...prev, [name]: value }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData((prev: ProfileForm) => ({ // Modifié: Utiliser ProfileForm
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev: ProfileForm) => ({
+      setFormData((prev: ProfileForm) => ({ // Modifié: Utiliser ProfileForm
         ...prev,
         profilePicture: file,
       }));
     } else {
-      setFormData((prev: ProfileForm) => ({
+      setFormData((prev: ProfileForm) => ({ // Modifié: Utiliser ProfileForm
         ...prev,
         profilePicture: null,
       }));
@@ -39,7 +43,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
   const inputStyle = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black bg-white";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" method="POST">
       <div className="mb-4">
         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
           Prénom
@@ -130,7 +134,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
           id="profilePicture"
           accept="image/*"
           onChange={handleFileChange}
-          className={inputStyle}
+          className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
         />
       </div>
       {error && <div className="text-red-500 text-sm mb-4">{error}</div>}

@@ -8,14 +8,14 @@ import useProfile from '@/hooks/useProfile';
 import TweetCard from '@/components/tweets/TweetCard';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileTabs from '@/components/profile/ProfileTabs';
-import CommentList from '@/components/comments/CommentList';
-import { FaArrowLeft } from 'react-icons/fa';
+import { useRef, useCallback } from 'react';
 import Image from 'next/image';
-import Header from '@/components/shared/Header';
+import { formatDistance } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import Header from '@/components/shared/Header'; // Import the Header component
 
 export default function ProfilePage() {
   const router = useRouter();
-  const auth = useAuth();
   const {
     profile,
     tweets,
@@ -23,23 +23,45 @@ export default function ProfilePage() {
     followersCount,
     followingCount,
     loading,
-    currentProfileId
+    currentProfileId,
+    tweetsLoading,
+    hasTweetsMore,
+    loadMoreTweets
   } = useProfile();
   
-  const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
+  useAuth();
+
+  // State pour gérer l'onglet actif
+  const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
+  
+  // State pour gérer le statut de suivi
   const [isFollowing, setIsFollowing] = useState(false);
 
+  // Référence uniquement pour les tweets
+  const tweetsObserver = useRef<IntersectionObserver | null>(null);
+  
+  // Callback uniquement pour les tweets
+  const lastTweetElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (tweetsLoading) return;
+      if (tweetsObserver.current) tweetsObserver.current.disconnect();
+      
+      tweetsObserver.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && hasTweetsMore) {
+          loadMoreTweets();
+        }
+      });
+      
+      if (node) tweetsObserver.current.observe(node);
+    },
+    [tweetsLoading, hasTweetsMore, loadMoreTweets]
+  );
+
+  // Fonction pour gérer le changement du nombre d'abonnements
   const handleFollowToggle = () => {
     setIsFollowing(!isFollowing);
-    // Add actual follow/unfollow logic here
+    // Logique pour suivre/ne plus suivre un utilisateur
   };
-  
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!auth.loading && !auth.user) {
-      router.push('/login');
-    }
-  }, [auth.loading, auth.user, router]);
 
   if (loading) {
     return (
@@ -85,9 +107,9 @@ export default function ProfilePage() {
           <ProfileHeader 
             profile={{
               ...profile,
-              username: profile.username || '', 
-              full_name: `${profile.firstName} ${profile.lastName}`.trim() || profile.name || '',
-              languages: profile.languages || ((languages) => languages)
+              certified: false,
+              is_premium: false,
+              premium_features: []
             }}
             followersCount={followersCount}
             followingCount={followingCount}
@@ -101,41 +123,71 @@ export default function ProfilePage() {
             onTabChange={setActiveTab}
           />
 
-          <div className="divide-y divide-gray-800">
-            {activeTab === 'tweets' ? (
-              tweets && tweets.length > 0 ? (
-                tweets.map(tweet => (
-                  <div key={tweet.id} className="py-3">
-                    <TweetCard tweet={tweet} />
+          {activeTab === 'tweets' ? (
+            <div className="space-y-4">
+              {tweets.map((tweet, index) => (
+                <div key={tweet.id}>
+                  <TweetCard tweet={tweet} />
+                  {index === tweets.length - 1 && hasTweetsMore && (
+                    <div ref={lastTweetElementRef} className="h-10"></div>
+                  )}
+                </div>
+              ))}
+              {tweetsLoading && (
+                <div className="flex justify-center p-4">
+                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div 
+                    key={comment.id} 
+                    className="bg-white p-4 rounded-lg shadow"
+                  >
+                    <div className="flex items-center space-x-2 mb-2">
+                      {comment.author?.profilePicture ? (
+                        <img
+                          src={comment.author.profilePicture}
+                          alt={comment.author.nickname}
+                          className="w-8 h-8 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                      )}
+                      <span className="font-semibold">{comment.author?.nickname || 'Utilisateur inconnu'}</span>
+                    </div>
+                    <p className="text-gray-700">{comment.content}</p>
+                    <div className="mt-2 text-sm text-gray-500">
+                      {formatDistance(new Date(comment.created_at), new Date(), {
+                        addSuffix: true,
+                        locale: fr
+                      })}
+                    </div>
+                    <div className="flex items-center mt-2 text-sm text-gray-500">
+                      <span className="mr-2">
+                        👁️ {comment.view_count}
+                      </span>
+                      <span className="mr-2">
+                        💬 Sur <a href={`/tweets/${comment.tweet_id}`} className="text-blue-500 hover:underline">ce tweet</a>
+                      </span>
+                    </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center text-gray-500 py-8">
-                  <p className="mb-2">Aucun post publié</p>
-                  {currentProfileId === profile.id && (
-                    <button 
-                      onClick={() => router.push('/tweets/create')}
-                      className="mt-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-full"
-                    >
-                      Créer un post
-                    </button>
-                  )}
+                <div className="text-center p-4 text-gray-500">
+                  Aucun commentaire
                 </div>
-              )
-            ) : activeTab === 'comments' ? (
-              comments && comments.length > 0 ? (
-                <CommentList comments={comments} />
-              ) : (
-                <div className="text-center text-gray-500 py-8">
-                  Aucune réponse
+              )}
+              {loading && (
+                <div className="flex justify-center p-4">
+                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
-              )
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                {activeTab === 'media' ? 'Aucun média' : 'Aucun contenu à afficher'}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

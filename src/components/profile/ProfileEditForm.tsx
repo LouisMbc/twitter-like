@@ -6,7 +6,7 @@ import { ProfileForm } from '@/types';
 interface ProfileEditFormProps {
   formData: ProfileForm;
   setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>;
-  onSubmit: (formData: ProfileForm) => Promise<void>; // Updated signature
+  onSubmit: (formData: ProfileForm) => Promise<void>;
   error: string;
   loading: boolean;
   onCancel: () => void;
@@ -40,7 +40,7 @@ export default function ProfileEditForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Pass formData instead of the event
+    // Passer le formData au lieu de l'événement
     await onSubmit(formData);
   };
 
@@ -137,39 +137,39 @@ export default function ProfileEditForm({
               className="mt-1 block w-full bg-black border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500"
             />
           </div>
+        </div>
 
-          <div className="pt-4 border-t border-gray-700">
-            <h3 className="text-lg font-medium text-white mb-2">Modifier le mot de passe</h3>
-            <p className="text-sm text-gray-400 mb-3">Laisser vide pour conserver le mot de passe actuel</p>
-            
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-                  Nouveau mot de passe
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password ?? ''}
-                  onChange={handleChange}
-                  className="mt-1 block w-full bg-black border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500"
-                />
-              </div>
+        <div className="border-t border-gray-200 pt-6">
+          <h3 className="text-lg font-medium text-gray-900">Changer le mot de passe</h3>
+          <p className="text-sm text-gray-500">Laissez vide si vous ne souhaitez pas le modifier</p>
+          
+          <div className="mt-4 grid grid-cols-1 gap-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Nouveau mot de passe
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password ?? ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
-                  Confirmer le mot de passe
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword ?? ''}
-                  onChange={handleChange}
-                  className="mt-1 block w-full bg-black border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500"
-                />
-              </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirmer le mot de passe
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword ?? ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
         </div>

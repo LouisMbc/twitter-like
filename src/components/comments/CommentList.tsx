@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from 'next/link';
@@ -43,21 +43,27 @@ interface CommentListProps {
 
 const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialComments, parentCommentId }) => {
   const [comments, setComments] = useState<Comment[]>(initialComments || []);
-  const [loading, setLoading] = useState(!initialComments);
+  const [loading, setLoading] = useState(!initialComments && !!tweetId);
   const [error, setError] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
-  // Function to load or refresh comments
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     if (!tweetId) {
-      setError('ID du tweet manquant');
+      // If initialComments were provided, this function might be called to refresh,
+      // but refreshing without a tweetId doesn't make sense unless we re-use initialComments.
+      // For now, if tweetId is missing, we assume we can't load/refresh.
+      if (!initialComments) {
+        setError('ID du tweet manquant pour charger les commentaires.');
+      }
+      setComments(initialComments || []);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
+    setError(null);
     try {
-      console.log('Loading comments for tweetId:', tweetId); // Debug log
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('Comments')
         .select(`
           id,
@@ -65,6 +71,7 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
           created_at,
           view_count,
           parent_comment_id,
+          tweet_id,
           author:author_id (
             id,
             nickname,
@@ -74,24 +81,46 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
         .eq('tweet_id', tweetId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      console.log('Comments loaded:', data); // Debug log
-      setComments(data || []);
+      if (fetchError) throw fetchError;
+
+      const formattedComments = (data || []).map(commentFromSupabase => {
+        // Déterminer l'objet auteur correct
+        const authorObject = Array.isArray(commentFromSupabase.author)
+          ? commentFromSupabase.author[0] // Prendre le premier élément si c'est un tableau non vide
+          : commentFromSupabase.author;   // Sinon, utiliser la valeur telle quelle (objet ou null/undefined)
+
+        return {
+          ...commentFromSupabase,
+          // Assigner l'objet auteur traité, ou un objet par défaut si l'auteur n'est pas trouvé
+          author: authorObject || { id: 'unknown', nickname: 'Utilisateur inconnu', profilePicture: null },
+          tweet_id: commentFromSupabase.tweet_id, // S'assurer que c'est bien une chaîne
+          // S'assurer que les autres champs correspondent à l'interface Comment si nécessaire
+          view_count: commentFromSupabase.view_count || 0,
+          parent_comment_id: commentFromSupabase.parent_comment_id === null ? undefined : commentFromSupabase.parent_comment_id,
+        };
+      });
+      setComments(formattedComments as Comment[]);
     } catch (err) {
       console.error('Error loading comments:', err);
       setError('Erreur lors du chargement des commentaires');
+      setComments(initialComments || []); // Fallback to initial or empty
     } finally {
       setLoading(false);
     }
-  };
+  }, [tweetId, initialComments]);
 
   useEffect(() => {
-    // If comments are already provided, don't load them
-    if (initialComments) return;
-    
-    // Otherwise, load comments for the specified tweet
-    loadComments();
-  }, [tweetId, initialComments]);
+    if (initialComments) {
+      setComments(initialComments);
+      setLoading(false);
+    } else if (tweetId) {
+      loadComments();
+    } else {
+      // No initialComments and no tweetId, list is empty
+      setComments([]);
+      setLoading(false);
+    }
+  }, [tweetId, initialComments, loadComments]); // loadComments is a dependency
 
   if (loading) {
     return <div className="py-8 text-center text-gray-500">Chargement des commentaires...</div>;
@@ -116,91 +145,52 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
   const renderComments = (parentId: string = 'root', level: number = 0) => {
     const levelComments = commentTree[parentId] || [];
     
-    return levelComments.map((comment) => {
-      // Support both new and legacy comment structure
-      const author = comment.author || comment.profiles;
-      const profilePicture = author?.profilePicture || comment.profile_picture || '/default-profile.png';
-      const nickname = author?.nickname || 'Anonymous';
-      const authorId = author?.id || '';
-      
-      return (
-        <div 
-          key={comment.id} 
-          className={`p-4 border-b border-gray-800 hover:bg-gray-900/30 ${level > 0 ? 'ml-8 mt-2' : ''}`}
-        >
-          <div className="flex">
-            <div className="mr-3 flex-shrink-0">
-              <Link href={`/profile/${authorId}`}>
-                <img
-                  src={profilePicture}
-                  alt={nickname}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              </Link>
-            </div>
-            
-            <div className="flex-1">
-              <div className="flex items-center mb-1">
-                <Link href={`/profile/${authorId}`} className="font-semibold hover:underline mr-2">
-                  {nickname}
-                </Link>
-                <span className="text-gray-500 text-sm">
-                  {formatDistance(new Date(comment.created_at), new Date(), {
-                    addSuffix: true,
-                    locale: fr
-                  })}
-                </span>
-              </div>
-              
-              <p className="text-gray-200 mb-2">{comment.content}</p>
-              
-              <div className="flex items-center text-gray-500">
-                <ReactionBar commentId={comment.id} />
-                <ViewCount contentId={comment.id} contentType="comment" initialCount={comment.view_count || 0} />
-                
-                <button 
-                  className="flex items-center hover:text-blue-400"
-                  onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none" 
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-1"
-                  >
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                  </svg>
-                  <span>Répondre</span>
-                </button>
-              </div>
-              
-              {replyingTo === comment.id && (
-                <div className="mt-3">
-                  <CommentForm
-                    tweetId={tweetId || ''}
-                    parentCommentId={comment.id}
-                    onCommentAdded={() => {
-                      setReplyingTo(null);
-                      loadComments();
-                    }}
-                    onCancel={() => setReplyingTo(null)}
-                  />
-                </div>
-              )}
-              
-              {/* Render child comments recursively */}
-              {renderComments(comment.id, level + 1)}
-            </div>
-          </div>
+    return levelComments.map((comment) => (
+      <div 
+        key={comment.id} 
+        className={`bg-white p-4 rounded-lg shadow ${level > 0 ? 'ml-8 mt-2' : ''}`}
+      >
+        <div className="flex items-center space-x-2 mb-2">
+          {comment.author.profilePicture ? (
+            <img
+              src={comment.author.profilePicture}
+              alt={comment.author.nickname}
+              className="w-8 h-8 rounded-full"
+            />
+          ) : (
+            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+          )}
+          <span className="font-semibold">{comment.author.nickname}</span>
         </div>
-      );
-    });
+        <p className="text-gray-700">{comment.content}</p>
+        <div className="mt-2 text-sm text-gray-500">
+          {formatDistance(new Date(comment.created_at), new Date(), {
+            addSuffix: true,
+            locale: fr
+          })}
+        </div>
+        <ReactionBar commentId={comment.id} />
+        <ViewCount contentId={comment.id} contentType="comment" initialCount={comment.view_count} />
+        <button
+          className="text-blue-500 text-sm mt-2"
+          onClick={() => setReplyingTo(comment.id)}
+        >
+          Répondre
+        </button>
+        {replyingTo === comment.id && (
+          <CommentForm
+            tweetId={comment.tweet_id || tweetId || ''} // Provide fallback values
+            parentCommentId={comment.id}
+            onCommentAdded={() => {
+              setReplyingTo(null);
+              loadComments(); // Now calls the useCallback version
+            }}
+            onCancel={() => setReplyingTo(null)}
+          />
+        )}
+        {renderComments(comment.id, level + 1)}
+      </div>
+    ));
   };
 
   return (

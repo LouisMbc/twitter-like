@@ -207,8 +207,8 @@ export default function ProfileHeader({
         
         {/* Profile Info */}
         <div className="mt-3">
-          <h1 className="text-xl font-bold">{profile.nickname || profile.username}</h1>
-          <p className="text-gray-500 text-sm">@{profile.username || profile.nickname}</p>
+          <h1 className="text-xl font-bold">{profile.nickname}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">@{profile.nickname}</p>
           
           {profile.bio && (
             <p className="mt-2 text-white">{profile.bio}</p>

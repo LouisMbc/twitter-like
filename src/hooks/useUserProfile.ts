@@ -1,9 +1,27 @@
 "use client";
 
+<<<<<<< HEAD
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile } from '@/types/profile';
+=======
+export const useUserProfile = (userID: string) => {
+  const params = useParams();
+  const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
+  
+  const {
+    profile,
+    tweets,
+    comments,
+    followersCount,
+    followingCount,
+    isFollowing,
+    loading,
+    currentProfileId,
+    handleFollowToggle
+  } = useProfileData(params.userId as string);
+>>>>>>> origin/louis
 
 export function useUserProfile(userId: string) {
   const router = useRouter();

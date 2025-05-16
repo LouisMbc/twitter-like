@@ -1,9 +1,9 @@
-/** @type {import('next').NextConfig} */
+import type { Configuration as WebpackConfig } from 'webpack';
+import type { NextConfig } from 'next';
 
-
-
-const nextConfig = {
-  webpack: (config: { resolve: { alias: any; fallback: any; }; }) => {
+const nextConfig: NextConfig = {
+  webpack: (config: WebpackConfig, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
       'fs': false,
@@ -33,11 +33,11 @@ const nextConfig = {
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'credentialless' // Changement important ici
+            value: 'unsafe-none' 
           },
           {
             key: 'Cross-Origin-Resource-Policy',
-            value: 'cross-origin' // Ajout pour autoriser les ressources cross-origin
+            value: 'cross-origin' 
           }
         ]
       }
@@ -50,10 +50,13 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Configuration pour les composants serveur
+  // Configuration pour les actions serveur uniquement
   experimental: {
-    serverComponents: true,
-    serverActions: true,
+    // Retrait de serverComponents car c'est maintenant la valeur par défaut
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+      bodySizeLimit: '2mb'
+    }
   },
 };
 

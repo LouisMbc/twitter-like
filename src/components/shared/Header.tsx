@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Home, Search, Bell, Mail, User, Plus, LogOut } from 'lucide-react';
 import supabase from '@/lib/supabase';
 import { messageService } from '@/services/supabase/message';
@@ -22,17 +22,26 @@ export function Navbar() {
 }
 
 export default function Header() {
-  const pathname = usePathname();
   const router = useRouter();
-  // Pour éviter l'erreur d'hydration, on initialise avec null et on n'affiche rien
-  // jusqu'à ce que le client vérifie l'authentification
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const pathname = usePathname();
+  
+  // IMPORTANT: Déclarez tous les hooks useState AVANT tout code conditionnel
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [profile, setProfile] = useState<any>(null);
-
+  
+  // Ne pas afficher le header sur certaines pages
+  const authPages = ['/auth/login', '/auth/register', '/auth/callback', '/profile/setup'];
+  const shouldDisplayHeader = !authPages.some(page => pathname?.startsWith(page));
+  
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+  };
+  
   // Vérifier l'authentification et récupérer l'ID du profil
   useEffect(() => {
     const checkAuth = async () => {
@@ -156,13 +165,8 @@ export default function Header() {
     };
   }, [profileId]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/auth/login');
-  };
-
-  // N'affichez rien jusqu'à ce que la vérification d'auth soit terminée côté client
-  if (!isAuthChecked) {
+  // Retourner null après avoir déclaré tous les hooks si le header ne doit pas s'afficher
+  if (!shouldDisplayHeader) {
     return null;
   }
 

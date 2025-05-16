@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/services/supabase/auth';
 import { profileService } from '@/services/supabase/profile';
 import { ProfileForm } from '@/types';
+import supabase from '@/lib/supabase';
 
 export const useProfileSetup = () => {
   const router = useRouter();
@@ -40,10 +41,18 @@ export const useProfileSetup = () => {
 
     try {
       validateForm();
+      
+      // Corriger la récupération de la session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Non authentifié');
 
       // Mettre à jour le mot de passe
-      const { error: passwordError } = await authService.updatePassword(formData.password);
-      if (passwordError) throw passwordError;
+      if (formData.password) {
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: formData.password
+        });
+        if (passwordError) throw passwordError;
+      }
 
       // Upload de la photo de profil
       let profilePictureUrl = null;
@@ -64,6 +73,7 @@ export const useProfileSetup = () => {
 
       router.push('/profile');
     } catch (error) {
+      console.error("Erreur lors de la création du profil:", error);
       setError(error instanceof Error ? error.message : 'Une erreur est survenue');
     } finally {
       setLoading(false);

@@ -20,19 +20,19 @@ export interface Comment {
 }
 
 export interface Profile {
-  username: any;
-  full_name: any;
-  languages(languages: any): unknown;
-  id: string;           // Ajout du champ id qui est nécessaire pour la recherche
-  user_id: string;      // Ajout du champ user_id
-  firstName: string;
-  lastName: string;
-  nickname: string;
-  bio: string | null;
-  profilePicture: string | null;
-  created_at: string;
-  follower_count: number;
-  following_count: number;
+  id: string;               // uuid
+  user_id: string;          // uuid lié à auth.users
+  firstName: string | null; // text
+  lastName: string | null;  // text
+  nickname: string | null;  // text
+  bio: string | null;       // text
+  profilePicture: string | null; // text (URL de l'image)
+  certified: boolean;       // boolean
+  follower_count: number;   // integer
+  following_count: number;  // integer
+  created_at: string;       // timestamp with time zone
+  is_premium: boolean;      // boolean
+  premium_features: any;    // jsonb
 }
 
 // Si vous décidez d'étendre votre interface Tweet
@@ -43,7 +43,6 @@ export interface Tweet {
   picture?: string[] | null;
   published_at: string;
   view_count: number;
-  retweet_id?: string | null;
   author: {
     verified: any;
     id: string;
@@ -51,6 +50,9 @@ export interface Tweet {
     profilePicture?: string | null;
   };
   author_id?: string; // Optionnel si vous avez déjà author
+  retweet_id?: string | null;
+  originalTweet?: Omit<Tweet, 'originalTweet'> | null; // Tweet original si c'est un retweet
+
 }
 
 // Ajouter aux types existants
@@ -62,13 +64,27 @@ export interface ProfilePageData {
   followingCount: number;
 }
 
+export interface Subscription {
+  id: string;
+  profile_id: string;
+  subscription_id: string;
+  status: string;
+  plan: string;
+  current_period_end: string;
+  cancel_at_period_end?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  customer_id?: string;
+}
+
+// Ajouter cette nouvelle interface à la fin du fichier
 export interface ProfileForm {
-  firstName: string;
   lastName: string;
+  firstName: string;
   nickname: string;
   bio: string;
-  password: string;
-  confirmPassword: string;
-  profilePicture?: File | null;
+  profilePicture: File | null;
   currentProfilePicture?: string | null;
+  password?: string | null;
+  confirmPassword?: string | null;
 }

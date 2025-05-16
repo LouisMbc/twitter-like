@@ -28,7 +28,7 @@ export default function SetupProfilePage() {
             profilePicture: formData.profilePicture ?? null
           }}
           setFormData={setFormData}
-          onSubmit={handleSubmit}
+          handleSubmit={handleSubmit}
           loading={loading}
           error={error}
         />

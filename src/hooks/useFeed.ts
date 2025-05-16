@@ -7,9 +7,12 @@ export default function useFeed() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const TWEETS_PER_PAGE = 10;
 
-  const fetchFeed = async () => {
-    console.log('--- DÉBUT CHARGEMENT DU FEED ---');
+  const fetchFeed = async (pageToLoad = 0) => {
+    console.log(`--- CHARGEMENT DU FEED (Page ${pageToLoad}) ---`);
     try {
       setLoading(true);
       
@@ -92,7 +95,8 @@ export default function useFeed() {
           )
         `)
         .in('author_id', userIds)
-        .order('published_at', { ascending: false });
+        .order('published_at', { ascending: false })
+        .range(pageToLoad * TWEETS_PER_PAGE, (pageToLoad + 1) * TWEETS_PER_PAGE - 1);
 
       console.log('Requête préparée:', query);
 
@@ -164,11 +168,12 @@ export default function useFeed() {
         console.log('Tweets formatés avec succès:', formattedTweets.length);
 
         // Pour chaque retweet, récupérer le tweet original
-        const enrichTweetsWithOriginals = async (tweets) => {
-          // D'abord, collectez tous les retweet_ids
+        // Typer la fonction d'enrichissement pour les retweets
+        const enrichTweetsWithOriginals = async (tweets: Tweet[]): Promise<Tweet[]> => {
+          // Collectez tous les retweet_ids
           const retweetIds = tweets
-            .filter(tweet => tweet.retweet_id)
-            .map(tweet => tweet.retweet_id);
+            .filter((tweet: Tweet) => tweet.retweet_id)
+            .map((tweet: Tweet) => tweet.retweet_id);
           
           // Si aucun retweet, retourner les tweets tels quels
           if (retweetIds.length === 0) {
@@ -193,7 +198,7 @@ export default function useFeed() {
             .in('id', retweetIds);
           
           // Créer un mapping pour un accès facile
-          const originalsMap = {};
+          const originalsMap: { [key: string]: any } = {};
           if (originalTweets) {
             originalTweets.forEach(original => {
               originalsMap[original.id] = original;
@@ -201,7 +206,7 @@ export default function useFeed() {
           }
           
           // Enrichir les tweets
-          return tweets.map(tweet => {
+          return tweets.map((tweet: Tweet) => {
             if (tweet.retweet_id && originalsMap[tweet.retweet_id]) {
               tweet.originalTweet = originalsMap[tweet.retweet_id];
             }
@@ -210,7 +215,15 @@ export default function useFeed() {
         };
 
         const enrichedTweets = await enrichTweetsWithOriginals(formattedTweets);
-        setTweets(enrichedTweets);
+        if (pageToLoad === 0) {
+          setTweets(enrichedTweets);
+        } else {
+          setTweets(prev => [...prev, ...enrichedTweets]);
+        }
+        
+        // Déterminer s'il y a plus de tweets à charger
+        setHasMore(enrichedTweets.length === TWEETS_PER_PAGE);
+        setPage(pageToLoad);
       } catch (formatError) {
         console.error('Erreur lors du formatage des tweets:', formatError);
         throw formatError;
@@ -239,5 +252,12 @@ export default function useFeed() {
     fetchFeed();
   };
   
-  return { tweets, loading, error, refreshFeed };
+  // Fonction pour charger plus de tweets
+  const loadMoreTweets = () => {
+    if (hasMore && !loading) {
+      fetchFeed(page + 1);
+    }
+  };
+
+  return { tweets, loading, error, refreshFeed, loadMoreTweets, hasMore };
 }

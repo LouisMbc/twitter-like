@@ -22,27 +22,32 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) throw new Error('Non authentifié');
   
-        // D'abord récupérer l'ID du profil de l'utilisateur
-        const { data: profileData, error: profileError } = await supabase
+        // Optionnel mais recommandé : Vérifier si un profil existe pour cet utilisateur
+        // même si nous utilisons session.user.id directement pour author_id.
+        // Cela garantit que l'auteur du commentaire a un profil associé.
+        const { data: userProfile, error: profileCheckError } = await supabase
           .from('Profile')
-          .select('id')
+          .select('user_id') // On peut sélectionner n'importe quelle colonne, juste pour vérifier l'existence
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle(); // Utiliser maybeSingle pour ne pas lever d'erreur si aucun profil, et le gérer
   
-        if (profileError) throw profileError;
-        if (!profileData) throw new Error('Profil non trouvé');
+        if (profileCheckError) throw profileCheckError;
+        if (!userProfile) {
+          console.error('Profil utilisateur non trouvé pour user_id:', session.user.id, '. Impossible de commenter.');
+          throw new Error('Profil utilisateur non trouvé. Impossible de commenter.');
+        }
   
-        // Créer le commentaire avec l'ID du profil
+        // Créer le commentaire avec session.user.id comme author_id
         const { error } = await supabase
           .from('Comments')
           .insert([{
             content,
             tweet_id: tweetId,
-            author_id: profileData.id, // Utiliser l'ID du profil au lieu de session.user.id
+            author_id: session.user.id, // MODIFIÉ : utiliser session.user.id directement
             parent_comment_id: parentCommentId || null
           }]);
   
-        if (error) throw error;
+        if (error) throw error; 
   
         setContent('');
         onCommentAdded();
