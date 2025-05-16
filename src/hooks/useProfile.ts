@@ -43,23 +43,11 @@ export const useProfile = () => {
       
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
-<<<<<<< HEAD
-      
-      // Chargement parallèle des tweets et commentaires pour de meilleures performances
-      const [tweetsResponse, commentsResponse] = await Promise.all([
-        profileService.getUserTweets(profileData.id),
-        profileService.getUserComments(profileData.id)
-      ]);
-      
-      setTweets(tweetsResponse.data || []);
-      setComments(commentsResponse.data || []);
-=======
 
       // Charger les premiers lots de tweets et commentaires
       await loadMoreTweets(profileData.id, 0);
       await loadAllComments(profileData.id);
       
->>>>>>> origin/louis
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
     } catch (error) {
@@ -67,7 +55,6 @@ export const useProfile = () => {
     } finally {
       setLoading(false);
     }
-<<<<<<< HEAD
   };
 
   // Utilisez useCallback pour éviter les re-créations inutiles de la fonction
@@ -115,8 +102,13 @@ export const useProfile = () => {
 
       // Reste du code pour configurer le profil
       setProfile(profileData);
-      setTweets(profileData.tweets || []);
-      setFollowersCount(profileData.followers_count || 0);
+      setCurrentProfileId(profileData.id);
+      
+      // Charger les premiers lots de tweets et commentaires
+      await loadMoreTweets(profileData.id, 0);
+      await loadAllComments(profileData.id);
+      
+      setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
     } catch (error) {
       // Améliorer la gestion des erreurs pour obtenir plus d'informations
@@ -134,14 +126,6 @@ export const useProfile = () => {
       setLoading(false);
     }
   }, []);
-
-  // Sélectionne une langue aléatoire (utile pour MultiluinguiX)
-  const getRandomLanguage = (languages: string[]) => {
-    const randomIndex = Math.floor(Math.random() * languages.length);
-    return languages[randomIndex];
-  };
-=======
-  }, [router]);
 
   // Fonction pour charger plus de tweets
   const loadMoreTweets = async (profileId: string, page: number) => {
@@ -248,6 +232,26 @@ export const useProfile = () => {
       setLoading(false);
     }
   };
+  
+  // Fonction pour charger plus de commentaires avec pagination
+  const loadMoreComments = async (profileId: string, page: number) => {
+    try {
+      setCommentsLoading(true);
+      // Implementation similaire à loadMoreTweets mais pour les commentaires
+      // Cette fonction peut être élaborée davantage si nécessaire
+      setCommentPage(page);
+    } catch (error) {
+      console.error('Erreur lors du chargement des commentaires:', error);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  // Sélectionne une langue aléatoire (utile pour MultiluinguiX)
+  const getRandomLanguage = (languages: string[]) => {
+    const randomIndex = Math.floor(Math.random() * languages.length);
+    return languages[randomIndex];
+  };
 
   // Fonctions pour charger plus d'éléments
   const loadMoreTweetsData = useCallback(() => {
@@ -264,7 +268,6 @@ export const useProfile = () => {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
->>>>>>> origin/louis
 
   // Ajouter des méthodes pour mettre à jour les compteurs
   const incrementFollowingCount = useCallback(() => {
@@ -283,16 +286,12 @@ export const useProfile = () => {
     followingCount,
     loading,
     currentProfileId,
-<<<<<<< HEAD
     loadProfileData,
     getRandomLanguage,
-    refreshProfile: loadProfile, // Exposer la fonction pour permettre le rafraîchissement
-=======
     refreshProfile: loadProfile,
->>>>>>> origin/louis
     incrementFollowingCount,
     decrementFollowingCount,
-    // Nouvelles propriétés pour infinite scroll
+    // Propriétés pour infinite scroll
     tweetsLoading,
     commentsLoading,
     hasTweetsMore,

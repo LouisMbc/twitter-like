@@ -146,11 +146,17 @@ export default function useFeed() {
             
             if (!author) {
               console.warn(`Tweet ${tweet.id}: Auteur manquant, utilisation d'une valeur par défaut`);
-              author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
+              author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null, verified: false };
+            } else {
+              // S'assurer que la propriété verified existe
+              author = {
+                ...author,
+                verified: (author as any).verified !== undefined ? (author as any).verified : false
+              };
             }
           } catch (authorError) {
             console.error(`Erreur lors du traitement de l'auteur pour le tweet ${tweet.id}:`, authorError);
-            author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
+            author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null, verified: false };
           }
           
           return {
@@ -186,13 +192,11 @@ export default function useFeed() {
             .select(`
               id,
               content,
-              picture,
-              published_at,
-              view_count,
               author:Profile!author_id (
                 id,
                 nickname,
-                profilePicture
+                profilePicture,
+                verified
               )
             `)
             .in('id', retweetIds);
