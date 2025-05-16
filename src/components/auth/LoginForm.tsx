@@ -21,18 +21,15 @@ export default function LoginForm() {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
       if (error) throw error;
 
-      console.log("Login successful, redirecting to dashboard...");
-      // Use await to ensure the navigation completes
-      await router.push('/dashboard');
+      router.push('/dashboard');
     } catch (err) {
-      console.error("Login error:", err);
       setError((err as Error).message);
     } finally {
       setLoading(false);
@@ -41,15 +38,15 @@ export default function LoginForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Connectez-vous à votre compte</h1>
+      <h1 className="text-2xl font-bold mb-6">Se connecter</h1>
 
       {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
           <input
             type="email"
             required
-            placeholder="Email"
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             className="w-full p-3 bg-black border border-gray-600 rounded-md text-white"
@@ -57,10 +54,10 @@ export default function LoginForm() {
         </div>
 
         <div>
+          <label className="block text-sm font-medium mb-1">Mot de passe</label>
           <input
             type="password"
             required
-            placeholder="Mot de passe"
             value={formData.password}
             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
             className="w-full p-3 bg-black border border-gray-600 rounded-md text-white"

@@ -38,16 +38,17 @@ export default function RegisterForm() {
     <div className="max-w-md mx-auto">
       {!submitted ? (
         <>
-          <h2 className="text-2xl font-bold mb-6">Créer votre compte</h2>
+          <h2 className="text-2xl font-bold mb-6">Créer un compte</h2>
           <form onSubmit={handleSignUp} className="space-y-5">
             <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full p-3 border border-gray-700 bg-black rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Email"
+                placeholder="Entrez votre email"
               />
             </div>
 
@@ -58,12 +59,12 @@ export default function RegisterForm() {
               disabled={loading}
               className="w-full bg-red-500 text-white py-3 px-4 rounded-full hover:bg-red-600 disabled:opacity-50 font-bold"
             >
-              {loading ? 'Envoi en cours...' : 'Poursuivre'}
+              {loading ? 'Envoi en cours...' : 'Envoyer le lien magique'}
             </button>
           </form>
 
           <div className="mt-8 text-center text-gray-400">
-            Vous avez déjà un compte?
+            Déjà un compte?
             <Link href="/auth/login" className="text-red-500 hover:underline ml-1">
               Se connecter
             </Link>
@@ -72,13 +73,10 @@ export default function RegisterForm() {
       ) : (
         <div className="text-center space-y-4 bg-gray-900 rounded-lg p-6">
           <div className="text-green-500 text-xl font-semibold">
-            ✓ Vérifiez votre email
+            ✓ Un lien de connexion a été envoyé à {email}
           </div>
           <p className="text-gray-400">
-            Un lien de connexion a été envoyé à <span className="text-white font-medium">{email}</span>
-          </p>
-          <p className="text-gray-500">
-            Cliquez sur le lien envoyé à votre adresse pour vous connecter automatiquement.
+            Veuillez vérifier votre boîte mail et cliquer sur le lien pour vous connecter.
           </p>
           <button 
             onClick={() => setSubmitted(false)} 

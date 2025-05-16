@@ -22,7 +22,8 @@ body {
 
 @layer base {
   html {
-    @apply bg-black text-white;
+    background-color: black;
+    color: white;
   }
   body {
     color: var(--foreground);
