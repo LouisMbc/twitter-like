@@ -6,7 +6,7 @@ import { ProfileForm } from '@/types';
 interface ProfileEditFormProps {
   formData: ProfileForm;
   setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>;
-  onSubmit: (e: React.FormEvent) => Promise<void>;
+  onSubmit: (formData: ProfileForm) => Promise<void>; // Updated signature
   error: string;
   loading: boolean;
   onCancel: () => void;
@@ -31,7 +31,7 @@ export default function ProfileEditForm({
     const file = e.target.files?.[0];
     if (!file) return;
     
-    setFormData((prev: ProfileForm) => ({ ...prev, profilePicture: file }));
+    setFormData(prev => ({ ...prev, profilePicture: file }));
     
     // Créer une URL pour la prévisualisation
     const url = URL.createObjectURL(file);
@@ -40,7 +40,8 @@ export default function ProfileEditForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(e);
+    // Pass formData instead of the event
+    await onSubmit(formData);
   };
 
   return (
@@ -150,7 +151,7 @@ export default function ProfileEditForm({
                   type="password"
                   id="password"
                   name="password"
-                  value={formData.password}
+                  value={formData.password ?? ''}
                   onChange={handleChange}
                   className="mt-1 block w-full bg-black border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500"
                 />
@@ -164,7 +165,7 @@ export default function ProfileEditForm({
                   type="password"
                   id="confirmPassword"
                   name="confirmPassword"
-                  value={formData.confirmPassword}
+                  value={formData.confirmPassword ?? ''}
                   onChange={handleChange}
                   className="mt-1 block w-full bg-black border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500"
                 />

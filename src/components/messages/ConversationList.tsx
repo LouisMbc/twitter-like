@@ -2,7 +2,8 @@
 import { useMessages } from '@/hooks/useMessages';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 // Ajout du type Conversation pour éviter les erreurs TS
 type Conversation = {
@@ -25,24 +26,6 @@ export default function ConversationList() {
     loading: boolean;
     error: string | null;
   };
-  const [formattedDates, setFormattedDates] = useState<string[]>([]);
-
-  useEffect(() => {
-    async function formatDates() {
-      const { formatDistanceToNow } = await import('date-fns');
-      const { fr } = await import('date-fns/locale');
-      setFormattedDates(
-        conversations.map(conversation => {
-          const d = new Date(conversation.lastMessage.created_at);
-          if (!isNaN(d.getTime())) {
-            return formatDistanceToNow(d, { addSuffix: true, locale: fr });
-          }
-          return '';
-        })
-      );
-    }
-    if (conversations.length > 0) formatDates();
-  }, [conversations]);
 
   if (loading) {
     return <div className="p-4 text-center">Chargement des conversations...</div>;
@@ -65,7 +48,7 @@ export default function ConversationList() {
 
   return (
     <div className="divide-y divide-gray-200">
-      {conversations.map((conversation, idx) => (
+      {conversations.map((conversation) => (
         <Link 
           href={`/messages/${conversation.user.id}`} 
           key={conversation.user.id}
@@ -85,11 +68,14 @@ export default function ConversationList() {
               </span>
             )}
           </div>
-            <div className="ml-4 flex-1">
+          <div className="ml-4 flex-1">
             <div className="flex justify-between">
               <h3 className="font-semibold text-white hover:text-black">{conversation.user.nickname}</h3>
               <span className="text-sm text-gray-500">
-              {formattedDates[idx] || ''}
+                {formatDistanceToNow(new Date(conversation.lastMessage.created_at), { 
+                  addSuffix: true,
+                  locale: fr 
+                })}
               </span>
             </div>
             <p className="text-sm text-gray-600 truncate">

@@ -1,39 +1,45 @@
 import React from 'react';
+import { ProfileForm } from '@/types';
 
 interface ProfileSetupFormProps {
-  formData: {
-    firstName: string;
-    lastName: string;
-    nickname: string;
-    bio: string;
-    profilePicture: File | null;
-    password: string;
-    confirmPassword: string; // Ajout du champ de confirmation du mot de passe
-  };
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
-  onSubmit: (e: React.FormEvent) => void;
+  formData: ProfileForm;
+  setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
   loading: boolean;
   error: string | null;
-  session?: any; // Ajout d'une prop session optionnelle
 }
 
 const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ 
   formData, 
   setFormData, 
-  onSubmit, 
+  handleSubmit, 
   loading, 
-  error,
-  session 
+  error
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    setFormData((prev: ProfileForm) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev: ProfileForm) => ({
+        ...prev,
+        profilePicture: file,
+      }));
+    } else {
+      setFormData((prev: ProfileForm) => ({
+        ...prev,
+        profilePicture: null,
+      }));
+    }
   };
 
   const inputStyle = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black bg-white";
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="mb-4">
         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
           Prénom
@@ -70,6 +76,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
           id="nickname"
           value={formData.nickname}
           onChange={handleChange}
+          required
           className={inputStyle}
         />
       </div>
@@ -93,8 +100,9 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
           type="password"
           name="password"
           id="password"
-          value={formData.password}
+          value={formData.password || ''}
           onChange={handleChange}
+          required
           className={inputStyle}
         />
       </div>
@@ -106,8 +114,9 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
           type="password"
           name="confirmPassword"
           id="confirmPassword"
-          value={formData.confirmPassword}
+          value={formData.confirmPassword || ''}
           onChange={handleChange}
+          required
           className={inputStyle}
         />
       </div>
@@ -119,7 +128,8 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
           type="file"
           name="profilePicture"
           id="profilePicture"
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, profilePicture: e.target.files?.[0] || null }))}
+          accept="image/*"
+          onChange={handleFileChange}
           className={inputStyle}
         />
       </div>
