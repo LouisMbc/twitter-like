@@ -118,11 +118,30 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
 
         {tweet.picture && tweet.picture.length > 0 && (
           <div className="mb-4">
-            <img
-              src={tweet.picture[0]}
-              alt="Tweet image"
-              className="rounded-lg max-h-96 w-auto"
-            />
+            {tweet.picture.map((pic, index) => {
+              // Déterminer si c'est une vidéo en vérifiant l'extension de l'URL
+              const isVideo = /\.(mp4|webm|ogg)$/i.test(pic);
+              
+              return isVideo ? (
+                <div key={index} className="relative aspect-video">
+                  <video
+                    src={pic}
+                    controls
+                    playsInline
+                    className="rounded-lg max-h-96 w-auto"
+                    onError={(e) => console.error("Erreur de chargement vidéo:", e)}
+                  />
+                </div>
+              ) : (
+                <div key={index} className="relative">
+                  <img
+                    src={pic}
+                    alt="Tweet image"
+                    className="rounded-lg max-h-96 w-auto"
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
 

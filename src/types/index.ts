@@ -36,13 +36,15 @@ export interface Tweet {
   picture?: string[] | null;
   published_at: string;
   view_count: number;
-  retweet_id?: string | null;
   author: {
     id: string;
     nickname: string;
     profilePicture?: string | null;
   };
   author_id?: string; // Optionnel si vous avez déjà author
+  retweet_id?: string | null;
+  originalTweet?: Omit<Tweet, 'originalTweet'> | null; // Tweet original si c'est un retweet
+
 }
 
 // Ajouter aux types existants

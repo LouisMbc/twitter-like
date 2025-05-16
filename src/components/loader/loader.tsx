@@ -4,7 +4,11 @@ import styles from './loader.module.css';
 // Utilisez une image qui existe vraiment dans votre dossier public
 import logo from '/public/Capture_d_écran_du_2025-05-15_11-40-36-removebg-preview.png'; 
 
-export default function LogoLoader() {
+interface LogoLoaderProps {
+  size?: string; // Rendre la prop optionnelle
+}
+
+export default function LogoLoader({ size = "medium" }: LogoLoaderProps) {
   const [progress, setProgress] = useState(0);
   
   useEffect(() => {
@@ -20,6 +24,18 @@ export default function LogoLoader() {
     
     return () => clearInterval(interval);
   }, []);
+
+  // Définir des tailles différentes en fonction de la prop
+  const getLoaderSize = () => {
+    switch(size) {
+      case "small":
+        return "w-6 h-6";
+      case "large":
+        return "w-12 h-12";
+      default:
+        return "w-8 h-8"; // medium par défaut
+    }
+  };
 
   return (
     <div className={styles.loaderContainer}>

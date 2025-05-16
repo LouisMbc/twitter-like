@@ -14,7 +14,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   const { profile } = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState('');
-  const [images, setImages] = useState<File[]>([]);
+  const [media, setMedia] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [preview, setPreview] = useState<string[]>([]);
@@ -51,28 +51,40 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     checkTweetLimit();
   }, [profile]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 4) {
-      setError('Maximum 4 images autorisées');
+      setError('Maximum 4 médias autorisés');
       return;
     }
-    setImages(files);
+    setMedia(files);
 
-    const previews = files.map(file => URL.createObjectURL(file));
+    // Créer les previews
+    const previews = files.map(file => {
+      // Si c'est une vidéo, on créé un élément vidéo pour la prévisualisation
+      if (file.type.startsWith('video/')) {
+        const videoUrl = URL.createObjectURL(file);
+        return videoUrl;
+      }
+      // Sinon on traite comme une image
+      return URL.createObjectURL(file);
+    });
     setPreview(previews);
   };
 
-  const uploadImages = async (tweetId: string) => {
-    console.log('[TweetComposer] Début de uploadImages pour tweetId:', tweetId);
-    const uploadPromises = images.map(async (image) => {
-      const fileExt = image.name.split('.').pop();
+  const uploadMedia = async (tweetId: string) => {
+    console.log('[TweetComposer] Début de uploadMedia pour tweetId:', tweetId);
+    const uploadPromises = media.map(async (file) => {
+      const fileExt = file.name.split('.').pop();
       const fileName = `${tweetId}/${Math.random()}.${fileExt}`;
       console.log('[TweetComposer] Tentative de téléversement du fichier:', fileName, 'vers le bucket: tweets');
       
       const { error: uploadError } = await supabase.storage
-        .from('tweets') // Confirmé comme étant le bon nom de bucket
-        .upload(fileName, image);
+        .from('tweets')
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          contentType: file.type  // Ajouter cette ligne importante
+        });
 
       if (uploadError) {
         console.error('[TweetComposer] Erreur de téléversement Supabase Storage:', uploadError);
@@ -143,31 +155,31 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       }
       console.log('[TweetComposer] handleSubmit - Tweet inséré avec ID:', tweet.id);
 
-      let finalImageUrls: string[] = [];
-      if (images.length > 0) {
-        console.log('[TweetComposer] handleSubmit - Téléversement des images...');
-        finalImageUrls = await uploadImages(tweet.id); // Appel de la fonction uploadImages
-        console.log('[TweetComposer] handleSubmit - URLs des images après téléversement:', finalImageUrls);
+      let finalMediaUrls: string[] = [];
+      if (media.length > 0) {
+        console.log('[TweetComposer] handleSubmit - Téléversement des médias...');
+        finalMediaUrls = await uploadMedia(tweet.id); // Appel de la fonction uploadMedia
+        console.log('[TweetComposer] handleSubmit - URLs des médias après téléversement:', finalMediaUrls);
 
-        if (finalImageUrls.length > 0) {
-          console.log('[TweetComposer] handleSubmit - Mise à jour du tweet avec les URLs:', finalImageUrls);
+        if (finalMediaUrls.length > 0) {
+          console.log('[TweetComposer] handleSubmit - Mise à jour du tweet avec les URLs:', finalMediaUrls);
           const { error: updateError } = await supabase
             .from('Tweets')
-            .update({ picture: finalImageUrls }) // Utiliser les URLs valides
+            .update({ picture: finalMediaUrls }) // Utiliser les URLs valides
             .eq('id', tweet.id);
 
           if (updateError) {
-            console.error('[TweetComposer] handleSubmit - Erreur de mise à jour du tweet avec les images:', updateError);
+            console.error('[TweetComposer] handleSubmit - Erreur de mise à jour du tweet avec les médias:', updateError);
             throw updateError;
           }
-          console.log('[TweetComposer] handleSubmit - Tweet mis à jour avec les images.');
-        } else if (images.length > 0 && finalImageUrls.length === 0) {
-          console.warn('[TweetComposer] handleSubmit - Des images étaient sélectionnées mais aucune URL valide n\'a été obtenue après le téléversement.');
+          console.log('[TweetComposer] handleSubmit - Tweet mis à jour avec les médias.');
+        } else if (media.length > 0 && finalMediaUrls.length === 0) {
+          console.warn('[TweetComposer] handleSubmit - Des médias étaient sélectionnés mais aucune URL valide n\'a été obtenue après le téléversement.');
         }
       }
       // ... (réinitialisation des états, redirection, etc.) ...
       setContent('');
-      setImages([]);
+      setMedia([]);
       setPreview([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -207,15 +219,23 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
           <div className="mt-2 grid grid-cols-2 gap-2">
             {preview.map((url, index) => (
               <div key={index} className="relative aspect-square">
-                <img
-                  src={url}
-                  alt={`Preview ${index + 1}`}
-                  className="w-full h-full object-cover rounded"
-                />
+                {media[index].type.startsWith('video/') ? (
+                  <video
+                    src={url}
+                    className="w-full h-full object-cover rounded"
+                    controls
+                  />
+                ) : (
+                  <img
+                    src={url}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-full object-cover rounded"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => {
-                    setImages(images.filter((_, i) => i !== index));
+                    setMedia(media.filter((_, i) => i !== index));
                     setPreview(preview.filter((_, i) => i !== index));
                   }}
                   className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6"
@@ -232,18 +252,18 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*" // Ajout de video/*
               multiple
               max={4}
-              onChange={handleImageChange}
+              onChange={handleMediaChange} // Renommer pour refléter que ce n'est plus seulement des images
               className="hidden"
-              id="image-input"
+              id="media-input" // Renommer pour cohérence
             />
             <label
-              htmlFor="image-input"
+              htmlFor="media-input"
               className="cursor-pointer text-blue-500 hover:text-blue-600"
             >
-              📷 Ajouter des photos
+              📷 Ajouter des médias
             </label>
             <span className="text-sm text-gray-500">
               {content.length}/280

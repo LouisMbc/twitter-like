@@ -15,6 +15,15 @@ export const useProfile = () => {
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
+  
+  // États pour pagination
+  const [tweetPage, setTweetPage] = useState(0);
+  const [commentPage, setCommentPage] = useState(0);
+  const [hasTweetsMore, setHasTweetsMore] = useState(true);
+  const [hasCommentsMore, setHasCommentsMore] = useState(true);
+  const [tweetsLoading, setTweetsLoading] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const ITEMS_PER_PAGE = 10;
 
   // Utilisez useCallback pour éviter les re-créations inutiles de la fonction
   const loadProfile = useCallback(async () => {
@@ -42,17 +51,36 @@ export const useProfile = () => {
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
 
-      // Chargement parallèle des tweets et commentaires pour de meilleures performances
-      const [tweetsResponse, commentsResponse] = await Promise.all([
-        profileService.getUserTweets(profileData.id),
-        profileService.getUserComments(profileData.id)
-      ]);
+      // Charger les premiers lots de tweets et commentaires
+      await loadMoreTweets(profileData.id, 0);
+      await loadAllComments(profileData.id);
+      
+      setFollowersCount(profileData.follower_count || 0);
+      setFollowingCount(profileData.following_count || 0);
+    } catch (error) {
+      console.error('Erreur lors du chargement du profil:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
-      // Déboguer la structure des données
-      console.log("Structure des commentaires reçus:", commentsResponse.data?.[0]);
-
-      // Formatage correct des tweets pour correspondre à l'interface Tweet
-      const formattedTweets = (tweetsResponse.data || []).map(tweet => ({
+  // Fonction pour charger plus de tweets
+  const loadMoreTweets = async (profileId: string, page: number) => {
+    try {
+      setTweetsLoading(true);
+      const { data: tweetsData, error: tweetsError } = await supabase
+        .from('Tweets')
+        .select(`
+          id, content, picture, published_at, view_count, retweet_id, author_id,
+          author:author_id (id, nickname, profilePicture)
+        `)
+        .eq('author_id', profileId)
+        .order('published_at', { ascending: false })
+        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+      
+      if (tweetsError) throw tweetsError;
+      
+      const formattedTweets = (tweetsData || []).map(tweet => ({
         id: tweet.id,
         content: tweet.content,
         picture: tweet.picture,
@@ -61,39 +89,102 @@ export const useProfile = () => {
         retweet_id: tweet.retweet_id,
         author: Array.isArray(tweet.author) ? tweet.author[0] : tweet.author
       }));
-
-      setTweets(formattedTweets);
-
-      // Formatage correct des commentaires pour correspondre à l'interface Comment
-      const formattedComments = (commentsResponse.data || []).map(comment => {
-        // Création d'un objet de base avec les propriétés garanties
-        const formattedComment = {
-          id: comment.id,
-          content: comment.content,
-          created_at: comment.created_at,
-          view_count: comment.view_count || 0,
-          tweet_id: '',
-          author: Array.isArray(comment.author) ? comment.author[0] : comment.author,
-          parent_comment_id: comment.parent_comment_id || null
-        };
-        
-        // Ajouter les propriétés optionnelles si elles existent
-        if (comment.tweet && Array.isArray(comment.tweet) && comment.tweet.length > 0) {
-          formattedComment.tweet_id = comment.tweet[0].id;
-        }
-        
-        return formattedComment;  // N'oubliez pas de retourner l'objet formatté
-      });
-
-      setComments(formattedComments);
-      setFollowersCount(profileData.follower_count || 0);
-      setFollowingCount(profileData.following_count || 0);
+      
+      if (page === 0) {
+        setTweets(formattedTweets);
+      } else {
+        setTweets(prev => [...prev, ...formattedTweets]);
+      }
+      
+      // Déterminer s'il y a plus de tweets à charger
+      setHasTweetsMore(formattedTweets.length === ITEMS_PER_PAGE);
+      setTweetPage(page);
     } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
+      console.error('Erreur lors du chargement des tweets:', error);
+    } finally {
+      setTweetsLoading(false);
+    }
+  };
+
+  // Fonction pour charger tous les commentaires (sans pagination)
+  const loadAllComments = async (profileId: string) => {
+    try {
+      setLoading(true);
+      console.log('🔍 Chargement des commentaires pour le profil:', profileId);
+      
+      // Vérifier d'abord si l'utilisateur a des commentaires
+      const { count, error: countError } = await supabase
+        .from('Comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('author_id', profileId);
+
+      console.log('📊 Nombre de commentaires trouvés:', count);
+      
+      if (countError) {
+        console.error('❌ Erreur de comptage des commentaires:', countError);
+      }
+      
+      // Problème clé: author_id dans Comments pourrait être user_id et non profile_id
+      // Essayons de récupérer le user_id associé au profile
+      const { data: profileData } = await supabase
+        .from('Profile')
+        .select('user_id')
+        .eq('id', profileId)
+        .single();
+        
+      console.log('👤 User ID associé au profil:', profileData?.user_id);
+      
+      // Essayer avec user_id au lieu de profile_id
+      const { data: commentsData, error: commentsError } = await supabase
+        .from('Comments')
+        .select(`
+          id, content, created_at, view_count, parent_comment_id, tweet_id, 
+          author:author_id (id, nickname, profilePicture)
+        `)
+        .eq('author_id', profileData?.user_id) // Utiliser user_id au lieu de profile_id
+        .order('created_at', { ascending: false });
+      
+      if (commentsError) {
+        console.error('❌ Erreur SQL lors du chargement des commentaires:', commentsError);
+        throw commentsError;
+      }
+      
+      console.log(`✅ ${commentsData?.length || 0} commentaires récupérés:`, commentsData);
+      
+      const formattedComments = (commentsData || []).map(comment => ({
+        id: comment.id,
+        content: comment.content,
+        created_at: comment.created_at,
+        view_count: comment.view_count || 0,
+        tweet_id: comment.tweet_id,
+        author: Array.isArray(comment.author) ? comment.author[0] : comment.author,
+        parent_comment_id: comment.parent_comment_id || undefined
+      }));
+      
+      console.log('🔄 Commentaires formatés:', formattedComments.length);
+      setComments(formattedComments);
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des commentaires:', error);
     } finally {
       setLoading(false);
     }
-  }, [router]); // Ajoutez router comme dépendance
+  };
+
+  // Fonctions pour charger plus d'éléments
+  const loadMoreTweetsData = useCallback(() => {
+    if (!profile || !hasTweetsMore || tweetsLoading) return;
+    loadMoreTweets(profile.id, tweetPage + 1);
+  }, [profile, hasTweetsMore, tweetsLoading, tweetPage]);
+
+  const loadMoreCommentsData = useCallback(() => {
+    if (!profile || !hasCommentsMore || commentsLoading) return;
+    loadMoreComments(profile.id, commentPage + 1);
+  }, [profile, hasCommentsMore, commentsLoading, commentPage]);
+
+  // Chargement des données au montage du composant
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   // Ajouter des méthodes pour mettre à jour les compteurs
   const incrementFollowingCount = useCallback(() => {
@@ -103,11 +194,6 @@ export const useProfile = () => {
   const decrementFollowingCount = useCallback(() => {
     setFollowingCount(prevCount => Math.max(0, prevCount - 1));
   }, []);
-
-  // Chargement des données au montage du composant
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]); // Utiliser loadProfile comme dépendance
 
   return {
     profile,
@@ -119,8 +205,15 @@ export const useProfile = () => {
     followingCount,
     loading,
     currentProfileId,
-    refreshProfile: loadProfile, // Exposer la fonction pour permettre le rafraîchissement
+    refreshProfile: loadProfile,
     incrementFollowingCount,
-    decrementFollowingCount
+    decrementFollowingCount,
+    // Nouvelles propriétés pour infinite scroll
+    tweetsLoading,
+    commentsLoading,
+    hasTweetsMore,
+    hasCommentsMore,
+    loadMoreTweets: loadMoreTweetsData,
+    loadMoreComments: loadMoreCommentsData
   };
 };
