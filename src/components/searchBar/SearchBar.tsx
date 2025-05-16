@@ -5,26 +5,10 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile } from '@/types';
 
-// Définir les types pour les résultats de recherche
-interface TweetResult {
-  id: string;
-  content: string;
-  authorId: string;
-  authorNickname?: string;
-  authorProfilePicture?: string;
-  type: 'tweet';
-}
-
-interface ProfileResult extends Partial<Profile> {
-  type: 'profile';
-}
-
-type SearchResult = ProfileResult | TweetResult;
-
 export default function SearchBar() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<Partial<Profile>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +16,7 @@ export default function SearchBar() {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setSearchResults([]);
+        setSearchQuery('');
       }
     };
 
@@ -50,62 +35,20 @@ export default function SearchBar() {
     setIsLoading(true);
 
     try {
-      // Recherche des profils
-      const { data: profileData, error: profileError } = await supabase
+      const { data, error } = await supabase
         .from('Profile')
         .select('id, nickname, profilePicture')
         .ilike('nickname', `%${query}%`)
-        .limit(3);
+        .limit(5);
 
-      if (profileError) throw profileError;
-
-      // Recherche des tweets
-      const { data: tweetData, error: tweetError } = await supabase
-        .from('Tweet') // Assurez-vous que le nom de la table est correct
-        .select(`
-          id,
-          content,
-          authorId,
-          Profile (nickname, profilePicture)
-        `)
-        .ilike('content', `%${query}%`)
-        .limit(3);
-
-      if (tweetError) throw tweetError;
-
-      // Formater les résultats
-      const profileResults: ProfileResult[] = (profileData || []).map(profile => ({
-        ...profile,
-        type: 'profile'
-      }));
-
-      const tweetResults: TweetResult[] = (tweetData || []).map(tweet => ({
-        id: tweet.id,
-        content: tweet.content,
-        authorId: tweet.authorId,
-        authorNickname: tweet.Profile?.nickname,
-        authorProfilePicture: tweet.Profile?.profilePicture,
-        type: 'tweet'
-      }));
-
-      // Combiner les résultats
-      setSearchResults([...profileResults, ...tweetResults]);
+      if (error) throw error;
+      setSearchResults(data || []);
     } catch (error) {
       console.error('Erreur de recherche:', error);
       setSearchResults([]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleResultClick = (result: SearchResult) => {
-    if (result.type === 'profile') {
-      router.push(`/profile/${result.id}`);
-    } else {
-      router.push(`/tweet/${result.id}`); // Assurez-vous que ce chemin est correct
-    }
-    setSearchResults([]);
-    setSearchQuery('');
   };
 
   return (
@@ -116,7 +59,7 @@ export default function SearchBar() {
         </svg>
         <input
           type="text"
-          placeholder="Rechercher des profils, tweets..."
+          placeholder="Rechercher des utilisateurs..."
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 bg-white text-black"
@@ -137,53 +80,35 @@ export default function SearchBar() {
             </div>
           )}
           
-          {searchResults.map((result, index) => (
+          {searchResults.map((result) => (
             <div
-              key={`${result.type}-${result.id}`}
+              key={result.id}
               className="p-3 hover:bg-gray-50 cursor-pointer"
-              onClick={() => handleResultClick(result)}
+              onClick={() => {
+                router.push(`/profile/${result.id}`);
+                setSearchResults([]);
+                setSearchQuery('');
+              }}
             >
-              {result.type === 'profile' ? (
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                    {result.profilePicture ? (
-                      <img
-                        src={result.profilePicture}
-                        alt={result.nickname}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-500">{result.nickname?.charAt(0).toUpperCase()}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <span className="font-medium">{result.nickname}</span>
-                    <div className="text-xs text-gray-500">Profil</div>
-                  </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                  {result.profilePicture ? (
+                    <img
+                      src={result.profilePicture}
+                      alt={result.nickname}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-gray-500">{result.nickname?.charAt(0).toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="flex space-x-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                    {result.authorProfilePicture ? (
-                      <img
-                        src={result.authorProfilePicture}
-                        alt={result.authorNickname}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-500">{result.authorNickname?.charAt(0).toUpperCase()}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">Tweet de <span className="font-medium">{result.authorNickname}</span></div>
-                    <p className="line-clamp-2">{result.content}</p>
-                  </div>
+                <div>
+                  <span className="font-medium">{result.nickname}</span>
+                  <div className="text-xs text-gray-500">Profil</div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
           
