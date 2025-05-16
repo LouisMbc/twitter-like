@@ -7,6 +7,7 @@ import supabase from '@/lib/supabase';
 import TweetComposer from '@/components/tweets/TweetComposer';
 import TweetList from '@/components/tweets/TweetList';
 import useFeed from '@/hooks/useFeed';
+import LogoLoader from '@/components/loader/loader';  // Importez le loader
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -25,8 +26,8 @@ export default function DashboardPage() {
 
   if (loading) {  
     return (
-      <div className="min-h-screen p-8">
-        <div className="text-center">Chargement...</div>
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <LogoLoader />
       </div>
     );
   }

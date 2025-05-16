@@ -48,8 +48,44 @@ export const useProfile = () => {
         profileService.getUserComments(profileData.id)
       ]);
 
-      setTweets(tweetsResponse.data || []);
-      setComments(commentsResponse.data || []);
+      // Déboguer la structure des données
+      console.log("Structure des commentaires reçus:", commentsResponse.data?.[0]);
+
+      // Formatage correct des tweets pour correspondre à l'interface Tweet
+      const formattedTweets = (tweetsResponse.data || []).map(tweet => ({
+        id: tweet.id,
+        content: tweet.content,
+        picture: tweet.picture,
+        published_at: tweet.published_at,
+        view_count: tweet.view_count,
+        retweet_id: tweet.retweet_id,
+        author: Array.isArray(tweet.author) ? tweet.author[0] : tweet.author
+      }));
+
+      setTweets(formattedTweets);
+
+      // Formatage correct des commentaires pour correspondre à l'interface Comment
+      const formattedComments = (commentsResponse.data || []).map(comment => {
+        // Création d'un objet de base avec les propriétés garanties
+        const formattedComment = {
+          id: comment.id,
+          content: comment.content,
+          created_at: comment.created_at,
+          view_count: comment.view_count || 0,
+          tweet_id: '',
+          author: Array.isArray(comment.author) ? comment.author[0] : comment.author,
+          parent_comment_id: comment.parent_comment_id || null
+        };
+        
+        // Ajouter les propriétés optionnelles si elles existent
+        if (comment.tweet && Array.isArray(comment.tweet) && comment.tweet.length > 0) {
+          formattedComment.tweet_id = comment.tweet[0].id;
+        }
+        
+        return formattedComment;  // N'oubliez pas de retourner l'objet formatté
+      });
+
+      setComments(formattedComments);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
     } catch (error) {

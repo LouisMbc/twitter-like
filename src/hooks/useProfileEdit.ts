@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { profileService } from '@/services/supabase/profile';
 import { authService } from '@/services/supabase/auth';
 import { ProfileForm } from '@/types';
+import supabase from '@/lib/supabase';
 
 export const useProfileEdit = () => {
   const router = useRouter();
@@ -19,27 +20,62 @@ export const useProfileEdit = () => {
     confirmPassword: ''
   });
 
+  // Modifier la fonction loadProfile pour vérifier également l'état de l'abonnement
+
   const loadProfile = async () => {
     try {
+      setLoading(true);
+      console.log("Début du chargement du profil");
+      
       const session = await authService.getSession();
       if (!session) {
+        console.log("Aucune session trouvée, redirection vers la page de connexion");
         router.push('/auth/login');
         return;
       }
-
+      
+      // Chargement du profil
       const { data: profile, error } = await profileService.getProfile(session.user.id);
+      
       if (error) throw error;
-
+      if (!profile) {
+        setError('Profil non trouvé');
+        return;
+      }
+      
+      // Vérifier l'état de l'abonnement dans Stripe (si nécessaire)
+      try {
+        const { data: subscription, error: subscriptionError } = await supabase
+          .from('Subscriptions')
+          .select('*')
+          .eq('profile_id', profile.id)
+          .single();
+        
+        if (subscriptionError) {
+          console.error('Erreur lors de la récupération de l\'abonnement:', subscriptionError);
+        } else if (subscription && subscription.status === 'active' && !profile.is_premium) {
+          // Mettre à jour le statut premium si nécessaire
+          await profileService.updatePremiumStatus(session.user.id, true);
+          profile.is_premium = true;
+        }
+      } catch (err) {
+        console.error('Exception lors de la vérification de l\'abonnement:', err);
+      }
+      
       setFormData(prev => ({
         ...prev,
         lastName: profile.lastName || '',
         firstName: profile.firstName || '',
         nickname: profile.nickname || '',
         bio: profile.bio || '',
-        currentProfilePicture: profile.profilePicture || ''
+        currentProfilePicture: profile.profilePicture || '',
+        password: '',
+        confirmPassword: ''
       }));
+      
     } catch (error) {
-      setError('Erreur lors du chargement du profil');
+      console.error('Erreur lors du chargement du profil:', error);
+      setError('Erreur lors du chargement du profil: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
 import supabase from '@/lib/supabase';
@@ -11,11 +11,18 @@ import { notificationService } from '@/services/supabase/notification';
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
+  
+  // IMPORTANT: Déclarez tous les hooks useState AVANT tout code conditionnel
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [profileId, setProfileId] = useState<string | null>(null);
-
+  
+  // Ne pas afficher le header sur certaines pages
+  const authPages = ['/auth/login', '/auth/register', '/auth/callback', '/profile/setup'];
+  const shouldDisplayHeader = !authPages.some(page => pathname?.startsWith(page));
+  
   // Vérifier l'authentification et récupérer l'ID du profil
   useEffect(() => {
     const checkAuth = async () => {
@@ -134,6 +141,11 @@ export default function Header() {
       supabase.removeChannel(subscription);
     };
   }, [profileId]);
+
+  // Retourner null après avoir déclaré tous les hooks si le header ne doit pas s'afficher
+  if (!shouldDisplayHeader) {
+    return null;
+  }
 
   return (
     <>

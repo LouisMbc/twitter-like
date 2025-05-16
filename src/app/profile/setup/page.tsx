@@ -15,7 +15,7 @@ export default function SetupProfilePage() {
         <ProfileSetupForm
           formData={formData}
           setFormData={setFormData}
-          onSubmit={handleSubmit}
+          handleSubmit={handleSubmit}
           loading={loading}
           error={error}
         />

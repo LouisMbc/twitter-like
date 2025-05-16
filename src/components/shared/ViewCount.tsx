@@ -109,11 +109,9 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
         // Préparer les données pour l'upsert
         const viewsData = {
           views_count: newViewCount,
-          viewers: updatedViewers
+          viewers: updatedViewers,
+          [idColumn]: contentId // Use computed property name here
         };
-        
-        // Ajouter la colonne d'ID appropriée
-        viewsData[idColumn] = contentId;
         
         // Mettre à jour ou créer l'entrée dans la table views
         const { error: viewsError } = await supabase

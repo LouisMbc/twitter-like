@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useProfileData } from '@/hooks/useProfileData';
 
-export const useUserProfile = () => {
+export const useUserProfile = (userID: string) => {
   const params = useParams();
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
   

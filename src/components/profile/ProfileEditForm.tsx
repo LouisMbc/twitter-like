@@ -6,7 +6,7 @@ import { ProfileForm } from '@/types';
 interface ProfileEditFormProps {
   formData: ProfileForm;
   setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>;
-  onSubmit: (e: React.FormEvent) => Promise<void>;
+  onSubmit: (formData: ProfileForm) => Promise<void>;
   error: string;
   loading: boolean;
   onCancel: () => void;
@@ -40,7 +40,8 @@ export default function ProfileEditForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(e);
+    // Passer le formData au lieu de l'événement
+    await onSubmit(formData);
   };
 
   return (
@@ -152,7 +153,7 @@ export default function ProfileEditForm({
                 type="password"
                 id="password"
                 name="password"
-                value={formData.password}
+                value={formData.password ?? ''}
                 onChange={handleChange}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
@@ -166,7 +167,7 @@ export default function ProfileEditForm({
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
-                value={formData.confirmPassword}
+                value={formData.confirmPassword ?? ''}
                 onChange={handleChange}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />

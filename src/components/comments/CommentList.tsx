@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ReactionBar from '@/components/reactions/ReactionBar';
@@ -17,54 +17,84 @@ interface CommentListProps {
 
 const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialComments, parentCommentId }) => {
   const [comments, setComments] = useState<Comment[]>(initialComments || []);
-  const [loading, setLoading] = useState(!initialComments);
+  const [loading, setLoading] = useState(!initialComments && !!tweetId);
   const [error, setError] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Si les commentaires sont déjà fournis, ne pas charger
-    if (initialComments) return;
-    
-    // Sinon, charger les commentaires pour le tweet spécifié
-    const loadComments = async () => {
-      if (!tweetId) {
-        setError('ID du tweet manquant');
-        setLoading(false);
-        return;
+  const loadComments = useCallback(async () => {
+    if (!tweetId) {
+      // If initialComments were provided, this function might be called to refresh,
+      // but refreshing without a tweetId doesn't make sense unless we re-use initialComments.
+      // For now, if tweetId is missing, we assume we can't load/refresh.
+      if (!initialComments) {
+        setError('ID du tweet manquant pour charger les commentaires.');
       }
+      setComments(initialComments || []);
+      setLoading(false);
+      return;
+    }
 
-      try {
-        console.log('Loading comments for tweetId:', tweetId); // Debug log
-        const { data, error } = await supabase
-          .from('Comments')
-          .select(`
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('Comments')
+        .select(`
+          id,
+          content,
+          created_at,
+          view_count,
+          parent_comment_id,
+          tweet_id,
+          author:author_id (
             id,
-            content,
-            created_at,
-            view_count,
-            parent_comment_id,
-            author:author_id (
-              id,
-              nickname,
-              profilePicture
-            )
-          `)
-          .eq('tweet_id', tweetId)
-          .order('created_at', { ascending: true });
+            nickname,
+            profilePicture
+          )
+        `)
+        .eq('tweet_id', tweetId)
+        .order('created_at', { ascending: true });
 
-        if (error) throw error;
-        console.log('Comments loaded:', data); // Debug log
-        setComments(data || []);
-      } catch (err) {
-        console.error('Error loading comments:', err);
-        setError('Erreur lors du chargement des commentaires');
-      } finally {
-        setLoading(false);
-      }
-    };
+      if (fetchError) throw fetchError;
 
-    loadComments();
+      const formattedComments = (data || []).map(commentFromSupabase => {
+        // Déterminer l'objet auteur correct
+        const authorObject = Array.isArray(commentFromSupabase.author)
+          ? commentFromSupabase.author[0] // Prendre le premier élément si c'est un tableau non vide
+          : commentFromSupabase.author;   // Sinon, utiliser la valeur telle quelle (objet ou null/undefined)
+
+        return {
+          ...commentFromSupabase,
+          // Assigner l'objet auteur traité, ou un objet par défaut si l'auteur n'est pas trouvé
+          author: authorObject || { id: 'unknown', nickname: 'Utilisateur inconnu', profilePicture: null },
+          tweet_id: commentFromSupabase.tweet_id, // S'assurer que c'est bien une chaîne
+          // S'assurer que les autres champs correspondent à l'interface Comment si nécessaire
+          view_count: commentFromSupabase.view_count || 0,
+          parent_comment_id: commentFromSupabase.parent_comment_id === null ? undefined : commentFromSupabase.parent_comment_id,
+        };
+      });
+      setComments(formattedComments as Comment[]);
+    } catch (err) {
+      console.error('Error loading comments:', err);
+      setError('Erreur lors du chargement des commentaires');
+      setComments(initialComments || []); // Fallback to initial or empty
+    } finally {
+      setLoading(false);
+    }
   }, [tweetId, initialComments]);
+
+  useEffect(() => {
+    if (initialComments) {
+      setComments(initialComments);
+      setLoading(false);
+    } else if (tweetId) {
+      loadComments();
+    } else {
+      // No initialComments and no tweetId, list is empty
+      setComments([]);
+      setLoading(false);
+    }
+  }, [tweetId, initialComments, loadComments]); // loadComments is a dependency
 
   if (loading) {
     return <div className="text-center text-gray-500">Chargement des commentaires...</div>;
@@ -123,11 +153,11 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
         </button>
         {replyingTo === comment.id && (
           <CommentForm
-            tweetId={tweetId}
+            tweetId={comment.tweet_id} // Use comment.tweet_id which is guaranteed
             parentCommentId={comment.id}
             onCommentAdded={() => {
               setReplyingTo(null);
-              loadComments();
+              loadComments(); // Now calls the useCallback version
             }}
             onCancel={() => setReplyingTo(null)}
           />
