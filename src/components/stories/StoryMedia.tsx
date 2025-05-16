@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import supabase from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 interface StoryMediaProps {
   storyId: string;
@@ -10,8 +10,11 @@ interface StoryMediaProps {
 export default function StoryMedia({ storyId }: StoryMediaProps) {
   const [story, setStory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    
     const fetchStory = async () => {
       try {
         const { data, error } = await supabase
@@ -38,6 +41,11 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
 
     fetchStory();
   }, [storyId]);
+
+  // Don't render anything on the server to avoid hydration mismatch
+  if (!mounted) {
+    return null;
+  }
 
   if (loading) {
     return (

@@ -21,8 +21,12 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   const [tweetCount, setTweetCount] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [reachedLimit, setReachedLimit] = useState(false);
+  const [clientOnly, setClientOnly] = useState(false);
 
   useEffect(() => {
+    // Set clientOnly to true after the component mounts
+    setClientOnly(true);
+
     const checkTweetLimit = async () => {
       if (!profile) return;
 
@@ -30,6 +34,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
 
       if (profile.is_premium) return;
 
+      // Create date object only on client-side
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -189,6 +194,10 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     }
   };
 
+  if (!clientOnly) {
+    return null;
+  }
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="mb-4 p-4 bg-white rounded-lg shadow">
@@ -261,7 +270,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
           <div className="mt-2 text-red-500 text-sm">{error}</div>
         )}
 
-        {!isPremium && (
+        {clientOnly && !isPremium && (
           <div className="mt-2 text-sm text-gray-500 flex justify-between">
             <span>
               {tweetCount}/5 tweets aujourd'hui {reachedLimit && '(limite atteinte)'}
@@ -276,7 +285,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         )}
       </form>
 
-      {reachedLimit && (
+      {clientOnly && reachedLimit && (
         <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
           <h3 className="font-semibold text-yellow-800">Limite de tweets atteinte</h3>
           <p className="text-sm text-yellow-700 mb-3">

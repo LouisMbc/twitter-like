@@ -24,7 +24,9 @@ export function Navbar() {
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Pour éviter l'erreur d'hydration, on initialise avec null et on n'affiche rien
+  // jusqu'à ce que le client vérifie l'authentification
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
@@ -159,107 +161,110 @@ export default function Header() {
     router.push('/auth/login');
   };
 
+  // N'affichez rien jusqu'à ce que la vérification d'auth soit terminée côté client
+  if (!isAuthChecked) {
+    return null;
+  }
+
   return (
     <>
-      {!isAuthChecked ? null : (
-        <div className="flex min-h-screen bg-black text-white">
-          {/* Sidebar */}
-          {isAuthenticated && (
-            <div className="fixed left-0 top-0 h-full w-64 bg-black border-r border-gray-800">
-              <div className="p-4">
-                <div className="mb-6">
-                  <Image 
-                    src="/logo_Flow.png" 
-                    alt="Flow Logo" 
-                    width={90} 
-                    height={30} 
-                    className="object-contain" 
-                  />
+      <div className="flex min-h-screen bg-black text-white">
+        {/* Sidebar - uniquement affiché si l'utilisateur est authentifié */}
+        {isAuthenticated && (
+          <div className="fixed left-0 top-0 h-full w-64 bg-black border-r border-gray-800">
+            <div className="p-4">
+              <div className="mb-6">
+                <Image 
+                  src="/logo_Flow.png" 
+                  alt="Flow Logo" 
+                  width={90} 
+                  height={30} 
+                  className="object-contain" 
+                />
+              </div>
+              
+              <nav className="space-y-1">
+                <Link href="/dashboard">
+                <div className={`flex items-center px-4 py-3 ${pathname === '/dashboard' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                  <Home className="mr-4" />
+                  <span className="text-lg">Accueil</span>
                 </div>
-                
-                <nav className="space-y-1">
-                  <Link href="/dashboard">
-                  <div className={`flex items-center px-4 py-3 ${pathname === '/dashboard' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
-                    <Home className="mr-4" />
-                    <span className="text-lg">Accueil</span>
-                  </div>
-                  </Link>
-                  <Link href="/explore">
-                  <div className={`flex items-center px-4 py-3 ${pathname === '/explore' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
-                    <Search className="mr-4" />
-                    <span className="text-lg">Explorer</span>
-                  </div>
-                  </Link>
-                  <Link href="/notifications">
-                  <div className={`flex items-center px-4 py-3 ${pathname === '/notifications' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
-                    <span className="relative mr-4">
-                    <Bell />
-                    {unreadNotificationCount > 0 && (
-                      <span className="notif-badge">
-                      {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
-                      </span>
-                    )}
+                </Link>
+                <Link href="/explore">
+                <div className={`flex items-center px-4 py-3 ${pathname === '/explore' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                  <Search className="mr-4" />
+                  <span className="text-lg">Explorer</span>
+                </div>
+                </Link>
+                <Link href="/notifications">
+                <div className={`flex items-center px-4 py-3 ${pathname === '/notifications' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
+                  <span className="relative mr-4">
+                  <Bell />
+                  {unreadNotificationCount > 0 && (
+                    <span className="notif-badge">
+                    {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
                     </span>
-                    <span className="text-lg">Notifications</span>
+                  )}
+                  </span>
+                  <span className="text-lg">Notifications</span>
+                </div>
+                </Link>
+                <Link href="/messages">
+                <div className={`flex items-center px-4 py-3 ${pathname === '/messages' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
+                  <Mail className="mr-4" />
+                  <span className="text-lg">Messages</span>
+                  {unreadMessageCount > 0 && (
+                  <span className="absolute left-7 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                  </span>
+                  )}
+                </div>
+                </Link>
+                <Link href="/profile">
+                <div className={`flex items-center px-4 py-3 ${pathname === '/profile' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
+                  <User className="mr-4" />
+                  <span className="text-lg">Profil</span>
+                </div>
+                </Link>
+              </nav>
+              
+              <button 
+                onClick={() => router.push('/tweets')}
+                className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700"
+              >
+                <div className="flex items-center justify-center">
+                  <Plus className="mr-2" size={16} />
+                  <span>Ajouter un post</span>
+                </div>
+              </button>
+              
+              {/* User profile at bottom */}
+              <div className="absolute bottom-16 left-0 right-0 px-4">
+                <div className="flex items-center p-2 hover:bg-gray-800 rounded-full cursor-pointer">
+                  <div className="w-10 h-10 bg-gray-600 rounded-full mr-3 flex items-center justify-center">
+                    <span>{profile?.username?.substring(0, 2) || 'VP'}</span>
                   </div>
-                  </Link>
-                  <Link href="/messages">
-                  <div className={`flex items-center px-4 py-3 ${pathname === '/messages' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md relative cursor-pointer`}>
-                    <Mail className="mr-4" />
-                    <span className="text-lg">Messages</span>
-                    {unreadMessageCount > 0 && (
-                    <span className="absolute left-7 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
-                    </span>
-                    )}
-                  </div>
-                  </Link>
-                  <Link href="/profile">
-                  <div className={`flex items-center px-4 py-3 ${pathname === '/profile' ? 'bg-gray-900 text-red-500 font-bold' : 'text-white hover:bg-gray-900'} rounded-md cursor-pointer`}>
-                    <User className="mr-4" />
-                    <span className="text-lg">Profil</span>
-                  </div>
-                  </Link>
-                </nav>
-                
-                <button 
-                  onClick={() => router.push('/tweets')}
-                  className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700"
-                >
-                  <div className="flex items-center justify-center">
-                    <Plus className="mr-2" size={16} />
-                    <span>Ajouter un post</span>
-                  </div>
+                  <span className="text-sm">{profile?.username || 'Votre_pseudo'}</span>
+                </div>
+              </div>
+              
+              {/* Theme toggle and logout */}
+              <div className="absolute bottom-4 left-0 right-0 px-4">
+                <div className="flex items-center justify-between p-2">
+                <button onClick={handleSignOut} className="flex items-center text-red-500">
+                  <>
+                    <LogOut className="mr-2" size={16} />
+                    <span>Déconnexion</span>
+                  </>
                 </button>
-                
-                {/* User profile at bottom */}
-                <div className="absolute bottom-16 left-0 right-0 px-4">
-                  <div className="flex items-center p-2 hover:bg-gray-800 rounded-full cursor-pointer">
-                    <div className="w-10 h-10 bg-gray-600 rounded-full mr-3 flex items-center justify-center">
-                      <span>{profile?.username?.substring(0, 2) || 'VP'}</span>
-                    </div>
-                    <span className="text-sm">{profile?.username || 'Votre_pseudo'}</span>
-                  </div>
-                </div>
-                
-                {/* Theme toggle and logout */}
-                <div className="absolute bottom-4 left-0 right-0 px-4">
-                  <div className="flex items-center justify-between p-2">
-                  <button onClick={handleSignOut} className="flex items-center text-red-500">
-                    <>
-                      <LogOut className="mr-2" size={16} />
-                      <span>Déconnexion</span>
-                    </>
-                  </button>
-                  </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="pt-16"></div>
-        </div>
-      )}
+        <div className="pt-16"></div>
+      </div>
     </>
   );
 }

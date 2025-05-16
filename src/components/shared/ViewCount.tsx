@@ -6,7 +6,7 @@ import supabase from '@/lib/supabase';
 interface ViewCounterProps {
   contentId: string;
   contentType: 'tweet' | 'comment';
-  initialCount?: number; // Ajouter cette propriété
+  initialCount?: number;
 }
 
 // Fonction pour générer un UUID
@@ -19,16 +19,20 @@ function generateUUID() {
 }
 
 export default function ViewCounter({ contentId, contentType, initialCount = 0 }: ViewCounterProps) {
-  const [views, setViews] = useState(initialCount); // Utiliser la valeur initiale
+  const [views, setViews] = useState(initialCount);
+  const [isClient, setIsClient] = useState(false);
+  
+  // Déterminer si nous sommes côté client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   useEffect(() => {
-    // Ne pas recompter si nous avons déjà une valeur initiale non nulle
-    if (initialCount > 0) {
-      setViews(initialCount);
-    }
-
-    // Ne compter les vues que côté client
-    if (typeof window === 'undefined') return;
+    // Mettre à jour l'état avec la valeur initiale
+    setViews(initialCount);
+    
+    // Ne pas recompter si nous ne sommes pas côté client
+    if (!isClient) return;
     
     // Récupérer ou créer un identifiant visiteur unique
     let visitorId = localStorage.getItem('visitor_id');
@@ -142,9 +146,13 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
       }
     };
 
-    // Mettre à jour les vues
-    updateViews();
-  }, [contentId, contentType, initialCount]);
+    // Mettre à jour les vues uniquement côté client
+    if (isClient) {
+      updateViews();
+    }
+  }, [contentId, contentType, initialCount, isClient]);
 
+  // Côté serveur, afficher simplement le compte initial
+  // Côté client, afficher le compte mis à jour
   return <span className="text-sm text-gray-500">{views} vue{views !== 1 ? 's' : ''}</span>;
 }

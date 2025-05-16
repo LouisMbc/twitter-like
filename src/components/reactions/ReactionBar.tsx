@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import supabase from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 interface ReactionBarProps {
   tweetId?: string;
@@ -16,6 +16,7 @@ interface ReactionCount {
 export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
   const [reactions, setReactions] = useState<ReactionCount[]>([]);
   const [userReaction, setUserReaction] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   // Mettre à jour les types de réactions pour correspondre à la table SQL
   const reactionTypes = {
@@ -27,8 +28,12 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
   };
 
   useEffect(() => {
-    loadReactions();
-    checkUserReaction();
+    setMounted(true);
+
+    if (tweetId || commentId) {
+      loadReactions();
+      checkUserReaction();
+    }
   }, [tweetId, commentId]);
 
   const loadReactions = async () => {
@@ -169,6 +174,11 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
       console.error('Erreur lors de la réaction:', error);
     }
   };
+
+  // Don't render during server-side rendering or if no content ID is provided
+  if (!mounted || (!tweetId && !commentId)) {
+    return null;
+  }
 
   return (
     <div className="flex items-center space-x-4 text-sm text-gray-500">

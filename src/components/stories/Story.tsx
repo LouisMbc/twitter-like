@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Suspense } from 'react';
 import StoryMedia from './StoryMedia';
 import StoryActions from './StoryActions';
-import supabase from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const STORY_DURATION = 60; // Durée en secondes (1 minute)
 
@@ -20,11 +20,17 @@ const Story = ({
   onClose?: () => void;
 }) => {
   const { stories, loading, refreshStories } = useStories();
-  const [currentStoryIndex, setCurrentStoryIndex] = useState<number | null>(
-    initialStoryIndex !== undefined ? initialStoryIndex : null
-  );
+  const [currentStoryIndex, setCurrentStoryIndex] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(STORY_DURATION);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  
+  // Déterminer si nous sommes côté client
+  useEffect(() => {
+    setIsClient(true);
+    // Initialiser l'index seulement côté client pour éviter l'erreur d'hydration
+    setCurrentStoryIndex(initialStoryIndex !== undefined ? initialStoryIndex : null);
+  }, [initialStoryIndex]);
   
   // Filtrer les stories si un userId est fourni
   const filteredStories = userId 
@@ -36,6 +42,9 @@ const Story = ({
 
   // Vérifier si l'utilisateur actuel est le propriétaire de la story
   useEffect(() => {
+    // Ne pas exécuter cette vérification côté serveur
+    if (!isClient) return;
+    
     const checkCurrentUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -44,7 +53,7 @@ const Story = ({
     };
     
     checkCurrentUser();
-  }, []);
+  }, [isClient]);
 
   // Fonction pour passer à la story suivante
   const goToNextStory = useCallback(() => {
@@ -71,7 +80,7 @@ const Story = ({
 
   // Démarrer le timer lorsqu'une story est ouverte
   useEffect(() => {
-    if (currentStory === null) return;
+    if (currentStory === null || !isClient) return;
     
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
@@ -88,7 +97,7 @@ const Story = ({
     return () => {
       clearInterval(timer);
     };
-  }, [currentStory, goToNextStory]);
+  }, [currentStory, goToNextStory, isClient]);
 
   // Fonction pour gérer la suppression
   const handleStoryDeleted = () => {
@@ -111,6 +120,11 @@ const Story = ({
     setCurrentStoryIndex(null);
     if (onClose) onClose();
   };
+
+  // Ne rien afficher si on n'est pas encore côté client pour éviter l'erreur d'hydration
+  if (!isClient) {
+    return null;
+  }
 
   if (loading) return <p>Chargement...</p>;
 
