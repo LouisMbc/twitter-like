@@ -197,7 +197,7 @@ const Story = ({
           </div>
           
           {/* Afficher StoryActions seulement si l'utilisateur est propriétaire de la story */}
-          {currentUserId === currentStory.user_id && (
+          {currentStory && currentUserId === currentStory.user_id && (
             <StoryActions 
               storyId={currentStory.id} 
               mediaUrl={currentStory.media_url}
@@ -211,7 +211,7 @@ const Story = ({
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
               </div>
             }>
-              <StoryMedia storyId={currentStory.id} />
+              {currentStory && <StoryMedia storyId={currentStory.id} />}
             </Suspense>
           </div>
         </div>
