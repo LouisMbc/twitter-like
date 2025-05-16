@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Suspense } from 'react';
 import StoryMedia from './StoryMedia';
 import StoryActions from './StoryActions';
-import { supabase } from '@/lib/supabase-browser';
+import supabase from '@/lib/supabase-browser';
 
 const STORY_DURATION = 60; // Durée en secondes (1 minute)
 

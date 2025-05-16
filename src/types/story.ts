@@ -1,4 +1,5 @@
 export interface Story {
+  Profile: any;
   id: string;
   user_id: string;
   content: string;

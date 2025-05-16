@@ -150,7 +150,7 @@ export default function ProfileHeader({
             )}
             
             {/* Add story button for current user */}
-            {isCurrentUser && (
+            {isCurrentUser(currentProfileId, profile.id) && (
               <button
                 onClick={handleAddStoryClick}
                 className="absolute bottom-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
@@ -183,7 +183,7 @@ export default function ProfileHeader({
               </button>
             )}
             
-            {isCurrentUser ? (
+            {isCurrentUser(currentProfileId, profile.id) ? (
               <button
                 onClick={() => router.push('/profile/edit')}
                 className="border border-gray-600 text-white px-4 py-1.5 rounded-full text-sm font-medium"
