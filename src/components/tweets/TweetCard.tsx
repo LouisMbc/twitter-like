@@ -23,7 +23,6 @@ interface TweetCardProps {
 }
 
 export default function TweetCard({ tweet, detailed = false, showRetweetButton = true, isComment = false }: TweetCardProps) {
-  const [liked, setLiked] = useState(false);
   const router = useRouter();
   const [originalTweet, setOriginalTweet] = useState<Tweet | null>(null);
   const [commentCount, setCommentCount] = useState(0);

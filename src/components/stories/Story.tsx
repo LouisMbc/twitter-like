@@ -12,17 +12,16 @@ const STORY_DURATION = 60; // Durée en secondes (1 minute)
 
 const Story = ({ 
   userId, 
-  initialStoryIndex = null, // Changer à null au lieu de 0
+  initialStoryIndex = 0,
   onClose 
 }: { 
   userId?: string | null;
-  initialStoryIndex?: number | null; // Ajouter null comme type possible
+  initialStoryIndex?: number;
   onClose?: () => void;
 }) => {
   const { stories, loading, refreshStories } = useStories();
-  // Uniquement initialiser avec initialStoryIndex si explicitement fourni
   const [currentStoryIndex, setCurrentStoryIndex] = useState<number | null>(
-    initialStoryIndex !== undefined && initialStoryIndex !== null ? initialStoryIndex : null
+    initialStoryIndex !== undefined ? initialStoryIndex : null
   );
   const [timeRemaining, setTimeRemaining] = useState(STORY_DURATION);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -127,13 +126,13 @@ const Story = ({
           }}
         >
           <div className="w-full h-full bg-gray-700 flex items-center justify-center text-white">
-            {story.user_id?.charAt(0).toUpperCase() || '?'}
+            {story.Profile?.nickname?.charAt(0).toUpperCase()}
           </div>
         </div>
       ))}
 
       {/* Affichage en plein écran de la Story sélectionnée */}
-      {currentStory !== null && currentStory !== undefined && currentStory.id && (
+      {currentStory !== null && (
         <div
           className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-80 flex items-center justify-center z-50"
         >
@@ -184,7 +183,7 @@ const Story = ({
           </div>
           
           {/* Afficher StoryActions seulement si l'utilisateur est propriétaire de la story */}
-          {currentStory && currentStory.user_id && currentUserId === currentStory.user_id && (
+          {currentUserId === currentStory.user_id && (
             <StoryActions 
               storyId={currentStory.id} 
               mediaUrl={currentStory.media_url}
