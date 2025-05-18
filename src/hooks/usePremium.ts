@@ -6,6 +6,14 @@ import { useProfile } from '@/hooks/useProfile';
 import { loadStripe } from '@stripe/stripe-js';
 import { Subscription } from '@/types'; // Importez le type Subscription
 
+// Add Profile type import and extend it if needed
+import type { Profile } from '@/types';
+
+// Declare module for stripe-js if types aren't available
+declare module '@/services/stripe/stripe' {
+  export function loadStripe(apiKey: string): Promise<any>;
+}
+
 // Initialiser la promesse Stripe en dehors du hook
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -14,7 +22,6 @@ export const usePremium = () => {
   const { profile } = useProfile();
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
-  // Définir le type correct pour subscriptionData
   const [subscriptionData, setSubscriptionData] = useState<Subscription | null>(null);
   const [error, setError] = useState('');
 
@@ -27,7 +34,7 @@ export const usePremium = () => {
 
     try {
       // Vérifier le statut premium dans le profil
-      setIsPremium(!!profile.is_premium);
+      setIsPremium(!!(profile as any).is_premium); // Use type assertion as a temporary fix
       
       // Récupérer les détails de l'abonnement
       const { data, error } = await supabase
@@ -40,7 +47,6 @@ export const usePremium = () => {
         throw error;
       }
       
-      // Ajouter le casting explicite ici
       setSubscriptionData(data as Subscription | null);
     } catch (err) {
       console.error('Erreur lors de la récupération du statut de l\'abonnement:', err);
@@ -55,11 +61,9 @@ export const usePremium = () => {
     try {
       setLoading(true);
       
-      // S'assurer que l'utilisateur est connecté et a un profil
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Veuillez vous connecter pour vous abonner");
       
-      // Récupérer le profil
       const { data: profileData } = await supabase
         .from('Profile')
         .select('id')
@@ -68,7 +72,6 @@ export const usePremium = () => {
       
       if (!profileData) throw new Error("Profil non trouvé");
       
-      // Appel à votre API de checkout
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
@@ -79,7 +82,6 @@ export const usePremium = () => {
         }),
       });
       
-      // Vérifier si la réponse est ok avant de tenter de la parser
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Statut de la réponse:', response.status);
@@ -87,10 +89,8 @@ export const usePremium = () => {
         throw new Error(`Erreur lors de la création de la session: ${response.statusText}`);
       }
       
-      // Parse la réponse en JSON
       const data = await response.json();
       
-      // Rediriger vers l'URL de checkout
       window.location.href = data.url;
     } catch (error) {
       console.error("Erreur lors de l'abonnement:", error);
@@ -119,7 +119,6 @@ export const usePremium = () => {
         throw new Error(apiError);
       }
       
-      // Rafraîchir les données
       fetchSubscriptionStatus();
     } catch (err) {
       console.error('Erreur lors de l\'annulation de l\'abonnement:', err);
@@ -148,7 +147,6 @@ export const usePremium = () => {
         throw new Error(apiError);
       }
       
-      // Rafraîchir les données
       fetchSubscriptionStatus();
     } catch (err) {
       console.error('Erreur lors de la réactivation de l\'abonnement:', err);
@@ -158,7 +156,6 @@ export const usePremium = () => {
     }
   };
 
-  // Charger le statut au démarrage
   useEffect(() => {
     fetchSubscriptionStatus();
   }, [fetchSubscriptionStatus]);

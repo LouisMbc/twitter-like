@@ -4,14 +4,35 @@ import { messageService } from '@/services/supabase/message';
 import { useProfile } from '@/hooks/useProfile';
 import supabase from '@/lib/supabase'; 
 
+// Define the types for our data structures
+interface Message {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  content: string;
+  created_at: string;
+  is_read: boolean;
+}
+
+interface Contact {
+  id: string;
+  // Add other user properties as needed
+}
+
+interface Conversation {
+  // Add conversation properties
+  id: string;
+  // Add other conversation properties as needed
+}
+
 export const useMessages = () => {
   const { profile } = useProfile();
-  const [conversations, setConversations] = useState([]);
-  const [currentMessages, setCurrentMessages] = useState([]);
-  const [currentContact, setCurrentContact] = useState(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentMessages, setCurrentMessages] = useState<Message[]>([]);
+  const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Récupérer toutes les conversations
   const fetchConversations = useCallback(async () => {
@@ -22,7 +43,7 @@ export const useMessages = () => {
       const { data, error } = await messageService.getConversations(profile.id);
       if (error) throw error;
       
-      setConversations(data || []);
+      setConversations((data || []) as Conversation[]);
     } catch (err) {
       console.error('Erreur lors du chargement des conversations:', err);
       setError('Impossible de charger vos conversations');
@@ -32,7 +53,7 @@ export const useMessages = () => {
   }, [profile]);
 
   // Récupérer les messages d'une conversation spécifique
-  const fetchMessages = useCallback(async (otherUser) => {
+  const fetchMessages = useCallback(async (otherUser: Contact) => {
     if (!profile || !otherUser) return;
     
     setLoading(true);
@@ -42,7 +63,7 @@ export const useMessages = () => {
       const { data, error } = await messageService.getMessages(profile.id, otherUser.id);
       if (error) throw error;
       
-      setCurrentMessages(data || []);
+      setCurrentMessages((data || []) as Message[]);
       
       // Marquer les messages comme lus
       await messageService.markAsRead(profile.id, otherUser.id);
@@ -58,7 +79,7 @@ export const useMessages = () => {
   }, [profile, fetchConversations]);
 
   // Envoyer un nouveau message
-  const sendMessage = useCallback(async (recipientId, content) => {
+  const sendMessage = useCallback(async (recipientId: string, content: string) => {
     if (!profile || !content.trim()) return;
     
     setSendingMessage(true);
@@ -67,7 +88,9 @@ export const useMessages = () => {
       if (error) throw error;
       
       // Ajouter le nouveau message à la conversation actuelle
-      setCurrentMessages(prev => [...prev, data[0]]);
+      if (data && data[0]) {
+        setCurrentMessages(prev => [...prev, data[0] as Message]);
+      }
       
       // Rafraîchir les conversations
       fetchConversations();
@@ -83,7 +106,7 @@ export const useMessages = () => {
   }, [profile, fetchConversations]);
 
   // Vérifier si l'utilisateur peut envoyer un message à quelqu'un
-  const checkCanMessage = useCallback(async (otherUserId) => {
+  const checkCanMessage = useCallback(async (otherUserId: string) => {
     if (!profile) return false;
     
     try {
@@ -101,7 +124,6 @@ export const useMessages = () => {
   useEffect(() => {
     if (!profile) return;
     
-    // Utilisez supabase (importé par défaut) et non supabase.supabase
     const subscription = supabase
       .channel('messages')
       .on('postgres_changes', {
@@ -112,7 +134,7 @@ export const useMessages = () => {
       }, (payload) => {
         // Mettre à jour la conversation actuelle si nécessaire
         if (currentContact && payload.new.sender_id === currentContact.id) {
-          setCurrentMessages(prev => [...prev, payload.new]);
+          setCurrentMessages(prev => [...prev, payload.new as Message]);
           messageService.markAsRead(profile.id, currentContact.id);
         }
         

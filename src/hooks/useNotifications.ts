@@ -4,12 +4,30 @@ import { notificationService } from '@/services/supabase/notification';
 import { useProfile } from '@/hooks/useProfile';
 import supabase from '@/lib/supabase';
 
+// Define the notification interface
+interface Sender {
+  id: string;
+  nickname: string;
+  profilePicture: string;
+}
+
+interface Notification {
+  id: string;
+  content_id: string;
+  content_type: string;
+  type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  sender: Sender[];
+}
+
 export const useNotifications = () => {
   const { profile } = useProfile();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Récupérer les notifications
   const fetchNotifications = useCallback(async () => {
@@ -20,7 +38,7 @@ export const useNotifications = () => {
       const { data, error } = await notificationService.getNotifications(profile.id);
       if (error) throw error;
 
-      setNotifications(data || []);
+      setNotifications((data || []) as Notification[]);
       
       // Mettre à jour le compteur de notifications non lues
       const unreadNotifications = data ? data.filter(notif => !notif.is_read) : [];
@@ -58,7 +76,7 @@ export const useNotifications = () => {
       if (error) throw error;
 
       // Mettre à jour localement
-      setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true })));
+      setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true } as Notification)));
       setUnreadCount(0);
     } catch (err) {
       console.error('Erreur lors du marquage des notifications:', err);
@@ -78,7 +96,7 @@ export const useNotifications = () => {
         filter: `user_id=eq.${profile.id}`
       }, (payload) => {
         // Ajouter la nouvelle notification
-        setNotifications(prev => [payload.new, ...prev]);
+        setNotifications(prev => [payload.new as Notification, ...prev]);
         setUnreadCount(prev => prev + 1);
       })
       .subscribe();
