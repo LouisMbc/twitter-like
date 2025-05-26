@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
-import { Heart, MessageSquare, Repeat, BarChart2 } from 'lucide-react';
-import { ArrowPathIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import RetweetButton from './RetweetButton';
@@ -112,10 +110,13 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
   }
   
   return (
-    <div className={`p-4 ${!isComment && 'border-b'} border-gray-800 hover:bg-gray-900/30`}
-         onClick={handleClick}>
-      <div className="flex">
-        <div className="mr-3 flex-shrink-0">
+    <div 
+      className={`p-4 ${!isComment && 'border-b'} border-gray-800 hover:bg-gray-900/30`}
+      onClick={handleClick}
+    >
+      <div className="flex space-x-3">
+        {/* Avatar et info auteur */}
+        <div className="flex-shrink-0">
           <Link href={`/profile/${tweet.author.id}`} onClick={(e) => e.stopPropagation()}>
             {tweet.author.profilePicture ? (
               <img
@@ -130,109 +131,134 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
             )}
           </Link>
         </div>
-        
+
+        {/* Contenu principal */}
         <div className="flex-1">
-          <div className="flex items-center">
-            <Link href={`/profile/${tweet.author.id}`} className="font-bold hover:underline" onClick={(e) => e.stopPropagation()}>
+          {/* En-tête: nom et date */}
+          <div className="flex items-center mb-1">
+            <Link 
+              href={`/profile/${tweet.author.id}`} 
+              className="font-bold hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
               {tweet.author.nickname}
             </Link>
-            <p className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 ml-2">
               {formatDate(tweet.published_at)}
-            </p>
+            </span>
           </div>
-        </div>
-        
-        {/* Contenu du tweet courant */}
-        <p className="text-gray-800 mb-4">{tweet.content}</p>
-
-        {tweet.picture && tweet.picture.length > 0 && (
-          <div className="mb-4">
-            {tweet.picture.map((pic, index) => {
-              // Déterminer si c'est une vidéo en vérifiant l'extension de l'URL
-              const isVideo = /\.(mp4|webm|ogg)$/i.test(pic);
-              
-              return isVideo ? (
-                <div key={index} className="relative aspect-video">
-                  <video
-                    src={pic}
-                    controls
-                    playsInline
-                    className="rounded-lg max-h-96 w-auto"
-                    onError={(e) => console.error("Erreur de chargement vidéo:", e)}
-                  />
-                </div>
-              ) : (
-                <div key={index} className="relative">
-                  <img
-                    src={pic}
-                    alt="Tweet image"
-                    className="rounded-lg max-h-96 w-auto"
-                  />
-                </div>
-              );
-            })}
+          
+          {/* Contenu du tweet */}
+          <div className="mb-3">
+            <p className="text-white">{tweet.content}</p>
           </div>
-        )}
-
-        {/* Affichage du tweet original s'il s'agit d'un retweet */}
-        {tweet.retweet_id && originalTweet && (
-          <div className="mt-4 border border-gray-200 rounded-lg p-3">
-            <div className="mb-2 text-sm text-gray-500 flex items-center">
-              <ArrowPathIcon className="h-4 w-4 mr-1" />
-              <span>Tweet original de {originalTweet.author.nickname}</span>
-            </div>
-            
-            {/* Tweet original intégré */}
-            <div className="bg-gray-50 p-3 rounded-md">
-              <div className="flex items-center mb-2">
-                <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                  {originalTweet.author.profilePicture ? (
-                    <img
-                      src={originalTweet.author.profilePicture}
-                      alt={originalTweet.author.nickname}
-                      className="w-full h-full object-cover"
+          
+          {/* Médias du tweet */}
+          {tweet.picture && tweet.picture.length > 0 && (
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              {tweet.picture.map((pic, index) => {
+                // Déterminer si c'est une vidéo en vérifiant l'extension de l'URL
+                const isVideo = /\.(mp4|webm|ogg)$/i.test(pic);
+                
+                return isVideo ? (
+                  <div key={index} className="relative aspect-video">
+                    <video
+                      src={pic}
+                      controls
+                      playsInline
+                      className="rounded-lg max-h-96 w-auto"
+                      onError={(e) => console.error("Erreur de chargement vidéo:", e)}
                     />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-sm text-gray-500">
-                        {originalTweet.author.nickname.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
-                    {originalTweet.author.nickname}
-                  </h4>
-                  <p className="text-xs text-gray-500">
-                    {formatDate(originalTweet.published_at)}
-                  </p>
-                </div>
+                  </div>
+                ) : (
+                  <div key={index} className="relative">
+                    <img
+                      src={pic}
+                      alt="Tweet image"
+                      className="rounded-lg max-h-96 w-auto object-cover"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Affichage du tweet original s'il s'agit d'un retweet */}
+          {tweet.retweet_id && originalTweet && (
+            <div className="mt-2 mb-3 border border-gray-700 rounded-lg p-3">
+              <div className="mb-2 text-sm text-gray-500 flex items-center">
+                <ArrowPathIcon className="h-4 w-4 mr-1" />
+                <span>Tweet original de {originalTweet.author.nickname}</span>
               </div>
               
-              <p className="text-gray-800 text-sm">{originalTweet.content}</p>
+              {/* Tweet original intégré */}
+              <div className="bg-gray-800 p-3 rounded-md">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                    {originalTweet.author.profilePicture ? (
+                      <img
+                        src={originalTweet.author.profilePicture}
+                        alt={originalTweet.author.nickname}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white">
+                        <span>{originalTweet.author.nickname.charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-white text-sm">
+                      {originalTweet.author.nickname}
+                    </h4>
+                    <p className="text-xs text-gray-400">
+                      {formatDate(originalTweet.published_at)}
+                    </p>
+                  </div>
+                </div>
+                
+                <p className="text-white text-sm">{originalTweet.content}</p>
+                
+                {originalTweet.picture && originalTweet.picture.length > 0 && (
+                  <div className="mt-2">
+                    <img
+                      src={originalTweet.picture[0]}
+                      alt="Original tweet image"
+                      className="rounded-md max-h-64 w-auto"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Actions (vues, commentaires, retweets) */}
+          <div className="flex items-center justify-between mt-2 text-sm">
+            <div className="flex items-center space-x-4">
+              <div onClick={(e) => e.stopPropagation()}>
+                <ViewCount 
+                  contentId={tweet.id} 
+                  contentType="tweet"
+                  initialCount={tweet.view_count || 0}
+                />
+              </div>
               
-              {originalTweet.picture && originalTweet.picture.length > 0 && (
-                <div className="mt-2">
-                  <img
-                    src={originalTweet.picture[0]}
-                    alt="Original tweet image"
-                    className="rounded-md max-h-64 w-auto"
-                  />
+              <button 
+                onClick={handleCommentClick}
+                className="flex items-center text-gray-500 hover:text-blue-500"
+              >
+                <span className="mr-1">{commentCount}</span> Commentaires
+              </button>
+              
+              {showRetweetButton && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <RetweetButton tweetId={tweet.id} />
                 </div>
               )}
             </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between text-gray-500 mt-4">
-          <div className="flex items-center space-x-4">
+            
             <div onClick={(e) => e.stopPropagation()}>
-              <ViewCount 
-                contentId={tweet.id} 
-                contentType="tweet"
-                initialCount={tweet.view_count || 0}
-              />
+              <ReactionBar tweetId={tweet.id} />
             </div>
           </div>
         </div>

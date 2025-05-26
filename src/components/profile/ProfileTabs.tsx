@@ -7,13 +7,13 @@ interface ProfileTabsProps {
 
 export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
   return (
-    <div className="border-b border-gray-800">
+    <div className="border-b border-gray-700">
       <div className="flex space-x-4">
         <button
           className={`px-4 py-2 rounded-lg ${
             activeTab === 'tweets'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700'
+              ? 'bg-blue-400 text-white'
+              : 'hover:bg-gray-800 text-gray-400'
           }`}
           onClick={() => onTabChange('tweets')}
         >
@@ -22,8 +22,8 @@ export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps
         <button
           className={`px-4 py-2 rounded-lg ${
             activeTab === 'comments'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700'
+              ? 'bg-blue-400 text-white'
+              : 'hover:bg-gray-800 text-gray-400'
           }`}
           onClick={() => onTabChange('comments')}
         >
