@@ -1,19 +1,17 @@
 export interface Profile {
-  name: any;
   id: string;
   user_id: string;
-  firstName: string;
-  lastName: string;
-  nickname: string;
+  firstName: string | null;
+  lastName: string | null;
+  nickname: string | null;
   bio: string | null;
   profilePicture: string | null;
   created_at: string;
   follower_count: number;
   following_count: number;
-  // Ces champs sont dans useProfileData.ts
-  username?: any;
-  full_name?: any;
-  languages?(languages: any): unknown;
+  certified: boolean;
+  is_premium: boolean;
+  premium_features: any;
 }
 
 export interface ProfileForm {

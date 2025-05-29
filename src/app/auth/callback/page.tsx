@@ -2,27 +2,55 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import useAuthCallback from '@/hooks/useAuthCallback';
-import supabase from '@/lib/supabase-browser';
+import supabase from '@/lib/supabase';
 
 export default function AuthCallback() {
   const router = useRouter();
-  const { handleCallback } = useAuthCallback();
 
   useEffect(() => {
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const redirectPath = await handleCallback(session);
-        router.push(redirectPath);
-      } else {
-        // If no session, redirect to home or login
-        router.push('/auth');
+    const handleAuthCallback = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Auth error:', error);
+          router.push('/auth?error=auth_failed');
+          return;
+        }
+
+        if (data.session?.user) {
+          // Vérifier si le profil existe
+          const { data: profileData } = await supabase
+            .from('Profile')
+            .select('id')
+            .eq('user_id', data.session.user.id)
+            .single();
+
+          if (!profileData) {
+            // Le profil n'existe pas, rediriger vers la configuration
+            router.push('/profile/setup');
+          } else {
+            // L'utilisateur est connecté et a un profil, rediriger vers le dashboard
+            router.push('/dashboard');
+          }
+        } else {
+          router.push('/auth');
+        }
+      } catch (error) {
+        console.error('Callback error:', error);
+        router.push('/auth?error=callback_failed');
       }
     };
 
-    init();
-  }, [router, handleCallback]);
+    handleAuthCallback();
+  }, [router]);
 
-  return <div>Vérification en cours...</div>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#282325] text-white">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+        <p>Connexion en cours...</p>
+      </div>
+    </div>
+  );
 }

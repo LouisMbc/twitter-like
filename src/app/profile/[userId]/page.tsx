@@ -15,6 +15,7 @@ export default function UserProfilePage() {
   const params = useParams();
   const userId = params.userId as string;
 
+  // Vérifier si userId est un ID de profil ou un user_id
   const {
     profile,
     tweets,
@@ -53,12 +54,13 @@ export default function UserProfilePage() {
             <Image
               src="/logo_Flow.png"
               alt="Flow Logo"
-              width={520}
-              height={240}
+              width={120}
+              height={40}
               priority
             />
           </div>
-          <div className="mt-4">Chargement...</div>
+          <div className="mt-4">Chargement du profil...</div>
+          <div className="mt-2 text-sm text-gray-400">ID: {userId}</div>
         </div>
       </div>
     );
@@ -67,7 +69,16 @@ export default function UserProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-black text-white">
-        <div className="flex justify-center p-8 text-red-500">Profil non trouvé</div>
+        <div className="text-center py-20">
+          <div className="text-red-500 text-xl mb-4">Profil non trouvé</div>
+          <div className="text-gray-400 text-sm mb-4">ID recherché: {userId}</div>
+          <button 
+            onClick={() => router.push('/explore')} 
+            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors"
+          >
+            Retour à la recherche
+          </button>
+        </div>
       </div>
     );
   }

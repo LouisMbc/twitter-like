@@ -1,67 +1,37 @@
+// Remove duplicate Profile interface - use the one from profile.ts
+export * from './profile';
+
+// Add other types here if needed
+export interface Tweet {
+  id: string;
+  content: string;
+  picture?: string | null;
+  published_at: string;
+  view_count: number;
+  retweet_id?: string | null;
+  author_id: string;
+  author: {
+    id: string;
+    nickname: string;
+    profilePicture: string | null;
+    verified?: boolean;
+  };
+  originalTweet?: any;
+}
+
 export interface Comment {
   id: string;
   content: string;
   created_at: string;
   view_count: number;
+  tweet_id: string;
+  author_id: string;
   parent_comment_id?: string;
   author: {
     id: string;
     nickname: string;
     profilePicture: string | null;
   };
-  replies?: Comment[];
-  tweet_id: string;
-  // Add these properties to match what's being accessed in the profile page
-  nickname?: string; // Same as author.nickname
-  first_name?: string;
-  last_name?: string;
-  profile_picture?: string | null; // Same as author.profilePicture
-  Profile?: any; // For compatibility with comment.ts
-}
-
-export interface Profile {
-  id: string;               // uuid
-  user_id: string;          // uuid lié à auth.users
-  firstName: string | null; // text
-  lastName: string | null;  // text
-  nickname: string | null;  // text
-  bio: string | null;       // text
-  profilePicture: string | null; // text (URL de l'image)
-  certified: boolean;       // boolean
-  follower_count: number;   // integer
-  following_count: number;  // integer
-  created_at: string;       // timestamp with time zone
-  is_premium: boolean;      // boolean
-  premium_features: any;    // jsonb
-}
-
-// Si vous décidez d'étendre votre interface Tweet
-export interface Tweet {
-  [x: string]: any;
-  id: string;
-  content: string;
-  picture?: string[] | null;
-  published_at: string;
-  view_count: number;
-  author: {
-    verified: any;
-    id: string;
-    nickname: string;
-    profilePicture?: string | null;
-  };
-  author_id?: string; // Optionnel si vous avez déjà author
-  retweet_id?: string | null;
-  originalTweet?: Omit<Tweet, 'originalTweet'> | null; // Tweet original si c'est un retweet
-
-}
-
-// Ajouter aux types existants
-export interface ProfilePageData {
-  profile: Profile;
-  tweets: Tweet[];
-  comments: Comment[];
-  followersCount: number;
-  followingCount: number;
 }
 
 export interface Subscription {
@@ -69,22 +39,22 @@ export interface Subscription {
   profile_id: string;
   subscription_id: string;
   status: string;
-  plan: string;
-  current_period_end: string;
-  cancel_at_period_end?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  customer_id?: string;
+  created_at: string;
 }
 
-// Ajouter cette nouvelle interface à la fin du fichier
-export interface ProfileForm {
-  lastName: string;
-  firstName: string;
+export interface Profile {
+  id: string;
+  user_id?: string;
   nickname: string;
-  bio: string;
-  profilePicture: File | null;
-  currentProfilePicture?: string | null;
-  password?: string | null;
-  confirmPassword?: string | null;
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  profilePicture?: string;
+  certified?: boolean;
+  is_premium?: boolean;
+  premium_features?: any[];
+  follower_count?: number;
+  following_count?: number;
+  created_at?: string;
+  updated_at?: string;
 }

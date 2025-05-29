@@ -5,18 +5,32 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile } from '@/types';
 
-export default function SearchBar() {
+interface SearchBarProps {
+  placeholder?: string;
+  autoFocus?: boolean;
+  onSearch?: (query: string) => void;
+  initialQuery?: string;
+  showInlineResults?: boolean;
+}
+
+export default function SearchBar({ 
+  placeholder = "Rechercher des utilisateurs...",
+  autoFocus = false,
+  onSearch,
+  initialQuery = '',
+  showInlineResults = true
+}: SearchBarProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [searchResults, setSearchResults] = useState<Partial<Profile>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setSearchResults([]);
-        setSearchQuery('');
+        setShowResults(false);
       }
     };
 
@@ -27,19 +41,27 @@ export default function SearchBar() {
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
 
+    // Si onSearch est fourni, l'utiliser au lieu de la recherche interne
+    if (onSearch) {
+      onSearch(query);
+      return;
+    }
+
     if (query.length < 2) {
       setSearchResults([]);
+      setShowResults(false);
       return;
     }
 
     setIsLoading(true);
+    setShowResults(true);
 
     try {
       const { data, error } = await supabase
         .from('Profile')
-        .select('id, nickname, profilePicture')
+        .select('id, user_id, nickname, profilePicture, firstName, lastName')
         .ilike('nickname', `%${query}%`)
-        .limit(5);
+        .limit(8);
 
       if (error) throw error;
       setSearchResults(data || []);
@@ -51,6 +73,18 @@ export default function SearchBar() {
     }
   };
 
+  const handleUserClick = (profileId: string) => {
+    console.log('Navigation vers profil depuis SearchBar, profileId:', profileId);
+    router.push(`/profile/${profileId}`);
+    setShowResults(false);
+    setSearchQuery('');
+  };
+
+  const handleViewAllResults = () => {
+    router.push(`/explore?q=${encodeURIComponent(searchQuery)}`);
+    setShowResults(false);
+  };
+
   return (
     <div className="relative w-full" ref={searchRef}>
       <div className="relative">
@@ -59,68 +93,93 @@ export default function SearchBar() {
         </svg>
         <input
           type="text"
-          placeholder="Rechercher des utilisateurs..."
+          placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 bg-white text-black"
+          onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
+          autoFocus={autoFocus}
+          className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-gray-800 text-white placeholder-gray-400"
         />
       </div>
 
-      {isLoading && (
-        <div className="absolute w-full mt-1 bg-white rounded-lg shadow-lg border z-10 p-3 text-center">
-          <p className="text-gray-500">Recherche en cours...</p>
-        </div>
-      )}
-
-      {!isLoading && searchResults.length > 0 && (
-        <div className="absolute w-full mt-1 bg-white rounded-lg shadow-lg border z-10">
-          {searchResults.length > 0 && (
-            <div className="p-2 border-b">
-              <p className="text-sm font-medium text-gray-500">Résultats ({searchResults.length})</p>
-            </div>
-          )}
-          
-          {searchResults.map((result) => (
-            <div
-              key={result.id}
-              className="p-3 hover:bg-gray-50 cursor-pointer"
-              onClick={() => {
-                router.push(`/profile/${result.id}`);
-                setSearchResults([]);
-                setSearchQuery('');
-              }}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                  {result.profilePicture ? (
-                    <img
-                      src={result.profilePicture}
-                      alt={result.nickname}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-gray-500">{result.nickname?.charAt(0).toUpperCase()}</span>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <span className="font-medium">{result.nickname}</span>
-                  <div className="text-xs text-gray-500">Profil</div>
-                </div>
+      {showInlineResults && showResults && (
+        <>
+          {isLoading && (
+            <div className="absolute w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50 p-4 text-center">
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-gray-300">Recherche en cours...</span>
               </div>
             </div>
-          ))}
-          
-          {searchQuery.length >= 2 && (
-            <div 
-              className="p-3 text-center text-red-500 hover:bg-gray-50 cursor-pointer border-t"
-              onClick={() => router.push(`/search?q=${encodeURIComponent(searchQuery)}`)}
-            >
-              Voir tous les résultats pour "{searchQuery}"
+          )}
+
+          {!isLoading && searchQuery.length >= 2 && (
+            <div className="absolute w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50 max-h-96 overflow-y-auto">
+              {searchResults.length > 0 ? (
+                <>
+                  <div className="p-3 border-b border-gray-700">
+                    <p className="text-sm font-medium text-gray-300">
+                      {searchResults.length} utilisateur{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  
+                  {searchResults.map((result) => (
+                    <div
+                      key={result.id}
+                      className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700 last:border-b-0"
+                      onClick={() => handleUserClick(result.id!)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600 flex-shrink-0">
+                          {result.profilePicture ? (
+                            <img
+                              src={result.profilePicture}
+                              alt={result.nickname}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-white font-medium">
+                                {result.nickname?.charAt(0).toUpperCase() || '?'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-white truncate">
+                            {result.nickname}
+                          </p>
+                          {(result.firstName || result.lastName) && (
+                            <p className="text-sm text-gray-400 truncate">
+                              {result.firstName || ''} {result.lastName || ''}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500">Profil utilisateur</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div 
+                    className="p-3 text-center text-red-400 hover:bg-gray-700 cursor-pointer border-t border-gray-700"
+                    onClick={handleViewAllResults}
+                  >
+                    <span className="text-sm font-medium">
+                      Voir tous les résultats pour "{searchQuery}"
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="p-4 text-center">
+                  <p className="text-gray-400">Aucun utilisateur trouvé pour "{searchQuery}"</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Essayez avec un autre terme de recherche
+                  </p>
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

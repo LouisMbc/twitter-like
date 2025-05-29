@@ -22,6 +22,7 @@ export default function LoginPage() {
     checkAuth();
   }, [router]);
 
+
   return (
     <div className="min-h-screen bg-black text-white flex">
       {/* Left side - Hero Image */}

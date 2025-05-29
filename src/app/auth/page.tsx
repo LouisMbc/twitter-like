@@ -2,10 +2,61 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Footer from "@/components/shared/Footer";
+import supabase from "@/lib/supabase";
+
+// Fonction pour créer le profil utilisateur
+const createUserProfile = async (user: any) => {
+  try {
+    // Vérifier si le profil existe déjà
+    const { data: existingProfile } = await supabase
+      .from('Profile')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!existingProfile) {
+      // Créer un nouveau profil
+      const { error } = await supabase
+        .from('Profile')
+        .insert({
+          user_id: user.id,
+          firstName: user.user_metadata?.given_name || '',
+          lastName: user.user_metadata?.family_name || '',
+          nickname: user.user_metadata?.name || user.email?.split('@')[0],
+          bio: null,
+          profilePicture: user.user_metadata?.avatar_url || null,
+          certified: false,
+          is_premium: false,
+          premium_features: {},
+          follower_count: 0,
+          following_count: 0
+        });
+
+      if (error) {
+        console.error('Error creating user profile:', error);
+      }
+    }
+  } catch (error) {
+    console.error('Error in createUserProfile:', error);
+  }
+};
 
 export default function AuthPage() {
   const router = useRouter();
+
+  // Écouter les changements d'authentification pour Google
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        await createUserProfile(session.user);
+        router.push('/dashboard');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   // Fonction pour l'auth Google
   const handleGoogleSignUp = async () => {

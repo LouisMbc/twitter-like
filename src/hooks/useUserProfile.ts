@@ -31,79 +31,115 @@ export function useUserProfile(userId: string) {
         return;
       }
 
-      // Get target profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('Profile')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Get current user's profile
-      const { data: currentProfile, error: currentProfileError } = await supabase
+      // Récupérer le profil de l'utilisateur connecté
+      const { data: currentUserProfile } = await supabase
         .from('Profile')
         .select('id')
         .eq('user_id', session.user.id)
         .single();
 
-      if (currentProfileError) throw currentProfileError;
-      setCurrentProfileId(currentProfile.id);
-
-      // Get followers count
-      const { count: followers, error: followersError } = await supabase
-        .from('Following')
-        .select('*', { count: 'exact' })
-        .eq('following_id', userId);
-
-      if (followersError) throw followersError;
-      setFollowersCount(followers || 0);
-
-      // Get following count
-      const { count: following, error: followingError } = await supabase
-        .from('Following')
-        .select('*', { count: 'exact' })
-        .eq('follower_id', userId);
-
-      if (followingError) throw followingError;
-      setFollowingCount(following || 0);
-
-      // Check if current user follows target profile
-      if (currentProfile.id !== userId) {
-        const { data: followData, error: followError } = await supabase
-          .from('Following')
-          .select('*')
-          .eq('follower_id', currentProfile.id)
-          .eq('following_id', userId)
-          .maybeSingle();
-
-        if (followError && followError.code !== 'PGRST116') throw followError;
-        setIsFollowing(!!followData);
+      if (currentUserProfile) {
+        setCurrentProfileId(currentUserProfile.id);
       }
 
-      // Get tweets
+      // Debug: Log de l'userId reçu
+      console.log('Recherche du profil pour userId:', userId);
+
+      // Récupérer le profil cible - essayer d'abord par id, puis par user_id
+      let profileData = null;
+      
+      // Tentative 1: récupérer par id de profil
+      const { data: profileById, error: errorById } = await supabase
+        .from('Profile')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileById) {
+        console.log('Profil trouvé par ID:', profileById);
+        profileData = profileById;
+      } else {
+        // Tentative 2: récupérer par user_id
+        const { data: profileByUserId, error: errorByUserId } = await supabase
+          .from('Profile')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (profileByUserId) {
+          console.log('Profil trouvé par user_id:', profileByUserId);
+          profileData = profileByUserId;
+        } else {
+          console.error('Profil non trouvé par ID ni par user_id:', { errorById, errorByUserId });
+        }
+      }
+
+      if (!profileData) {
+        console.error('Aucun profil trouvé pour:', userId);
+        setProfile(null);
+        return;
+      }
+
+      setProfile(profileData);
+
+      // Charger les tweets du profil
       const { data: tweetsData, error: tweetsError } = await supabase
         .from('Tweets')
-        .select('*, author:Profile!author_id(*)')
-        .eq('author_id', userId)
+        .select(`
+          id, content, picture, published_at, view_count, retweet_id, author_id,
+          author:author_id (id, nickname, profilePicture)
+        `)
+        .eq('author_id', profileData.id)
         .order('published_at', { ascending: false });
 
-      if (tweetsError) throw tweetsError;
-      setTweets(tweetsData || []);
+      if (tweetsError) {
+        console.error('Erreur lors du chargement des tweets:', tweetsError);
+      } else {
+        setTweets(tweetsData || []);
+      }
 
-      // Get comments
+      // Charger les commentaires du profil
       const { data: commentsData, error: commentsError } = await supabase
         .from('Comments')
         .select('*, tweet:Tweets(*), author:Profile(*)')
-        .eq('author_id', userId)
+        .eq('author_id', profileData.user_id || profileData.id)
         .order('created_at', { ascending: false });
 
-      if (commentsError) throw commentsError;
-      setComments(commentsData || []);
+      if (commentsError) {
+        console.error('Erreur lors du chargement des commentaires:', commentsError);
+      } else {
+        setComments(commentsData || []);
+      }
 
-      setProfile(profileData);
+      // Charger les statistiques de suivi
+      const [followersResult, followingResult] = await Promise.all([
+        supabase
+          .from('Following')
+          .select('id')
+          .eq('following_id', profileData.id),
+        supabase
+          .from('Following')
+          .select('id')
+          .eq('follower_id', profileData.id)
+      ]);
+
+      setFollowersCount(followersResult.data?.length || 0);
+      setFollowingCount(followingResult.data?.length || 0);
+
+      // Vérifier si l'utilisateur actuel suit ce profil
+      if (currentUserProfile && profileData.id !== currentUserProfile.id) {
+        const { data: followingData } = await supabase
+          .from('Following')
+          .select('id')
+          .eq('follower_id', currentUserProfile.id)
+          .eq('following_id', profileData.id)
+          .maybeSingle();
+
+        setIsFollowing(!!followingData);
+      }
+
     } catch (error) {
-      console.error('Erreur détaillée:', error);
+      console.error('Erreur lors du chargement du profil:', error);
       setProfile(null);
     } finally {
       setLoading(false);
