@@ -238,12 +238,12 @@ export default function ConversationPage() {
                         {profile?.profilePicture ? (
                           <img
                             src={profile.profilePicture}
-                            alt={profile.nickname}
+                            alt={profile.nickname || 'Profile'}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs font-medium">
-                            {profile?.nickname.charAt(0).toUpperCase()}
+                            {profile?.nickname?.charAt(0).toUpperCase() || '?'}
                           </div>
                         )}
                       </div>
