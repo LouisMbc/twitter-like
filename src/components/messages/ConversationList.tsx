@@ -38,51 +38,66 @@ export default function ConversationList() {
 
   return (
     <div className="divide-y divide-gray-800">
-      {conversations.map((conversation: any) => (
-        <Link 
-          href={`/messages/${conversation.id}`} 
-          key={conversation.id}
-          className="flex items-center p-4 hover:bg-gray-900 transition-colors border-l-4 border-transparent hover:border-red-500"
-        >
-          <div className="relative mr-3">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600">
-              {conversation.profilePicture ? (
-                <img
-                  src={conversation.profilePicture}
-                  alt={conversation.nickname}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white font-medium">
-                  {conversation.nickname.charAt(0).toUpperCase()}
+      {conversations.map((conversation: any) => {
+        // Vérifications de sécurité pour éviter les erreurs
+        const conversationId = conversation.id || conversation.user?.id;
+        const nickname = conversation.nickname || conversation.user?.nickname || 'Utilisateur';
+        const profilePicture = conversation.profilePicture || conversation.user?.profilePicture;
+        const unreadCount = conversation.unread_count || conversation.unreadCount || 0;
+        const lastMessageAt = conversation.last_message_at || conversation.lastMessage?.created_at;
+        const lastMessage = conversation.last_message || conversation.lastMessage?.content || 'Aucun message';
+
+        if (!conversationId) {
+          console.warn('Conversation sans ID:', conversation);
+          return null;
+        }
+
+        return (
+          <Link 
+            href={`/messages/${conversationId}`} 
+            key={conversationId}
+            className="flex items-center p-4 hover:bg-gray-900 transition-colors border-l-4 border-transparent hover:border-red-500"
+          >
+            <div className="relative mr-3">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600">
+                {profilePicture ? (
+                  <img
+                    src={profilePicture}
+                    alt={nickname}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white font-medium">
+                    {nickname ? nickname.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+              </div>
+              {unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
                 </div>
               )}
             </div>
-            {conversation.unread_count > 0 && (
-              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                {conversation.unread_count > 9 ? '9+' : conversation.unread_count}
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start mb-1">
+                <h3 className={`font-medium ${unreadCount > 0 ? 'text-white' : 'text-gray-300'} truncate`}>
+                  {nickname}
+                </h3>
+                <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                  {lastMessageAt && formatDistanceToNow(new Date(lastMessageAt), { 
+                    addSuffix: false,
+                    locale: fr 
+                  })}
+                </span>
               </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-start mb-1">
-              <h3 className={`font-medium ${conversation.unread_count > 0 ? 'text-white' : 'text-gray-300'} truncate`}>
-                {conversation.nickname}
-              </h3>
-              <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                {conversation.last_message_at && formatDistanceToNow(new Date(conversation.last_message_at), { 
-                  addSuffix: false,
-                  locale: fr 
-                })}
-              </span>
+              <p className={`text-sm truncate ${unreadCount > 0 ? 'text-gray-300 font-medium' : 'text-gray-500'}`}>
+                {lastMessage}
+              </p>
             </div>
-            <p className={`text-sm truncate ${conversation.unread_count > 0 ? 'text-gray-300 font-medium' : 'text-gray-500'}`}>
-              {conversation.last_message || 'Aucun message'}
-            </p>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 }
