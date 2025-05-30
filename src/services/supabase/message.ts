@@ -2,6 +2,29 @@
 import supabase from '@/lib/supabase';
 import { notificationService } from './notification';
 
+interface MessageUser {
+  id: string;
+  nickname: string;
+  profilePicture: string | null;
+}
+
+interface Message {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  content: string;
+  created_at: string;
+  is_read: boolean;
+  sender?: MessageUser;
+  recipient?: MessageUser;
+}
+
+interface Conversation {
+  user: MessageUser;
+  lastMessage: Message;
+  unreadCount: number;
+}
+
 export const messageService = {
   // Récupérer les conversations de l'utilisateur
   getConversations: async (userId: string) => {
@@ -10,6 +33,8 @@ export const messageService = {
       .from('Messages')
       .select(`
         id,
+        sender_id,
+        recipient_id,
         content,
         created_at,
         is_read,
@@ -22,23 +47,36 @@ export const messageService = {
     if (error) return { error };
 
     // Regrouper les messages par conversation (par utilisateur)
-    const conversations = {};
-    data?.forEach(message => {
-      const otherUserId = message.sender.id === userId 
-        ? message.recipient.id 
-        : message.sender.id;
+    const conversations: Record<string, Conversation> = {};
+    
+    data?.forEach((message: any) => {
+      const sender = Array.isArray(message.sender) ? message.sender[0] : message.sender;
+      const recipient = Array.isArray(message.recipient) ? message.recipient[0] : message.recipient;
+      
+      const otherUserId = sender?.id === userId ? recipient?.id : sender?.id;
+      const otherUser = sender?.id === userId ? recipient : sender;
+      
+      if (!otherUserId || !otherUser) return;
       
       if (!conversations[otherUserId]) {
         conversations[otherUserId] = {
-          user: message.sender.id === userId ? message.recipient : message.sender,
-          lastMessage: message,
-          unreadCount: message.sender.id !== userId && !message.is_read ? 1 : 0
+          user: otherUser,
+          lastMessage: {
+            ...message,
+            sender,
+            recipient
+          },
+          unreadCount: sender?.id !== userId && !message.is_read ? 1 : 0
         };
       } else if (new Date(message.created_at) > new Date(conversations[otherUserId].lastMessage.created_at)) {
         // Mettre à jour le dernier message s'il est plus récent
-        conversations[otherUserId].lastMessage = message;
+        conversations[otherUserId].lastMessage = {
+          ...message,
+          sender,
+          recipient
+        };
         // Incrémenter le compteur de non lus si nécessaire
-        if (message.sender.id !== userId && !message.is_read) {
+        if (sender?.id !== userId && !message.is_read) {
           conversations[otherUserId].unreadCount++;
         }
       }

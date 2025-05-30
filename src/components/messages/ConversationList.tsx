@@ -4,27 +4,8 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-// Ajout du type Conversation pour éviter les erreurs TS
-type Conversation = {
-  user: {
-    id: string | number;
-    profilePicture: string | null;
-    nickname: string;
-  };
-  lastMessage: {
-    created_at: string | Date;
-    sender_id: string | number;
-    content: string;
-  };
-  unreadCount: number;
-};
-
 export default function ConversationList() {
-  const { conversations, loading, error } = useMessages() as {
-    conversations: Conversation[];
-    loading: boolean;
-    error: string | null;
-  };
+  const { conversations, loading, error } = useMessages();
 
   if (loading) {
     return (
@@ -57,48 +38,47 @@ export default function ConversationList() {
 
   return (
     <div className="divide-y divide-gray-800">
-      {conversations.map((conversation) => (
+      {conversations.map((conversation: any) => (
         <Link 
-          href={`/messages/${conversation.user.id}`} 
-          key={conversation.user.id}
+          href={`/messages/${conversation.id}`} 
+          key={conversation.id}
           className="flex items-center p-4 hover:bg-gray-900 transition-colors border-l-4 border-transparent hover:border-red-500"
         >
           <div className="relative mr-3">
             <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600">
-              {conversation.user.profilePicture ? (
+              {conversation.profilePicture ? (
                 <img
-                  src={conversation.user.profilePicture}
-                  alt={conversation.user.nickname}
+                  src={conversation.profilePicture}
+                  alt={conversation.nickname}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white font-medium">
-                  {conversation.user.nickname.charAt(0).toUpperCase()}
+                  {conversation.nickname.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
-            {conversation.unreadCount > 0 && (
+            {conversation.unread_count > 0 && (
               <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
+                {conversation.unread_count > 9 ? '9+' : conversation.unread_count}
               </div>
             )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start mb-1">
-              <h3 className={`font-medium ${conversation.unreadCount > 0 ? 'text-white' : 'text-gray-300'} truncate`}>
-                {conversation.user.nickname}
+              <h3 className={`font-medium ${conversation.unread_count > 0 ? 'text-white' : 'text-gray-300'} truncate`}>
+                {conversation.nickname}
               </h3>
               <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                {formatDistanceToNow(new Date(conversation.lastMessage.created_at), { 
+                {conversation.last_message_at && formatDistanceToNow(new Date(conversation.last_message_at), { 
                   addSuffix: false,
                   locale: fr 
                 })}
               </span>
             </div>
-            <p className={`text-sm truncate ${conversation.unreadCount > 0 ? 'text-gray-300 font-medium' : 'text-gray-500'}`}>
-              {conversation.lastMessage.sender_id === conversation.user.id 
-                ? conversation.lastMessage.content 
-                : `Vous: ${conversation.lastMessage.content}`}
+            <p className={`text-sm truncate ${conversation.unread_count > 0 ? 'text-gray-300 font-medium' : 'text-gray-500'}`}>
+              {conversation.last_message || 'Aucun message'}
             </p>
           </div>
         </Link>
