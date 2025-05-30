@@ -73,7 +73,7 @@ export const notificationService = {
     user_id: string;
     sender_id: string;
     content_id?: string;
-    content_type: 'tweet' | 'story' | 'follow' | 'like' | 'retweet';
+    content_type: 'tweet' | 'story' | 'follow' | 'like' | 'retweet' | 'message';
     type: string;
     message: string;
   }) => {

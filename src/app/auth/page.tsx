@@ -58,19 +58,43 @@ export default function AuthPage() {
     return () => subscription.unsubscribe();
   }, [router]);
 
-  // Fonction pour l'auth Google
+  // Fonction pour l'auth Google - maintenant activée
   const handleGoogleSignUp = async () => {
-    // Utilise Supabase pour l'auth Google
-    const { data, error } = await (await import("@/lib/supabase")).default.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: typeof window !== "undefined"
-          ? `${window.location.origin}/auth/callback`
-          : undefined,
-      },
-    });
-    if (error) {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) {
+        console.error("Erreur Google OAuth:", error);
+        alert("Erreur lors de la connexion Google: " + error.message);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la connexion Google:", error);
       alert("Erreur lors de la connexion Google");
+    }
+  };
+
+  // Fonction pour l'auth Apple - maintenant activée
+  const handleAppleSignUp = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "apple",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) {
+        console.error("Erreur Apple OAuth:", error);
+        alert("Erreur lors de la connexion Apple: " + error.message);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la connexion Apple:", error);
+      alert("Erreur lors de la connexion Apple");
     }
   };
 
@@ -107,7 +131,7 @@ export default function AuthPage() {
               </button>
               <button
                 className="w-full flex items-center justify-center gap-2 bg-white text-black font-medium rounded-full py-2.5 hover:bg-gray-100 transition"
-                onClick={() => {/* TODO: Auth Apple */}}
+                onClick={handleAppleSignUp}
               >
                 <Image src="/apple.png" alt="Apple" width={22} height={22} />
                 Inscrivez-vous avec Apple

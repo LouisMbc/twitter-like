@@ -1,5 +1,6 @@
 // src/services/supabase/message.ts
 import supabase from '@/lib/supabase';
+import { notificationService } from './notification';
 
 export const messageService = {
   // Récupérer les conversations de l'utilisateur
@@ -77,6 +78,33 @@ export const messageService = {
         }
       ])
       .select();
+
+    // Si le message est envoyé avec succès, créer une notification
+    if (data && data[0]) {
+      try {
+        // Récupérer les informations de l'expéditeur pour le message de notification
+        const { data: senderData } = await supabase
+          .from('Profile')
+          .select('nickname')
+          .eq('id', senderId)
+          .single();
+        
+        const senderName = senderData ? senderData.nickname : 'Un utilisateur';
+        
+        // Créer une notification pour le destinataire
+        await notificationService.createNotification({
+          user_id: recipientId,
+          sender_id: senderId,
+          content_id: data[0].id,
+          content_type: 'message',
+          type: 'new_message',
+          message: `vous a envoyé un message`
+        });
+      } catch (notificationError) {
+        console.error('Erreur lors de la création de la notification de message:', notificationError);
+        // Ne pas faire échouer l'envoi du message si la notification échoue
+      }
+    }
 
     return { data, error };
   },
