@@ -37,8 +37,6 @@ export default function LoginForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Se connecter</h1>
-
       {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

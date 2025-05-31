@@ -53,7 +53,7 @@ export default function SuccessPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
           <h2 className="mt-4 text-xl">Vérification de votre paiement...</h2>
@@ -63,19 +63,19 @@ export default function SuccessPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-8 text-center">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-black">
+      <div className="bg-gray-900 rounded-lg shadow-lg max-w-lg w-full p-8 text-center text-white border border-gray-700">
         <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
           <CheckCircleIcon className="h-10 w-10 text-green-600" />
         </div>
         
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Paiement réussi !</h1>
+        <h1 className="text-2xl font-bold text-white mb-4">Paiement réussi !</h1>
         
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-300 mb-6">
           Votre abonnement Twitter-like Premium a été activé avec succès. Vous allez maintenant profiter de toutes les fonctionnalités premium.
         </p>
         
-        <p className="text-sm text-gray-500 mb-8">
+        <p className="text-sm text-gray-400 mb-8">
           Vous serez redirigé vers votre page d'abonnement dans quelques secondes...
         </p>
         

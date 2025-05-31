@@ -145,7 +145,7 @@ export default function ProfilePage() {
                 comments.map((comment) => (
                   <div 
                     key={comment.id} 
-                    className="bg-white p-4 rounded-lg shadow"
+                    className="bg-gray-900 p-4 rounded-lg shadow border border-gray-700"
                   >
                     <div className="flex items-center space-x-2 mb-2">
                       {comment.author?.profilePicture ? (
@@ -155,29 +155,29 @@ export default function ProfilePage() {
                           className="w-8 h-8 rounded-full"
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                        <div className="w-8 h-8 bg-gray-600 rounded-full" />
                       )}
-                      <span className="font-semibold">{comment.author?.nickname || 'Utilisateur inconnu'}</span>
+                      <span className="font-semibold text-white">{comment.author?.nickname || 'Utilisateur inconnu'}</span>
                     </div>
-                    <p className="text-gray-700">{comment.content}</p>
-                    <div className="mt-2 text-sm text-gray-500">
+                    <p className="text-gray-300">{comment.content}</p>
+                    <div className="mt-2 text-sm text-gray-400">
                       {formatDistance(new Date(comment.created_at), new Date(), {
                         addSuffix: true,
                         locale: fr
                       })}
                     </div>
-                    <div className="flex items-center mt-2 text-sm text-gray-500">
+                    <div className="flex items-center mt-2 text-sm text-gray-400">
                       <span className="mr-2">
                         👁️ {comment.view_count}
                       </span>
                       <span className="mr-2">
-                        💬 Sur <a href={`/tweets/${comment.tweet_id}`} className="text-blue-500 hover:underline">ce tweet</a>
+                        💬 Sur <a href={`/tweets/${comment.tweet_id}`} className="text-blue-400 hover:underline">ce tweet</a>
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center p-4 text-gray-500">
+                <div className="text-center p-4 text-gray-400">
                   Aucun commentaire
                 </div>
               )}

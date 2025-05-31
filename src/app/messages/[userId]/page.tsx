@@ -106,7 +106,7 @@ export default function ConversationPage() {
 
   if (loading || checkingPermissions) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500 mx-auto"></div>
           <div className="mt-4">Chargement de la conversation...</div>
@@ -117,27 +117,27 @@ export default function ConversationPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
-        <div className="text-center text-red-500">{error}</div>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center text-red-400">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-black text-white">
       <div className="flex flex-col h-screen">
         {/* Conversation header */}
-        <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-gray-900 border-b border-gray-700 p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <button 
               onClick={() => router.push('/messages')}
-              className="mr-4 text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
+              className="mr-4 text-gray-400 hover:bg-gray-800 p-2 rounded-full transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </button>
             {currentContact && (
               <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-300 mr-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 mr-3">
                   {currentContact.profilePicture ? (
                     <img
                       src={currentContact.profilePicture}
@@ -145,35 +145,35 @@ export default function ConversationPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-600 font-medium">
+                    <div className="w-full h-full flex items-center justify-center text-white font-medium">
                       {currentContact.nickname.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div>
-                  <h2 className="font-semibold text-gray-900">{currentContact.nickname}</h2>
-                  <p className="text-xs text-gray-500">En ligne</p>
+                  <h2 className="font-semibold text-white">{currentContact.nickname}</h2>
+                  <p className="text-xs text-gray-400">En ligne</p>
                 </div>
               </div>
             )}
           </div>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <InformationCircleIcon className="w-5 h-5 text-gray-600" />
+          <button className="p-2 hover:bg-gray-800 rounded-full transition-colors">
+            <InformationCircleIcon className="w-5 h-5 text-gray-400" />
           </button>
         </div>
 
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-900">
           {!canMessageUser ? (
             <div className="text-center p-8">
-              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-sm">
                 <div className="mb-4">
                   <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 15v2m0 0v2m0-2h2m-2 0H10m0 0V9a3 3 0 116 0v6z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Impossible d'envoyer des messages</h3>
-                <p className="text-gray-600">Vous devez vous suivre mutuellement pour pouvoir communiquer.</p>
+                <h3 className="text-lg font-medium text-white mb-2">Impossible d'envoyer des messages</h3>
+                <p className="text-gray-400">Vous devez vous suivre mutuellement pour pouvoir communiquer.</p>
               </div>
             </div>
           ) : currentMessages.length === 0 ? (
@@ -183,8 +183,8 @@ export default function ConversationPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.418 8-9.293 8.293a1 1 0 01-.607-.094L7 18l-2.293.293A1 1 0 014 17V9a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun message</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-lg font-medium text-white mb-2">Aucun message</h3>
+              <p className="text-gray-400 mb-4">
                 Commencez la conversation en envoyant le premier message !
               </p>
             </div>
@@ -197,7 +197,7 @@ export default function ConversationPage() {
                 >
                   {msg.sender_id !== profile?.id && (
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600">
                         {currentContact?.profilePicture ? (
                           <img
                             src={currentContact.profilePicture}
@@ -205,7 +205,7 @@ export default function ConversationPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs font-medium">
+                          <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium">
                             {currentContact?.nickname.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -218,7 +218,7 @@ export default function ConversationPage() {
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl relative ${
                         msg.sender_id === profile?.id 
                           ? 'bg-red-500 text-white' 
-                          : 'bg-gray-200 text-gray-900'
+                          : 'bg-gray-700 text-white'
                       }`}
                     >
                       <p className="break-words">{msg.content}</p>
@@ -234,7 +234,7 @@ export default function ConversationPage() {
 
                   {msg.sender_id === profile?.id && (
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600">
                         {profile?.profilePicture ? (
                           <img
                             src={profile.profilePicture}
@@ -242,7 +242,7 @@ export default function ConversationPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs font-medium">
+                          <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium">
                             {profile?.nickname?.charAt(0).toUpperCase() || '?'}
                           </div>
                         )}
@@ -258,14 +258,14 @@ export default function ConversationPage() {
 
         {/* Message input */}
         {canMessageUser && (
-          <div className="border-t border-gray-200 p-4 bg-white">
+          <div className="border-t border-gray-700 p-4 bg-gray-900">
             <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
               <div className="flex-1">
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Écrivez votre message..."
-                  className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none max-h-32"
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none max-h-32"
                   disabled={sendingMessage}
                   rows={1}
                   onKeyDown={(e) => {

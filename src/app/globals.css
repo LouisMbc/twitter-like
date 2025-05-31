@@ -6,13 +6,13 @@
 /* Default to dark theme for all elements */
 /* Dans votre fichier CSS global (par ex. globals.css) */
 :root {
-  --background: #ffffff;
-  --text: #0f172a;
+  --background: #000000;
+  --text: #ffffff;
 }
 
 .dark {
-  --background: #1e293b;
-  --text: #f8fafc;
+  --background: #000000;
+  --text: #ffffff;
 }
 
 body {
@@ -22,8 +22,8 @@ body {
 
 @layer base {
   html {
-    background-color: black;
-    color: white;
+    background-color: #000000;
+    color: #ffffff;
   }
   body {
     color: var(--foreground);

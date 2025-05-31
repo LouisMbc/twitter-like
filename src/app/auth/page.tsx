@@ -99,71 +99,109 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#282325] text-white">
-      <div className="w-full py-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-center">
-          L'essentiel de l'information est ici
-        </h1>
-      </div>
-      {/* Contenu principal */}
-      <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-0 md:gap-0">
-        <div className="flex flex-1 flex-col items-center justify-center mb-8 md:mb-0">
-          <Image
-            src="/logo_Flow.png"
-            alt="Flow Logo"
-            width={300}
-            height={300}
-            priority
-            className="object-contain"
-          />
+    <div className="min-h-screen flex flex-col justify-between bg-black text-white relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+      
+      <div className="relative z-10">
+        <div className="w-full py-16">
+          <h1 className="text-4xl md:text-6xl font-bold text-center bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+            L'essentiel de l'information est ici
+          </h1>
+          <p className="text-center text-gray-400 mt-4 text-lg">
+            Découvrez, partagez et connectez-vous avec le monde
+          </p>
         </div>
-        {/* Formulaire d'inscription à droite */}
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <div className="bg-[#231f20] rounded-xl shadow-lg px-8 py-10 w-full max-w-[370px] flex flex-col items-center">
-            <div className="w-full space-y-3">
-              <p className="text-center text-lg font-semibold mb-2">Inscrivez vous</p>
-              <button
-                className="w-full flex items-center justify-center gap-2 bg-white text-black font-medium rounded-full py-2.5 hover:bg-gray-100 transition"
-                onClick={handleGoogleSignUp}
-              >
-                <Image src="/google.png" alt="Google" width={22} height={22} />
-                Inscrivez-vous avec Google
-              </button>
-              <button
-                className="w-full flex items-center justify-center gap-2 bg-white text-black font-medium rounded-full py-2.5 hover:bg-gray-100 transition"
-                onClick={handleAppleSignUp}
-              >
-                <Image src="/apple.png" alt="Apple" width={22} height={22} />
-                Inscrivez-vous avec Apple
-              </button>
-              <div className="flex items-center my-2">
-                <div className="flex-1 h-px bg-gray-700" />
-                <span className="mx-3 text-gray-400 font-bold">OU</span>
-                <div className="flex-1 h-px bg-gray-700" />
-              </div>
-              <button
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full py-2.5 transition"
-                onClick={() => router.push("/auth/register")}
-              >
-                Créer un compte
-              </button>
+        
+        {/* Contenu principal */}
+        <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 px-8">
+          <div className="flex flex-1 flex-col items-center justify-center mb-8 md:mb-0 max-w-md">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-red-500/20 to-blue-500/20 rounded-full blur-lg group-hover:blur-xl transition-all duration-300"></div>
+              <Image
+                src="/logo_Flow.png"
+                alt="Flow Logo"
+                width={280}
+                height={280}
+                priority
+                className="object-contain relative z-10 drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-300"
+              />
             </div>
-            <div className="mt-8 w-full text-center">
-              <p className="text-gray-400 mb-2">Vous avez déjà un compte ?</p>
-              <button
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-full py-2.5 transition"
-                onClick={() => router.push("/auth/login")}
-              >
-                Se connecter
-              </button>
+            <div className="mt-8 text-center space-y-3">
+              <h2 className="text-2xl font-semibold text-white">Bienvenue sur Flow</h2>
+              <p className="text-gray-400 max-w-sm leading-relaxed">
+                La plateforme qui vous connecte aux conversations qui comptent vraiment.
+              </p>
+            </div>
+          </div>
+          
+          {/* Formulaire d'inscription à droite */}
+          <div className="flex flex-1 flex-col items-center justify-center max-w-md w-full">
+            <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-2xl px-8 py-10 w-full border border-gray-700/50 relative overflow-hidden">
+              {/* Subtle glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-blue-500/5 rounded-2xl"></div>
+              
+              <div className="relative z-10">
+                <div className="w-full space-y-4">
+                  <p className="text-center text-2xl font-semibold mb-6 text-white">Inscrivez-vous</p>
+                  <button
+                    className="w-full flex items-center justify-center gap-3 bg-white text-black font-medium rounded-full py-3 hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-lg"
+                    onClick={handleGoogleSignUp}
+                  >
+                    <Image src="/google.png" alt="Google" width={22} height={22} />
+                    Inscrivez-vous avec Google
+                  </button>
+                  <button
+                    className="w-full flex items-center justify-center gap-3 bg-white text-black font-medium rounded-full py-3 hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-lg"
+                    onClick={handleAppleSignUp}
+                  >
+                    <Image src="/apple.png" alt="Apple" width={22} height={22} />
+                    Inscrivez-vous avec Apple
+                  </button>
+                  <div className="flex items-center my-6">
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent" />
+                    <span className="mx-4 text-gray-400 font-bold text-sm">OU</span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent" />
+                  </div>
+                  <button
+                    className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-full py-3 transition-all duration-200 hover:scale-105 shadow-lg"
+                    onClick={() => router.push("/auth/register")}
+                  >
+                    Créer un compte
+                  </button>
+                </div>
+                <div className="mt-8 w-full text-center">
+                  <p className="text-gray-400 mb-4">Vous avez déjà un compte ?</p>
+                  <button
+                    className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-full py-3 transition-all duration-200 hover:scale-105 shadow-lg"
+                    onClick={() => router.push("/auth/login")}
+                  >
+                    Se connecter
+                  </button>
+                </div>
+                
+                {/* Additional styling */}
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-400">
+                    En vous inscrivant, vous acceptez nos{' '}
+                    <a href="/terms" className="text-red-400 hover:text-red-300 underline">
+                      conditions d'utilisation
+                    </a>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Séparateur au-dessus du footer */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mt-16" />
+        
+        {/* Footer */}
+        <Footer />
       </div>
-      {/* Séparateur au-dessus du footer */}
-      <div className="w-full h-px bg-gray-700 mt-8" />
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

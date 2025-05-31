@@ -27,16 +27,16 @@ export default function PremiumPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-8">
+    <div className="max-w-4xl mx-auto p-4 space-y-8 bg-black min-h-screen text-white">
       <h1 className="text-3xl font-bold">Twitter-like Premium</h1>
       
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded">
           {error}
         </div>
       )}
       
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-700">
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-8 text-white">
           <h2 className="text-2xl font-bold mb-2">Débloquez toutes les fonctionnalités premium</h2>
           <p className="opacity-90">Profitez d'une expérience sans limite sur Twitter-like</p>
@@ -45,7 +45,7 @@ export default function PremiumPage() {
         <div className="p-6 space-y-6">
           {isPremium ? (
             <>
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded flex items-center">
+              <div className="bg-green-900 border border-green-700 text-green-200 px-4 py-3 rounded flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                 </svg>
@@ -53,24 +53,24 @@ export default function PremiumPage() {
               </div>
               
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">Détails de votre abonnement</h3>
+                <h3 className="text-lg font-semibold text-white">Détails de votre abonnement</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Statut</p>
-                    <p className="capitalize">{subscriptionData?.status || 'Actif'}</p>
+                    <p className="text-sm font-medium text-gray-400">Statut</p>
+                    <p className="capitalize text-white">{subscriptionData?.status || 'Actif'}</p>
                   </div>
                   
                   {subscriptionData?.current_period_end && (
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Renouvellement prévu</p>
-                      <p>{formatDistance(new Date(subscriptionData.current_period_end), new Date(), { addSuffix: true, locale: fr })}</p>
+                      <p className="text-sm font-medium text-gray-400">Renouvellement prévu</p>
+                      <p className="text-white">{formatDistance(new Date(subscriptionData.current_period_end), new Date(), { addSuffix: true, locale: fr })}</p>
                     </div>
                   )}
                 </div>
               </div>
               
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">Fonctionnalités premium activées</h3>
+                <h3 className="text-lg font-semibold text-white">Fonctionnalités premium activées</h3>
                 <ul className="space-y-2">
                   <li className="flex items-center">
                     <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -99,10 +99,10 @@ export default function PremiumPage() {
                 </ul>
               </div>
               
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-gray-700">
                 {subscriptionData?.cancel_at_period_end ? (
                   <>
-                    <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+                    <div className="mb-4 bg-yellow-900 border border-yellow-700 text-yellow-200 px-4 py-3 rounded">
                       <p>Votre abonnement sera annulé à la fin de la période en cours. Vous pouvez le réactiver à tout moment.</p>
                     </div>
                     <button
@@ -135,7 +135,7 @@ export default function PremiumPage() {
           ) : (
             <>
               <h3 className="text-xl font-semibold">Devenez Premium</h3>
-              <p className="text-gray-600">Pour seulement 9,99€/mois, vous bénéficiez de :</p>
+              <p className="text-gray-400">Pour seulement 9,99€/mois, vous bénéficiez de :</p>
               
               <ul className="space-y-2">
                 <li className="flex items-center">
@@ -164,12 +164,12 @@ export default function PremiumPage() {
                 </li>
               </ul>
               
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-6">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 mt-6">
                 <div className="flex justify-between mb-2">
                   <span className="font-medium">Twitter-like Premium</span>
                   <span className="font-bold">9,99€/mois</span>
                 </div>
-                <p className="text-sm text-gray-600">Annulation possible à tout moment</p>
+                <p className="text-sm text-gray-400">Annulation possible à tout moment</p>
               </div>
               
               <button
@@ -192,13 +192,13 @@ export default function PremiumPage() {
       </div>
       
       {/* Section test cards */}
-      <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
-        <h2 className="text-xl font-semibold mb-4">Cartes de test Stripe</h2>
-        <p className="mb-4 text-gray-600">Utilisez ces numéros de carte pour tester l'intégration de paiement:</p>
+      <div className="bg-gray-900 rounded-lg shadow-lg p-6 mt-8 border border-gray-700">
+        <h2 className="text-xl font-semibold mb-4 text-white">Cartes de test Stripe</h2>
+        <p className="mb-4 text-gray-300">Utilisez ces numéros de carte pour tester l'intégration de paiement:</p>
         
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+            <thead className="text-xs text-gray-400 uppercase bg-gray-800">
               <tr>
                 <th className="px-6 py-3">Numéro de carte</th>
                 <th className="px-6 py-3">Date d'expiration</th>
@@ -207,23 +207,23 @@ export default function PremiumPage() {
               </tr>
             </thead>
             <tbody>
-              <tr className="bg-white border-b">
-                <td className="px-6 py-4 font-medium">4242 4242 4242 4242</td>
-                <td className="px-6 py-4">Toute date future</td>
-                <td className="px-6 py-4">Trois chiffres</td>
-                <td className="px-6 py-4 text-green-600">Paiement réussi</td>
+              <tr className="bg-gray-800 border-b border-gray-700">
+                <td className="px-6 py-4 font-medium text-white">4242 4242 4242 4242</td>
+                <td className="px-6 py-4 text-gray-300">Toute date future</td>
+                <td className="px-6 py-4 text-gray-300">Trois chiffres</td>
+                <td className="px-6 py-4 text-green-400">Paiement réussi</td>
               </tr>
-              <tr className="bg-gray-50 border-b">
-                <td className="px-6 py-4 font-medium">4000 0027 6000 3184</td>
-                <td className="px-6 py-4">Toute date future</td>
-                <td className="px-6 py-4">Trois chiffres</td>
-                <td className="px-6 py-4 text-yellow-600">3D Secure requis</td>
+              <tr className="bg-gray-700 border-b border-gray-600">
+                <td className="px-6 py-4 font-medium text-white">4000 0027 6000 3184</td>
+                <td className="px-6 py-4 text-gray-300">Toute date future</td>
+                <td className="px-6 py-4 text-gray-300">Trois chiffres</td>
+                <td className="px-6 py-4 text-yellow-400">3D Secure requis</td>
               </tr>
-              <tr className="bg-white border-b">
-                <td className="px-6 py-4 font-medium">4000 0000 0000 9995</td>
-                <td className="px-6 py-4">Toute date future</td>
-                <td className="px-6 py-4">Trois chiffres</td>
-                <td className="px-6 py-4 text-red-600">Paiement refusé</td>
+              <tr className="bg-gray-800 border-b border-gray-700">
+                <td className="px-6 py-4 font-medium text-white">4000 0000 0000 9995</td>
+                <td className="px-6 py-4 text-gray-300">Toute date future</td>
+                <td className="px-6 py-4 text-gray-300">Trois chiffres</td>
+                <td className="px-6 py-4 text-red-400">Paiement refusé</td>
               </tr>
             </tbody>
           </table>
