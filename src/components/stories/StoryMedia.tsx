@@ -58,27 +58,34 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
   if (!story) {
     return <div>Story non disponible</div>;
   }
-
   if (story.media_type === 'image') {
     return (
-      <div className="w-full h-full">
+      <div className="w-full h-full flex items-center justify-center bg-black rounded-2xl overflow-hidden">
         <img 
           src={story.media_url}
           alt="Story"
-          className="rounded-lg object-cover w-full h-full"
+          className="max-w-full max-h-full object-contain rounded-2xl"
+          onError={(e) => {
+            console.error('Erreur de chargement de l\'image:', e);
+            (e.target as HTMLImageElement).src = '/placeholder-image.png';
+          }}
         />
       </div>
     );
   } else if (story.media_type === 'video') {
     return (
-      <div className="w-full h-full aspect-video">
+      <div className="w-full h-full flex items-center justify-center bg-black rounded-2xl overflow-hidden">
         <video
           src={story.media_url}
-          className="w-full h-full rounded-lg object-contain"
-          controls
+          className="max-w-full max-h-full object-contain rounded-2xl"
+          controls={false}
           autoPlay
+          muted
           playsInline
           loop={false}
+          onError={(e) => {
+            console.error('Erreur de chargement de la vidéo:', e);
+          }}
         />
       </div>
     );

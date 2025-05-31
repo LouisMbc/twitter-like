@@ -78,6 +78,12 @@ const Story = ({
     setTimeRemaining(STORY_DURATION);
   }, [currentStoryIndex]);
 
+  // Ajoutez un gestionnaire pour le bouton de fermeture
+  const handleClose = () => {
+    setCurrentStoryIndex(null);
+    if (onClose) onClose();
+  };
+
   // Démarrer le timer lorsqu'une story est ouverte
   useEffect(() => {
     if (currentStory === null || !isClient) return;
@@ -99,6 +105,35 @@ const Story = ({
     };
   }, [currentStory, goToNextStory, isClient]);
 
+  // Gestion des touches clavier
+  useEffect(() => {
+    if (currentStory === null || !isClient) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          handleClose();
+          break;
+        case 'ArrowLeft':
+          goToPrevStory();
+          break;
+        case 'ArrowRight':
+          goToNextStory();
+          break;
+        case ' ': // Barre d'espace pour pause/reprendre
+          e.preventDefault();
+          // Vous pouvez implémenter une logique de pause ici si nécessaire
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [currentStory, goToPrevStory, goToNextStory, handleClose, isClient]);
+
   // Fonction pour gérer la suppression
   const handleStoryDeleted = () => {
     if (currentStoryIndex !== null) {
@@ -115,108 +150,192 @@ const Story = ({
     }
   };
 
-  // Ajoutez un gestionnaire pour le bouton de fermeture
-  const handleClose = () => {
-    setCurrentStoryIndex(null);
-    if (onClose) onClose();
-  };
-
   // Ne rien afficher si on n'est pas encore côté client pour éviter l'erreur d'hydration
   if (!isClient) {
     return null;
   }
 
   if (loading) return <p>Chargement...</p>;
-
+  
   return (
-    <div className="flex space-x-3 overflow-x-auto p-4 bg-gray-900 rounded-lg">
-      {filteredStories.map((story, index) => (
-        <div
-          key={story.id}
-          className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-500 cursor-pointer"
-          onClick={() => {
-            setCurrentStoryIndex(index);
-            setTimeRemaining(STORY_DURATION);
-          }}
-        >
-          <div className="w-full h-full bg-gray-700 flex items-center justify-center text-white">
-            {story.Profile?.nickname?.charAt(0).toUpperCase()}
-          </div>
-        </div>
-      ))}
-
-      {/* Affichage en plein écran de la Story sélectionnée */}
-      {currentStory !== null && (
-        <div
-          className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-80 flex items-center justify-center z-50"
-        >
-          {/* Barre de progression */}
-          <div className="absolute top-4 left-0 right-0 px-4">
-            <div className="bg-gray-600 h-1 w-full rounded-full overflow-hidden">
-              <div 
-                className="bg-white h-full transition-all duration-1000 ease-linear" 
-                style={{ width: `${(timeRemaining / STORY_DURATION) * 100}%` }}
-              ></div>
+    <>
+      <div className="flex space-x-4 overflow-x-auto p-2 scrollbar-hide">
+        {filteredStories.map((story, index) => (
+          <div
+            key={story.id}
+            className="flex-shrink-0 relative group cursor-pointer"
+            onClick={() => {
+              setCurrentStoryIndex(index);
+              setTimeRemaining(STORY_DURATION);
+            }}
+          >
+            {/* Container avec effet de bordure */}
+            <div className="relative">
+              {/* Bordure animée */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-full opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              {/* Avatar */}
+              <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-800 border-2 border-gray-900 flex items-center justify-center">
+                {story.Profile?.profilePicture ? (
+                  <img 
+                    src={story.Profile.profilePicture} 
+                    alt={story.Profile.nickname}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                    {story.Profile?.nickname?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Nom d'utilisateur */}
+            <p className="text-xs text-gray-300 text-center mt-2 truncate max-w-16">
+              {story.Profile?.nickname || 'User'}
+            </p>
+            
+            {/* Indicateur de temps restant */}
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
             </div>
           </div>
-          
-          {/* Bouton précédent */}
-          <div 
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white opacity-70 hover:opacity-100 z-10"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToPrevStory();
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+        ))}
+      </div>
+
+      {/* Affichage en plein écran de la Story sélectionnée */}
+      {currentStory && (
+        <div
+          className="fixed inset-0 w-full h-full bg-black/90 backdrop-blur-sm flex items-center justify-center z-[9999] story-container"
+          style={{ zIndex: 9999 }}
+          onClick={handleClose} // Fermer en cliquant sur l'arrière-plan
+        >
+          {/* Barre de progression */}
+          <div className="absolute top-6 left-6 right-6 z-[10000]">
+            <div className="bg-gray-600/50 h-1 w-full rounded-full overflow-hidden backdrop-blur-sm">
+              <div 
+                className="bg-white h-full transition-all duration-1000 ease-linear" 
+                style={{ width: `${((STORY_DURATION - timeRemaining) / STORY_DURATION) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Header avec info utilisateur */}
+          <div className="absolute top-8 left-6 right-6 flex items-center justify-between z-[10000]">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                {currentStory.Profile?.profilePicture ? (
+                  <img 
+                    src={currentStory.Profile.profilePicture} 
+                    alt={currentStory.Profile.nickname}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  currentStory.Profile?.nickname?.charAt(0).toUpperCase() || 'U'
+                )}
+              </div>
+              <div>
+                <p className="text-white font-semibold text-sm">
+                  {currentStory.Profile?.nickname || 'Utilisateur'}
+                </p>
+                <p className="text-gray-300 text-xs">
+                  {new Date(currentStory.created_at || '').toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
+              </div>
+            </div>
+            
+            {/* Bouton fermer */}
+            <button 
+              className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-all duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClose();
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
           
-          {/* Bouton suivant */}
-          <div 
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white opacity-70 hover:opacity-100 z-10"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToNextStory();
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-          
-          {/* Bouton fermer */}
-          <div 
-            className="absolute top-4 right-4 cursor-pointer text-white opacity-70 hover:opacity-100"
-            onClick={handleClose}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
-          
-          {/* Afficher StoryActions seulement si l'utilisateur est propriétaire de la story */}
-          {currentStory && currentUserId === currentStory.user_id && (
-            <StoryActions 
-              storyId={currentStory.id} 
-              mediaUrl={currentStory.media_url}
-              onDelete={handleStoryDeleted}
-            />
+          {/* Navigation précédent */}
+          {currentStoryIndex !== null && currentStoryIndex > 0 && (
+            <button 
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all duration-200 z-[10000]"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPrevStory();
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
           )}
           
-          <div className="w-full max-w-md h-full max-h-[80vh] p-4">
-            <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-              </div>
-            }>
-              {currentStory && <StoryMedia storyId={currentStory.id} />}
-            </Suspense>
+          {/* Navigation suivant */}
+          {currentStoryIndex !== null && currentStoryIndex < filteredStories.length - 1 && (
+            <button 
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all duration-200 z-[10000]"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNextStory();
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+          
+          {/* Contenu principal de la story */}
+          <div 
+            className="w-full h-full max-w-md mx-auto flex items-center justify-center p-6 pt-24 pb-16"
+            onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur le contenu
+          >
+            <div className="w-full h-full max-h-[70vh] rounded-2xl overflow-hidden bg-gray-900/50 backdrop-blur-sm border border-gray-700/30">
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="relative">
+                    <div className="w-12 h-12 border-4 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                  </div>
+                </div>
+              }>
+                <StoryMedia storyId={currentStory.id} />
+              </Suspense>
+            </div>
+          </div>
+
+          {/* Actions de la story (pour le propriétaire) */}
+          {currentStory && currentUserId === currentStory.user_id && (
+            <div className="absolute bottom-6 left-6 right-6 z-[10000]" onClick={(e) => e.stopPropagation()}>
+              <StoryActions 
+                storyId={currentStory.id || ''} 
+                mediaUrl={currentStory.media_url || ''}
+                onDelete={handleStoryDeleted}
+              />
+            </div>
+          )}
+
+          {/* Indicateur de position */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-1 z-[10000]">
+            {filteredStories.map((_, index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  index === currentStoryIndex 
+                    ? 'bg-white' 
+                    : 'bg-white/30'
+                }`}
+              />
+            ))}
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
