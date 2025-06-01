@@ -39,7 +39,6 @@ export default function RegisterForm() {
     <div className="max-w-md mx-auto">
       {!submitted ? (
         <>
-          <h2 className="text-2xl font-bold mb-6">Créer un compte</h2>
           <form onSubmit={handleSignUp} className="space-y-5">
             <div>
               <label className="block text-sm font-medium mb-1">Email</label>
