@@ -202,13 +202,12 @@ export default function Header() {
   if (!shouldDisplayHeader) {
     return null;
   }
-
   return (
     <>
-      <div className="flex min-h-screen bg-black text-white">
+      <div className="flex min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors duration-300">
         {/* Sidebar - uniquement affiché si l'utilisateur est authentifié */}
         {isAuthenticated && (
-          <div className="fixed left-0 top-0 h-full w-64 bg-black border-r border-gray-800">
+          <div className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-black border-r border-gray-300 dark:border-gray-800 transition-colors duration-300">
             <div className="p-4">
               <div className="mb-6">
                 <Image
@@ -225,9 +224,9 @@ export default function Header() {
                   <div
                     className={`flex items-center px-4 py-3 ${
                       pathname === "/dashboard"
-                        ? "bg-gray-900 text-red-500 font-bold"
-                        : "text-white hover:bg-gray-900"
-                    } rounded-md cursor-pointer`}
+                        ? "bg-gray-200 dark:bg-gray-900 text-red-500 font-bold"
+                        : "text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
+                    } rounded-md cursor-pointer transition-colors duration-200`}
                   >
                     <Home className="mr-4" />
                     <span className="text-lg">Accueil</span>
@@ -237,9 +236,9 @@ export default function Header() {
                   <div
                     className={`flex items-center px-4 py-3 ${
                       pathname === "/explore"
-                        ? "bg-gray-900 text-red-500 font-bold"
-                        : "text-white hover:bg-gray-900"
-                    } rounded-md cursor-pointer`}
+                        ? "bg-gray-200 dark:bg-gray-900 text-red-500 font-bold"
+                        : "text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
+                    } rounded-md cursor-pointer transition-colors duration-200`}
                   >
                     <Search className="mr-4" />
                     <span className="text-lg">Explorer</span>
@@ -248,10 +247,9 @@ export default function Header() {
                 <Link href="/notifications">
                   <div
                     className={`flex items-center px-4 py-3 ${
-                      pathname === "/notifications"
-                        ? "bg-gray-900 text-red-500 font-bold"
-                        : "text-white hover:bg-gray-900"
-                    } rounded-md relative cursor-pointer`}
+                      pathname === "/notifications"                        ? "bg-gray-200 dark:bg-gray-900 text-red-500 font-bold"
+                        : "text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
+                    } rounded-md relative cursor-pointer transition-colors duration-200`}
                   >
                     <span className="relative mr-4">
                       <Bell />
@@ -270,9 +268,9 @@ export default function Header() {
                   <div
                     className={`flex items-center px-4 py-3 ${
                       pathname === "/messages"
-                        ? "bg-gray-900 text-red-500 font-bold"
-                        : "text-white hover:bg-gray-900"
-                    } rounded-md relative cursor-pointer`}
+                        ? "bg-gray-200 dark:bg-gray-900 text-red-500 font-bold"
+                        : "text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
+                    } rounded-md relative cursor-pointer transition-colors duration-200`}
                   >
                     <Mail className="mr-4" />
                     <span className="text-lg">Messages</span>
@@ -287,19 +285,17 @@ export default function Header() {
                   <div
                     className={`flex items-center px-4 py-3 ${
                       pathname === "/profile"
-                        ? "bg-gray-900 text-red-500 font-bold"
-                        : "text-white hover:bg-gray-900"
-                    } rounded-md cursor-pointer`}
+                        ? "bg-gray-200 dark:bg-gray-900 text-red-500 font-bold"
+                        : "text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
+                    } rounded-md cursor-pointer transition-colors duration-200`}
                   >
                     <User className="mr-4" />
                     <span className="text-lg">Profil</span>
                   </div>
                 </Link>
-              </nav>
-
-              <button
+              </nav>              <button
                 onClick={() => router.push("/tweets")}
-                className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700"
+                className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700 transition-colors duration-200"
               >
                 <div className="flex items-center justify-center">
                   <Plus className="mr-2" size={16} />
@@ -309,7 +305,7 @@ export default function Header() {
 
               {/* User profile at bottom */}
               <div className="absolute bottom-16 left-0 right-0 px-4">
-                <div className="flex items-center p-2 hover:bg-gray-800 rounded-full cursor-pointer">
+                <div className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full cursor-pointer transition-colors duration-200">
                   {profile?.avatar_url ? (
                     <div className="w-10 h-10 rounded-full mr-3 overflow-hidden">
                       <Image
@@ -321,29 +317,28 @@ export default function Header() {
                       />
                     </div>
                   ) : (
-                    <div className="w-10 h-10 bg-gray-600 rounded-full mr-3 flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full mr-3 flex items-center justify-center text-black dark:text-white">
                       <span>{profile?.username?.substring(0, 2) || "VP"}</span>
                     </div>
                   )}
                   <div className="flex flex-col">
-                    <span className="font-medium">
+                    <span className="font-medium text-black dark:text-white">
                       {profile?.full_name || profile?.username}
                     </span>
                     {profile?.full_name && (
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
                         @{profile?.username}
                       </span>
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* Theme toggle and logout */}
+              </div>              {/* Theme toggle and logout */}
               <div className="absolute bottom-4 left-0 right-0 px-4">
                 <div className="flex items-center justify-between p-2">
+                  <ThemeToggle />
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center text-red-500"
+                    className="flex items-center text-red-500 hover:text-red-600 transition-colors duration-200"
                   >
                     <>
                       <LogOut className="mr-2" size={16} />

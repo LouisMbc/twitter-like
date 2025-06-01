@@ -3,31 +3,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Default to dark theme for all elements */
-/* Dans votre fichier CSS global (par ex. globals.css) */
+/* CSS Variables for themes */
 :root {
-  --background: #000000;
-  --text: #ffffff;
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --border: #e5e7eb;
+  --primary: #1d4ed8;
+  --secondary: #f3f4f6;
 }
 
 .dark {
   --background: #000000;
-  --text: #ffffff;
-}
-
-body {
-  background-color: var(--background);
-  color: var(--text);
+  --foreground: #ffffff;
+  --card: #111111;
+  --card-foreground: #ffffff;
+  --border: #374151;
+  --primary: #3b82f6;
+  --secondary: #1f2937;
 }
 
 @layer base {
-  html {
-    background-color: #000000;
-    color: #ffffff;
+  * {
+    border-color: var(--border);
   }
-  body {
+  
+  html {
+    background-color: var(--background);
     color: var(--foreground);
-    background: var(--background);
+  }
+  
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 

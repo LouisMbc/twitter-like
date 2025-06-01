@@ -1,10 +1,14 @@
 // src/components/messages/ConversationList.tsx
 import { useMessages } from '@/hooks/useMessages';
-import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export default function ConversationList() {
+interface ConversationListProps {
+  onSelectConversation: (userId: string) => Promise<void>;
+  selectedUserId: string | null;
+}
+
+export default function ConversationList({ onSelectConversation, selectedUserId }: ConversationListProps) {
   const { conversations, loading, error } = useMessages();
 
   if (loading) {
@@ -50,13 +54,15 @@ export default function ConversationList() {
         if (!conversationId) {
           console.warn('Conversation sans ID:', conversation);
           return null;
-        }
-
-        return (
-          <Link 
-            href={`/messages/${conversationId}`} 
+        }        return (
+          <div 
             key={conversationId}
-            className="flex items-center p-4 hover:bg-gray-900 transition-colors border-l-4 border-transparent hover:border-red-500"
+            onClick={() => onSelectConversation(conversationId)}
+            className={`flex items-center p-4 hover:bg-gray-900 transition-colors border-l-4 cursor-pointer ${
+              selectedUserId === conversationId 
+                ? 'border-red-500 bg-gray-900' 
+                : 'border-transparent hover:border-red-500'
+            }`}
           >
             <div className="relative mr-3">
               <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600">
@@ -92,10 +98,9 @@ export default function ConversationList() {
                 </span>
               </div>
               <p className={`text-sm truncate ${unreadCount > 0 ? 'text-gray-300 font-medium' : 'text-gray-500'}`}>
-                {lastMessage}
-              </p>
+                {lastMessage}              </p>
             </div>
-          </Link>
+          </div>
         );
       })}
     </div>
