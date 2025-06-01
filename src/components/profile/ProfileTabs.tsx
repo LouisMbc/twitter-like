@@ -19,12 +19,11 @@ export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps
               : 'text-gray-400 hover:text-gray-200'
           }`}
           onClick={() => onTabChange('tweets')}
-        >
-          {/* Active tab background */}
+        >          {/* Active tab background */}
           {activeTab === 'tweets' && (
             <>
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/30 to-pink-500/30 rounded-xl blur"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-pink-500/20 rounded-xl"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/30 to-red-600/30 rounded-xl blur"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-600/20 rounded-xl"></div>
             </>
           )}
           
@@ -48,12 +47,11 @@ export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps
               : 'text-gray-400 hover:text-gray-200'
           }`}
           onClick={() => onTabChange('comments')}
-        >
-          {/* Active tab background */}
+        >          {/* Active tab background */}
           {activeTab === 'comments' && (
             <>
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl blur"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-gray-500/30 to-gray-600/30 rounded-xl blur"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-500/20 to-gray-600/20 rounded-xl"></div>
             </>
           )}
           
@@ -72,12 +70,11 @@ export default function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps
       </div>
       
       {/* Active tab indicator */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5">
-        <div 
+      <div className="absolute bottom-0 left-0 right-0 h-0.5">        <div 
           className={`h-full transition-all duration-300 ease-out ${
             activeTab === 'tweets' 
-              ? 'bg-gradient-to-r from-red-500 to-pink-500 w-24 ml-2' 
-              : 'bg-gradient-to-r from-blue-500 to-purple-500 w-32 ml-26'
+              ? 'bg-gradient-to-r from-red-500 to-red-600 w-24 ml-2' 
+              : 'bg-gradient-to-r from-gray-500 to-gray-600 w-32 ml-26'
           }`}
           style={{
             marginLeft: activeTab === 'tweets' ? '8px' : '128px'

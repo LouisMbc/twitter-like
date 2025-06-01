@@ -177,11 +177,11 @@ export default function ProfilePage() {
       </div>
     );
   }  return (
-    <div className="min-h-screen flex bg-black text-gray-100 relative overflow-hidden">
+    <div className="min-h-screen flex bg-black text-gray-50 relative overflow-hidden">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-800/6 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-700/4 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-950/30 via-black to-gray-950/30"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-900/4 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-800/3 rounded-full blur-3xl"></div>
 
       <Header />
 
@@ -191,9 +191,9 @@ export default function ProfilePage() {
         <div className="p-6 space-y-6">
           {/* Profile Section */}
           <div className="relative group">
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-800/40 overflow-hidden">
+            <div className="bg-gray-950/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-900/60 overflow-hidden">
               {/* Subtle glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-800/3 to-gray-700/3 rounded-2xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/2 to-gray-800/2 rounded-2xl"></div>
 
               <div className="relative z-10">
                 <ProfileHeader
@@ -220,23 +220,20 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
-
-          {/* Content Section */}
+          </div>          {/* Content Section */}
           <div className="relative group">
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-800/40 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-800/3 to-gray-700/3 rounded-2xl"></div>
+            <div className="bg-gray-950/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-900/60 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/2 to-gray-800/2 rounded-2xl"></div>
 
               <div className="relative z-10">
                 <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
                 <div className="p-8">                  {activeTab === "tweets" ? (
                     <div className="space-y-6">
-                      {tweets.length > 0 ? (
-                        tweets.map((tweet, index) => (
+                      {tweets.length > 0 ? (                        tweets.map((tweet, index) => (
                           <div key={tweet.id} className="group relative">
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-700/15 to-gray-600/15 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="relative bg-gray-800/40 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/30 hover:border-gray-700/50 transition-all duration-300 hover:transform hover:scale-[1.02]">
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-800/10 to-gray-700/10 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                            <div className="relative bg-gray-950/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-900/40 hover:border-gray-800/60 transition-all duration-300 hover:transform hover:scale-[1.02]">
                               <TweetCard tweet={tweet} />
                               {index === tweets.length - 1 && hasTweetsMore && (
                                 <div
@@ -246,13 +243,12 @@ export default function ProfilePage() {
                               )}
                             </div>
                           </div>
-                        ))
-                      ) : (
+                        ))                      ) : (
                         <div className="text-center py-16">
                           <div className="relative group">
-                            <div className="absolute -inset-4 bg-gradient-to-r from-gray-600/20 to-gray-400/20 rounded-full blur-xl opacity-50"></div>
+                            <div className="absolute -inset-4 bg-gradient-to-r from-gray-700/15 to-gray-500/15 rounded-full blur-xl opacity-50"></div>
                             <svg
-                              className="relative w-20 h-20 mx-auto text-gray-400 mb-6 group-hover:text-gray-300 transition-colors duration-300"
+                              className="relative w-20 h-20 mx-auto text-gray-500 mb-6 group-hover:text-gray-400 transition-colors duration-300"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -265,18 +261,17 @@ export default function ProfilePage() {
                               />
                             </svg>
                           </div>
-                          <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text mb-3">
+                          <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-300 to-gray-500 bg-clip-text mb-3">
                             Aucun tweet
                           </h3>
-                          <p className="text-gray-400 text-lg">
+                          <p className="text-gray-500 text-lg">
                             Commencez à partager vos pensées !
                           </p>
                         </div>
-                      )}
-                      {tweetsLoading && (
+                      )}                      {tweetsLoading && (
                         <div className="flex justify-center p-8">
                           <div className="relative">
-                            <div className="w-12 h-12 border-4 border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
+                            <div className="w-12 h-12 border-4 border-gray-700 border-t-red-500 rounded-full animate-spin"></div>
                             <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-red-400 rounded-full animate-spin animate-reverse"></div>
                           </div>
                         </div>
@@ -284,11 +279,10 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {comments.length > 0 ? (
-                        comments.map((comment) => (
+                      {comments.length > 0 ? (                        comments.map((comment) => (
                           <div key={comment.id} className="group relative">
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-700/15 to-gray-600/15 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="relative bg-gray-800/40 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/30 hover:border-gray-700/50 transition-all duration-300 hover:transform hover:scale-[1.02]">
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-800/10 to-gray-700/10 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                            <div className="relative bg-gray-950/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-900/40 hover:border-gray-800/60 transition-all duration-300 hover:transform hover:scale-[1.02]">
                               <div className="flex items-center space-x-4 mb-4">
                                 {comment.author?.profilePicture ? (
                                   <div className="relative">
@@ -310,13 +304,12 @@ export default function ProfilePage() {
                                       </span>
                                     </div>
                                   </div>
-                                )}
-                                <div>
-                                  <span className="font-bold text-white text-lg">
+                                )}                                <div>
+                                  <span className="font-bold text-gray-200 text-lg">
                                     {comment.author?.nickname ||
                                       "Utilisateur inconnu"}
                                   </span>
-                                  <div className="text-sm text-gray-400">
+                                  <div className="text-sm text-gray-500">
                                     {formatDistance(
                                       new Date(comment.created_at),
                                       new Date(),
@@ -327,12 +320,11 @@ export default function ProfilePage() {
                                     )}
                                   </div>
                                 </div>
-                              </div>
-                              <p className="text-gray-200 leading-relaxed mb-4 text-lg">
+                              </div>                              <p className="text-gray-300 leading-relaxed mb-4 text-lg">
                                 {comment.content}
                               </p>
-                              <div className="flex items-center text-sm text-gray-400 space-x-6">
-                                <span className="flex items-center space-x-2 hover:text-gray-300 transition-colors">
+                              <div className="flex items-center text-sm text-gray-500 space-x-6">
+                                <span className="flex items-center space-x-2 hover:text-gray-400 transition-colors">
                                   <svg
                                     className="w-5 h-5"
                                     fill="currentColor"
@@ -359,13 +351,12 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           </div>
-                        ))
-                      ) : (
+                        ))                      ) : (
                         <div className="text-center py-16">
                           <div className="relative group">
-                            <div className="absolute -inset-4 bg-gradient-to-r from-gray-600/20 to-gray-400/20 rounded-full blur-xl opacity-50"></div>
+                            <div className="absolute -inset-4 bg-gradient-to-r from-gray-700/15 to-gray-500/15 rounded-full blur-xl opacity-50"></div>
                             <svg
-                              className="relative w-20 h-20 mx-auto text-gray-400 mb-6 group-hover:text-gray-300 transition-colors duration-300"
+                              className="relative w-20 h-20 mx-auto text-gray-500 mb-6 group-hover:text-gray-400 transition-colors duration-300"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -378,10 +369,10 @@ export default function ProfilePage() {
                               />
                             </svg>
                           </div>
-                          <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text mb-3">
+                          <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-300 to-gray-500 bg-clip-text mb-3">
                             Aucun commentaire
                           </h3>
-                          <p className="text-gray-400 text-lg">
+                          <p className="text-gray-500 text-lg">
                             Participez aux conversations !
                           </p>
                         </div>
@@ -389,7 +380,7 @@ export default function ProfilePage() {
                       {loading && (
                         <div className="flex justify-center p-8">
                           <div className="relative">
-                            <div className="w-12 h-12 border-4 border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
+                            <div className="w-12 h-12 border-4 border-gray-700 border-t-red-500 rounded-full animate-spin"></div>
                             <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-red-400 rounded-full animate-spin animate-reverse"></div>
                           </div>
                         </div>
