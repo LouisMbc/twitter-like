@@ -21,7 +21,11 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
           .from("Stories")
           .select(`
             media_url,
-            media_type
+            media_type,
+            Profile:user_id (
+              profilePicture,
+              nickname
+            )
           `)
           .eq('id', storyId)
           .single();
@@ -77,14 +81,21 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
       <div className="w-full h-full flex items-center justify-center bg-black rounded-2xl overflow-hidden">
         <video
           src={story.media_url}
-          className="max-w-full max-h-full object-contain rounded-2xl"
+          className="w-full h-full object-cover rounded-2xl"
           controls={false}
           autoPlay
           muted
           playsInline
           loop={false}
+          preload="metadata"
           onError={(e) => {
             console.error('Erreur de chargement de la vidéo:', e);
+          }}
+          onLoadStart={() => {
+            console.log('Début du chargement de la vidéo');
+          }}
+          onCanPlay={() => {
+            console.log('Vidéo prête à être lue');
           }}
         />
       </div>

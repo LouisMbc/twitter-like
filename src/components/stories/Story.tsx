@@ -12,7 +12,7 @@ const STORY_DURATION = 60; // Durée en secondes (1 minute)
 
 const Story = ({ 
   userId, 
-  initialStoryIndex = 0,
+  initialStoryIndex,
   onClose 
 }: { 
   userId?: string | null;
@@ -28,9 +28,9 @@ const Story = ({
   // Déterminer si nous sommes côté client
   useEffect(() => {
     setIsClient(true);
-    // Initialiser l'index seulement côté client pour éviter l'erreur d'hydration
-    setCurrentStoryIndex(initialStoryIndex !== undefined ? initialStoryIndex : null);
-  }, [initialStoryIndex]);
+    // Ne pas auto-lancer la story au chargement de la page
+    // L'utilisateur doit cliquer pour ouvrir une story
+  }, []);
   
   // Filtrer les stories si un userId est fourni
   const filteredStories = userId 
@@ -179,8 +179,12 @@ const Story = ({
                 {story.Profile?.profilePicture ? (
                   <img 
                     src={story.Profile.profilePicture} 
-                    alt={story.Profile.nickname}
+                    alt={story.Profile.nickname || 'Profile'}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.log('Erreur chargement photo de profil');
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
@@ -223,15 +227,21 @@ const Story = ({
           {/* Header avec info utilisateur */}
           <div className="absolute top-8 left-6 right-6 flex items-center justify-between z-[10000]">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold overflow-hidden">
                 {currentStory.Profile?.profilePicture ? (
                   <img 
                     src={currentStory.Profile.profilePicture} 
-                    alt={currentStory.Profile.nickname}
+                    alt={currentStory.Profile.nickname || 'Profile'}
                     className="w-full h-full rounded-full object-cover"
+                    onError={(e) => {
+                      console.log('Erreur chargement photo de profil header');
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                 ) : (
-                  currentStory.Profile?.nickname?.charAt(0).toUpperCase() || 'U'
+                  <span className="text-sm">
+                    {currentStory.Profile?.nickname?.charAt(0).toUpperCase() || 'U'}
+                  </span>
                 )}
               </div>
               <div>
@@ -296,7 +306,7 @@ const Story = ({
             className="w-full h-full max-w-md mx-auto flex items-center justify-center p-6 pt-24 pb-16"
             onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant sur le contenu
           >
-            <div className="w-full h-full max-h-[70vh] rounded-2xl overflow-hidden bg-gray-900/50 backdrop-blur-sm border border-gray-700/30">
+            <div className="w-full h-full max-h-[70vh] rounded-2xl overflow-hidden bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 relative">
               <Suspense fallback={
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="relative">
