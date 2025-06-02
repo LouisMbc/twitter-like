@@ -1,29 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: ['class', '[data-theme="dark"]'],
+  darkMode: 'class', // Important : utilise la classe 'dark' pour activer le mode sombre
   theme: {
     extend: {
-      colors: {
-        primary: 'var(--primary)',
-        secondary: 'var(--secondary)',
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-      },
-      backgroundColor: {
-        'sidebar-bg': 'var(--sidebar-bg)',
-      },
-      textColor: {
-        'text-primary': 'var(--text-primary)',
-        'text-secondary': 'var(--text-secondary)',
-      },
-      borderColor: {
-        DEFAULT: 'var(--border-color)',
-      },
+      // Vous pouvez ajouter des couleurs personnalisées ici si nécessaire
     },
   },
   plugins: [],
