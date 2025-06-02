@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation';
 import { FaSearch } from 'react-icons/fa';
 import Header from '@/components/shared/Header';
 import Story from '@/components/stories/Story';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
+
 export default function DashboardPage() {
   const router = useRouter();
   const { tweets, loading, error, refreshFeed, loadMoreTweets, hasMore } = useFeed();
@@ -65,6 +67,7 @@ export default function DashboardPage() {
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
           </div>
+          <ThemeToggle />
         </div>
         
         {/* Stories section */}

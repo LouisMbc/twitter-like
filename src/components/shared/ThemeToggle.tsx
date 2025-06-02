@@ -28,14 +28,14 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="fixed bottom-6 right-6 z-50 p-3 bg-gray-900/80 dark:bg-gray-100/80 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:scale-110 transition-all duration-200 group"
+      className="p-2 bg-gray-800/50 dark:bg-gray-200/50 backdrop-blur-sm rounded-full shadow-lg border border-gray-300 dark:border-gray-700 hover:scale-110 transition-all duration-200 group"
       aria-label="Changer le thème"
     >
-      <div className="relative w-6 h-6">
-        <Sun className={`absolute inset-0 w-6 h-6 text-yellow-500 transition-all duration-300 ${
+      <div className="relative w-5 h-5">
+        <Sun className={`absolute inset-0 w-5 h-5 text-yellow-500 transition-all duration-300 ${
           theme === 'dark' ? 'opacity-0 rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'
         }`} />
-        <Moon className={`absolute inset-0 w-6 h-6 text-blue-400 transition-all duration-300 ${
+        <Moon className={`absolute inset-0 w-5 h-5 text-blue-400 transition-all duration-300 ${
           theme === 'light' ? 'opacity-0 -rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'
         }`} />
       </div>

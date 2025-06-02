@@ -8,15 +8,11 @@ import { Home, Search, Bell, Mail, User, Plus, LogOut, Star, ArrowLeft, MoreHori
 import supabase from "@/lib/supabase";
 import { messageService } from "@/services/supabase/message";
 import { notificationService } from "@/services/supabase/notification";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export function Navbar() {
   return (
     <nav className="p-4 flex justify-between items-center">
       <div>Logo</div>
-      <div className="flex items-center gap-4">
-        <ThemeToggle />
-      </div>
     </nav>
   );
 }
@@ -236,7 +232,6 @@ export default function Header() {
               />
             </div>
           </div>
-          <ThemeToggle />
         </div>
       </div>
     );
@@ -410,13 +405,6 @@ export default function Header() {
                     </button>
                   </div>
                 )}
-              </div>
-
-              {/* Theme toggle above profile */}
-              <div className="absolute bottom-20 left-0 right-0 px-4">
-                <div className="flex justify-center">
-                  <ThemeToggle />
-                </div>
               </div>
             </div>
           </div>
