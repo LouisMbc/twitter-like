@@ -9,6 +9,7 @@ import TweetCard from '@/components/tweets/TweetCard';
 import CommentList from '@/components/comments/CommentList';
 import Header from '@/components/shared/Header';
 import Image from 'next/image';
+import { useEffect } from 'react';
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -27,7 +28,8 @@ export default function UserProfilePage() {
     currentProfileId,
     handleFollowToggle,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    isViewingStories
   } = useUserProfile(userId);
 
   // Function to handle following count changes
@@ -38,6 +40,25 @@ export default function UserProfilePage() {
 
   const isCurrentUser = currentProfileId === profile?.id;
 
+  // Empêcher le scroll quand une story est ouverte
+  useEffect(() => {
+    const body = document.body;
+    const html = document.documentElement;
+    
+    if (isViewingStories) {
+      body.style.overflow = 'hidden';
+      html.style.overflow = 'hidden';
+    } else {
+      body.style.overflow = '';
+      html.style.overflow = '';
+    }
+    
+    return () => {
+      body.style.overflow = '';
+      html.style.overflow = '';
+    };
+  }, [isViewingStories]);
+
   if (!userId) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -47,41 +68,33 @@ export default function UserProfilePage() {
   }
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-gray-50 relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-500/5 rounded-full blur-3xl"></div>
-        
-        <div className="text-center py-20 relative z-10">
-          <div className="animate-pulse flex justify-center">
+      <div className="min-h-screen bg-black text-white">        
+        <div className="text-center py-20">
+          <div className="flex justify-center mb-4">
             <Image
               src="/logo_Flow.png"
               alt="Flow Logo"
-              width={120}
-              height={40}
+              width={100}
+              height={32}
               priority
             />
-          </div>          <div className="mt-4 text-gray-300">Chargement du profil...</div>
+          </div>
+          <div className="text-lg">Chargement du profil...</div>
           <div className="mt-2 text-sm text-gray-400">ID: {userId}</div>
         </div>
       </div>
     );
   }
+
   if (!profile) {
     return (
-      <div className="min-h-screen bg-black text-gray-50 relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-500/5 rounded-full blur-3xl"></div>
-        
-        <div className="text-center py-20 relative z-10">
+      <div className="min-h-screen bg-black text-white">        
+        <div className="text-center py-20">
           <div className="text-red-500 text-xl mb-4">Profil non trouvé</div>
           <div className="text-gray-400 text-sm mb-4">ID recherché: {userId}</div>
           <button 
             onClick={() => router.push('/explore')} 
-            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-full transition-all duration-200 hover:scale-105 shadow-lg"
+            className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
             Retour à la recherche
           </button>
@@ -89,16 +102,12 @@ export default function UserProfilePage() {
       </div>
     );
   }
+
   return (
-    <div className="min-h-screen flex bg-black text-gray-50 relative overflow-hidden">
-      {/* Background effects - same as auth page */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-500/5 rounded-full blur-3xl"></div>
-      
+    <div className="min-h-screen flex bg-black text-white">      
       <Header />
-      <div className="ml-64 flex-1 relative z-10">
-        <div className="max-w-2xl mx-auto">
+      <div className="ml-64 flex-1">
+        <div className="w-full bg-black min-h-screen">
           <ProfileHeader
             profile={{
               ...profile,
@@ -114,24 +123,30 @@ export default function UserProfilePage() {
             isCurrentUser={isCurrentUser}
           />
 
-          <ProfileTabs
-            activeTab={activeTab}
-            onTabChange={(tab) => {
-              if (tab === 'tweets' || tab === 'comments') {
-                setActiveTab(tab);
-              }
-            }}
-          />
+          <div className="border-b border-gray-800 bg-black sticky top-0 z-10">
+            <ProfileTabs
+              activeTab={activeTab}
+              onTabChange={(tab) => {
+                if (tab === 'tweets' || tab === 'comments') {
+                  setActiveTab(tab);
+                }
+              }}
+            />
+          </div>
 
-          <div className="space-y-4">
-            {activeTab === 'tweets' ? (              tweets.length > 0 ? (
+          <div className="bg-black">
+            {activeTab === 'tweets' ? (
+              tweets.length > 0 ? (
                 tweets.map(tweet => (
-                  <TweetCard key={tweet.id} tweet={tweet} />
+                  <div key={tweet.id} className="border-b border-gray-800 hover:bg-gray-950 transition-colors">
+                    <TweetCard tweet={tweet} />
+                  </div>
                 ))
               ) : (
-                <div className="p-8 text-center text-gray-400 bg-gray-900/20 rounded-xl border border-gray-700/30">
-                  <div className="text-lg font-medium mb-2">Aucune publication</div>
-                  <div className="text-sm text-gray-500">Ce profil n'a pas encore publié de contenu.</div>
+                <div className="p-8 text-center">
+                  <div className="text-6xl mb-4">📝</div>
+                  <div className="text-lg font-medium text-white mb-2">Aucune publication</div>
+                  <div className="text-sm text-gray-500">@{profile.nickname} n'a pas encore publié.</div>
                 </div>
               )
             ) : (
@@ -148,7 +163,11 @@ export default function UserProfilePage() {
                   }
                 }))} />
               ) : (
-                <div className="p-4 text-center text-gray-500">Aucun commentaire</div>
+                <div className="p-8 text-center">
+                  <div className="text-6xl mb-4">💬</div>
+                  <div className="text-lg font-medium text-white mb-2">Aucune réponse</div>
+                  <div className="text-sm text-gray-500">@{profile.nickname} n'a pas encore répondu.</div>
+                </div>
               )
             )}
           </div>

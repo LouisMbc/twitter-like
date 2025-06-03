@@ -28,7 +28,7 @@ export default function ProfileCard({
   followersCount, 
   followingCount, 
   onFollowingChange,
-  isCurrentUser = true // Par défaut, on considère que c'est le profil de l'utilisateur courant
+  isCurrentUser = true
 }: ProfileCardProps) {
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -153,11 +153,16 @@ export default function ProfileCard({
     }
   };
 
+  const handleEditProfile = () => {
+    // Utiliser window.location pour éviter les problèmes de Next.js router
+    window.location.href = '/profile/edit';
+  };
+
   return (
-    <div className="bg-black border border-gray-800 rounded-lg p-6 mb-6">
-      <div className="flex items-start space-x-6">
-        {/* Photo de profil */}
-        <div className="w-32 h-32 rounded-full overflow-hidden">
+    <div className="bg-black border border-gray-800 rounded-lg p-8 mb-8 w-full">
+      <div className="flex items-start space-x-8">
+        {/* Photo de profil - larger */}
+        <div className="w-40 h-40 rounded-full overflow-hidden">
           {profile.profilePicture ? (
             <img
               src={profile.profilePicture}
@@ -166,29 +171,30 @@ export default function ProfileCard({
             />
           ) : (
             <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-              <span className="text-4xl text-gray-300">
+              <span className="text-5xl text-gray-300">
                 {profile.firstName.charAt(0)}
               </span>
             </div>
           )}
         </div>
 
-        {/* Informations du profil */}
+        {/* Informations du profil - expanded */}
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold text-white">{profile.nickname}</h1>
-              <p className="text-gray-400">
+              <h1 className="text-3xl font-bold text-white">{profile.nickname}</h1>
+              <p className="text-gray-400 text-lg">
                 {profile.firstName} {profile.lastName}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-base text-gray-500 mt-2">
                 Membre depuis {formatDistance(new Date(profile.created_at), new Date(), { locale: fr })}
               </p>
             </div>
             
             {isCurrentUser ? (
               <button
-                onClick={() => router.push('/profile/edit')}
+                onClick={handleEditProfile}
+                type="button"
                 className="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700"
               >
                 Éditer le profil
@@ -208,15 +214,15 @@ export default function ProfileCard({
             )}
           </div>
 
-          {/* Stats */}
-          <div className="flex space-x-6 mt-4">
+          {/* Stats - larger */}
+          <div className="flex space-x-8 mt-6">
             <div>
-              <span className="font-bold text-white">{followersCount}</span>
-              <span className="text-gray-400 ml-1">Abonnés</span>
+              <span className="font-bold text-white text-xl">{followersCount}</span>
+              <span className="text-gray-400 ml-2 text-base">Abonnés</span>
             </div>
             <div>
-              <span className="font-bold text-white">{localFollowingCount}</span>
-              <span className="text-gray-400 ml-1">Abonnements</span>
+              <span className="font-bold text-white text-xl">{localFollowingCount}</span>
+              <span className="text-gray-400 ml-2 text-base">Abonnements</span>
             </div>
           </div>
         </div>

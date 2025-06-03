@@ -26,16 +26,16 @@ export default function EditProfilePage() {
     return (
       <div className="min-h-screen bg-black text-white">
         <div className="text-center py-20">
-          <div className="animate-pulse flex justify-center">
+          <div className="flex justify-center mb-4">
             <Image 
               src="/logo_Flow.png" 
               alt="Flow Logo" 
-              width={120} 
-              height={40} 
+              width={100} 
+              height={32} 
               priority
             />
           </div>
-          <div className="mt-4">Chargement...</div>
+          <div className="text-lg">Chargement...</div>
         </div>
       </div>
     );
@@ -44,20 +44,20 @@ export default function EditProfilePage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-black bg-opacity-80 backdrop-blur-sm p-4 border-b border-gray-800">
+      <div className="sticky top-0 z-40 bg-black border-b border-gray-800 p-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <button 
               onClick={() => router.back()} 
-              className="p-2 rounded-full hover:bg-gray-800 mr-4"
+              className="p-2 rounded-full hover:bg-gray-800 mr-4 transition-colors"
             >
               <FaArrowLeft />
             </button>
-            <h1 className="text-xl font-bold">Modifier le profil</h1>
+            <h1 className="text-xl font-semibold">Modifier le profil</h1>
           </div>
           <button 
             onClick={() => handleSubmit(formData)}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-full font-bold"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
           >
             Enregistrer
           </button>

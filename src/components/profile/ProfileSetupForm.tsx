@@ -1,9 +1,9 @@
 import React from 'react';
-import { ProfileForm } from '@/types'; // Modifié: Importer ProfileForm depuis @/types
+import { ProfileForm } from '@/types';
 
 interface ProfileSetupFormProps {
-  formData: ProfileForm; // Modifié: Utiliser ProfileForm
-  setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>; // Modifié: Utiliser ProfileForm
+  formData: ProfileForm;
+  setFormData: React.Dispatch<React.SetStateAction<ProfileForm>>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   loading: boolean;
   error: string | null;
@@ -19,7 +19,7 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData((prev: ProfileForm) => ({ // Modifié: Utiliser ProfileForm
+    setFormData((prev: ProfileForm) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -28,126 +28,147 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev: ProfileForm) => ({ // Modifié: Utiliser ProfileForm
+      setFormData((prev: ProfileForm) => ({
         ...prev,
         profilePicture: file,
       }));
     } else {
-      setFormData((prev: ProfileForm) => ({ // Modifié: Utiliser ProfileForm
+      setFormData((prev: ProfileForm) => ({
         ...prev,
         profilePicture: null,
       }));
     }
   };
 
-  const inputStyle = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black bg-white";
+  const inputStyle =
+    'mt-1 block w-full border border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white bg-gray-800';
+  const labelStyle = 'block text-sm font-medium text-gray-300 mb-1';
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" method="POST">
-      <div className="mb-4">
-        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-          Prénom
-        </label>
-        <input
-          type="text"
-          name="firstName"
-          id="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
-          className={inputStyle}
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-          Nom
-        </label>
-        <input
-          type="text"
-          name="lastName"
-          id="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
-          className={inputStyle}
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">
-          Pseudo
-        </label>
-        <input
-          type="text"
-          name="nickname"
-          id="nickname"
-          value={formData.nickname}
-          onChange={handleChange}
-          required
-          className={inputStyle}
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-          Bio
-        </label>
-        <textarea
-          name="bio"
-          id="bio"
-          value={formData.bio}
-          onChange={handleChange}
-          className={inputStyle}
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-          Mot de passe
-        </label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          value={formData.password || ''}
-          onChange={handleChange}
-          required
-          className={inputStyle}
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-          Confirmer le mot de passe
-        </label>
-        <input
-          type="password"
-          name="confirmPassword"
-          id="confirmPassword"
-          value={formData.confirmPassword || ''}
-          onChange={handleChange}
-          required
-          className={inputStyle}
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700">
-          Photo de profil
-        </label>
-        <input
-          type="file"
-          name="profilePicture"
-          id="profilePicture"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-        />
-      </div>
-      {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
-      <div>
+    <div className="bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-700">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="firstName" className={labelStyle}>
+            Prénom
+          </label>
+          <input
+            type="text"
+            name="firstName"
+            id="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            className={inputStyle}
+            placeholder="Votre prénom"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="lastName" className={labelStyle}>
+            Nom
+          </label>
+          <input
+            type="text"
+            name="lastName"
+            id="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            className={inputStyle}
+            placeholder="Votre nom"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="nickname" className={labelStyle}>
+            Pseudo *
+          </label>
+          <input
+            type="text"
+            name="nickname"
+            id="nickname"
+            value={formData.nickname}
+            onChange={handleChange}
+            required
+            className={inputStyle}
+            placeholder="Votre pseudo unique"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="bio" className={labelStyle}>
+            Bio
+          </label>
+          <textarea
+            name="bio"
+            id="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            rows={3}
+            className={inputStyle}
+            placeholder="Parlez-nous de vous..."
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className={labelStyle}>
+            Mot de passe *
+          </label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            value={formData.password || ''}
+            onChange={handleChange}
+            required
+            className={inputStyle}
+            placeholder="Choisissez un mot de passe"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className={labelStyle}>
+            Confirmer le mot de passe *
+          </label>
+          <input
+            type="password"
+            name="confirmPassword"
+            id="confirmPassword"
+            value={formData.confirmPassword || ''}
+            onChange={handleChange}
+            required
+            className={inputStyle}
+            placeholder="Confirmez votre mot de passe"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="profilePicture" className={labelStyle}>
+            Photo de profil
+          </label>
+          <input
+            type="file"
+            name="profilePicture"
+            id="profilePicture"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-red-600 file:text-white hover:file:bg-red-700"
+          />
+        </div>
+
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={loading}
         >
-          {loading ? 'Chargement...' : 'Enregistrer'}
+          {loading ? 'Création du profil...' : 'Créer mon profil'}
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
 
