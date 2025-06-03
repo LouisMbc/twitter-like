@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Home, Search, Bell, Mail, User, Plus, LogOut, Star, ArrowLeft, MoreHorizontal } from "lucide-react";
+import { Home, Search, Bell, Mail, User, Plus, LogOut, Sparkles, ArrowLeft, MoreHorizontal } from "lucide-react";
 import supabase from "@/lib/supabase";
 import { messageService } from "@/services/supabase/message";
 import { notificationService } from "@/services/supabase/notification";
@@ -324,7 +324,7 @@ export default function Header() {
                         : "text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
                     } rounded-md cursor-pointer transition-colors duration-200`}
                   >
-                    <Star className="mr-4" />
+                    <Sparkles className="mr-4" />
                     <span className="text-lg">Premium</span>
                   </div>
                 </Link>
