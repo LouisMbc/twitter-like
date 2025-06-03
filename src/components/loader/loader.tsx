@@ -5,7 +5,7 @@ import styles from './loader.module.css';
 import logo from '/public/Capture_d_écran_du_2025-05-15_11-40-36-removebg-preview.png'; 
 
 interface LogoLoaderProps {
-  size?: string; // Rendre la prop optionnelle
+  size?: string;
 }
 
 export default function LogoLoader({ size = "medium" }: LogoLoaderProps) {
@@ -18,9 +18,10 @@ export default function LogoLoader({ size = "medium" }: LogoLoaderProps) {
           clearInterval(interval);
           return 100;
         }
-        return prevProgress + 1;
+        // Progression ultra-rapide - terminé en moins d'1 seconde
+        return prevProgress + 25; // Encore plus rapide
       });
-    }, 30); // Ajustez la vitesse selon vos préférences
+    }, 20); // Intervalle très court pour fluidité maximale
     
     return () => clearInterval(interval);
   }, []);

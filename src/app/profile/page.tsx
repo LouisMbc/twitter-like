@@ -11,6 +11,8 @@ import ProfileTabs from "@/components/profile/ProfileTabs";
 import { useRef, useCallback } from "react";
 import Image from "next/image";
 import Header from "@/components/shared/Header";
+import { formatDistance } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -34,6 +36,9 @@ export default function ProfilePage() {
 
   // State pour gérer le statut de suivi
   const [isFollowing, setIsFollowing] = useState(false);
+
+  // State pour gérer le chargement initial
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Référence uniquement pour les tweets
   const tweetsObserver = useRef<IntersectionObserver | null>(null);
@@ -60,37 +65,30 @@ export default function ProfilePage() {
     setIsFollowing(!isFollowing);
     // Logique pour suivre/ne plus suivre un utilisateur
   };
+
+  // Effet pour gérer le chargement initial
+  useEffect(() => {
+    if (!loading && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [loading, isInitialLoad]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center space-y-4">
-            <Image
-              src="/logo_Flow.png"
-              alt="Flow Logo"
-              width={120}
-              height={40}
-              priority
-              className="mx-auto"
-            />
-            <div className="text-xl font-semibold">
-              Chargement de votre profil...
-            </div>
-            <div className="text-gray-400">Veuillez patienter un instant</div>
-            <div className="flex justify-center">
-              <div className="w-8 h-8 border-2 border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
-            </div>
-          </div>
+          <div className="w-8 h-8 border-4 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
         </div>
       </div>
     );
   }
+
   if (!profile) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
         <div className="flex items-center justify-center min-h-screen">
           <div className="max-w-md mx-auto p-8 text-center">
-            <div className="bg-gray-900 rounded-lg p-8 border border-gray-700">
+            <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-8 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
               <svg
                 className="w-16 h-16 mx-auto text-gray-400 mb-4"
                 fill="none"
@@ -122,12 +120,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-black text-white overflow-hidden">
+    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white overflow-hidden transition-colors duration-300">
       <Header />
 
       {/* Main content - fixed positioning to prevent layout shifts */}
       <div className="ml-64 flex-1 relative">
-        <div className="w-full bg-black min-h-screen">
+        <div className="w-full bg-white dark:bg-black min-h-screen transition-colors duration-300">
           {/* Profile Section */}
           <ProfileHeader
             profile={{
@@ -153,18 +151,18 @@ export default function ProfilePage() {
           />
 
           {/* Tabs and Content */}
-          <div className="border-b border-gray-800 bg-black sticky top-0 z-10">
+          <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-10 transition-colors duration-300">
             <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
           </div>
 
-          <div className="bg-black min-h-screen">
+          <div className="bg-white dark:bg-black min-h-screen transition-colors duration-300">
             {activeTab === "tweets" ? (
               <div>
                 {tweets.length > 0 ? (
                   tweets.map((tweet, index) => (
                     <div
                       key={tweet.id}
-                      className="border-b border-gray-800 hover:bg-gray-950 transition-colors"
+                      className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
                     >
                       <TweetCard tweet={tweet} />
                       {index === tweets.length - 1 && hasTweetsMore && (
@@ -175,10 +173,10 @@ export default function ProfilePage() {
                 ) : (
                   <div className="text-center py-16 px-8">
                     <div className="text-6xl mb-4">📝</div>
-                    <h3 className="text-xl font-medium text-white mb-2">
+                    <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                       Aucun post publié
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-gray-500 dark:text-gray-500">
                       Quand vous publierez des posts, ils apparaîtront ici.
                     </p>
                   </div>
@@ -186,48 +184,54 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div>
-                {comments.length > 0 ? (
+                {comments && comments.length > 0 ? (
                   comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="border-b border-gray-800 p-4 hover:bg-gray-950 transition-colors"
+                      className="border-b border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
                     >
                       <div className="flex items-start space-x-3">
                         {comment.author?.profilePicture ? (
                           <img
                             src={comment.author.profilePicture}
-                            alt={comment.author.nickname}
-                            className="w-10 h-10 rounded-full"
+                            alt={comment.author.nickname || "Utilisateur"}
+                            className="w-10 h-10 rounded-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling?.classList.remove('hidden');
+                            }}
                           />
-                        ) : (
-                          <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                            <span className="text-white font-medium text-sm">
-                              {
-                                comment.author?.nickname?.charAt(0).toUpperCase() ||
-                                "?"
-                              }
-                            </span>
-                          </div>
-                        )}
+                        ) : null}
+                        
+                        <div className={`w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center ${comment.author?.profilePicture ? 'hidden' : ''}`}>
+                          <span className="text-gray-900 dark:text-white font-medium text-sm">
+                            {comment.author?.nickname?.charAt(0).toUpperCase() || "?"}
+                          </span>
+                        </div>
 
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-semibold text-white">
+                            <span className="font-semibold text-gray-900 dark:text-white">
                               {comment.author?.nickname || "Utilisateur inconnu"}
                             </span>
                             <span className="text-gray-500 text-sm">
-                              {formatDistance(
-                                new Date(comment.created_at),
-                                new Date(),
-                                {
-                                  addSuffix: true,
-                                  locale: fr,
-                                }
-                              )}
+                              {comment.created_at ? (
+                                formatDistance(
+                                  new Date(comment.created_at),
+                                  new Date(),
+                                  {
+                                    addSuffix: true,
+                                    locale: fr,
+                                  }
+                                )
+                              ) : 'Date inconnue'}
                             </span>
                           </div>
 
-                          <p className="text-gray-300 mb-3">{comment.content}</p>
+                          <p className="text-gray-700 dark:text-gray-300 mb-3">
+                            {comment.content || "Contenu non disponible"}
+                          </p>
 
                           <div className="flex items-center text-sm text-gray-500 space-x-4">
                             <span className="flex items-center space-x-1">
@@ -239,21 +243,23 @@ export default function ProfilePage() {
                                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                                 <path
                                   fillRule="evenodd"
-                                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
                                   clipRule="evenodd"
                                 />
                               </svg>
-                              <span>{comment.view_count}</span>
+                              <span>{comment.view_count || 0}</span>
                             </span>
-                            <span>
-                              💬 Sur{" "}
-                              <a
-                                href={`/tweets/${comment.tweet_id}`}
-                                className="text-red-400 hover:text-red-300 underline"
-                              >
-                                ce tweet
-                              </a>
-                            </span>
+                            {comment.tweet_id && (
+                              <span>
+                                💬 Sur{" "}
+                                <a
+                                  href={`/tweets/${comment.tweet_id}`}
+                                  className="text-red-400 hover:text-red-300 underline"
+                                >
+                                  ce tweet
+                                </a>
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -262,10 +268,10 @@ export default function ProfilePage() {
                 ) : (
                   <div className="text-center py-16 px-8">
                     <div className="text-6xl mb-4">💬</div>
-                    <h3 className="text-xl font-medium text-white mb-2">
+                    <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                       Aucune réponse
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-gray-500 dark:text-gray-500">
                       Quand vous répondrez aux posts, vos réponses apparaîtront ici.
                     </p>
                   </div>

@@ -54,7 +54,7 @@ export default function SuccessPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex bg-black text-white">
+      <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
         <Header />
         <div className="ml-64 flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -67,27 +67,27 @@ export default function SuccessPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-black text-white">
+    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
       <Header />
       <div className="ml-64 flex-1 flex items-center justify-center p-4">
-        <div className="bg-gray-900 rounded-lg shadow-lg max-w-lg w-full p-8 text-center border border-gray-700">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-lg w-full p-8 text-center border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 mb-6">
             <CheckCircleIcon className="h-10 w-10 text-green-600" />
           </div>
           
-          <h1 className="text-2xl font-bold text-white mb-4">Paiement réussi !</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Paiement réussi !</h1>
           
-          <p className="text-gray-300 mb-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             Votre abonnement Twitter-like Premium a été activé avec succès. Vous allez maintenant profiter de toutes les fonctionnalités premium.
           </p>
           
-          <p className="text-sm text-gray-400 mb-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
             Vous serez redirigé vers votre page d'abonnement dans quelques secondes...
           </p>
           
           <button
             onClick={() => router.push('/premium')}
-            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow focus:outline-none"
+            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow focus:outline-none transition-colors duration-300"
           >
             Voir mon abonnement
           </button>

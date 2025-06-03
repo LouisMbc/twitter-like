@@ -12,37 +12,41 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     
-    // Récupérer le thème depuis localStorage ou détecter la préférence système
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const initialTheme = savedTheme || systemTheme;
+    // Récupérer le thème depuis localStorage
+    const savedTheme = (localStorage.getItem('theme') as Theme) || 'dark';
+    setTheme(savedTheme);
     
-    setTheme(initialTheme);
-    
-    // Appliquer la classe au document
-    document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+    // Appliquer la classe immédiatement
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
-  // Éviter l'hydration mismatch
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Éviter l'hydration mismatch - afficher les enfants même avant le montage
+  const value = { theme, toggleTheme };
+  
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

@@ -106,7 +106,7 @@ export default function ConversationPage() {
 
   if (loading || checkingPermissions) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white flex items-center justify-center transition-colors duration-300">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500 mx-auto"></div>
           <div className="mt-4">Chargement de la conversation...</div>
@@ -117,20 +117,22 @@ export default function ConversationPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center text-red-400">{error}</div>
+      <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white flex items-center justify-center transition-colors duration-300">
+        <div className="text-center text-red-500">{error}</div>
       </div>
     );
   }
+  
   return (
-    <div className="min-h-screen bg-black text-gray-50 relative overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-50 relative overflow-hidden transition-colors duration-300">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-950/30 via-black to-gray-950/30"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-900/4 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-800/3 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/30 dark:from-gray-950/30 via-transparent to-gray-100/30 dark:to-gray-950/30"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/4 dark:bg-gray-900/4 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/3 dark:bg-gray-800/3 rounded-full blur-3xl"></div>
       
-      <div className="flex flex-col h-screen relative z-10">        {/* Conversation header */}
-        <div className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 p-4 flex items-center justify-between">
+      <div className="flex flex-col h-screen relative z-10">
+        {/* Conversation header */}
+        <div className="bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 p-4 flex items-center justify-between transition-colors duration-300">
           <div className="flex items-center">
             <button 
               onClick={() => router.push('/messages')}
@@ -166,8 +168,11 @@ export default function ConversationPage() {
           >
             <InformationCircleIcon className="w-5 h-5 text-gray-400" />
           </button>
-        </div>{/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-950/40">{!canMessageUser ? (
+        </div>
+
+        {/* Messages area */}
+        <div className="flex-1 overflow-y-auto p-4 bg-white/40 dark:bg-gray-950/40 transition-colors duration-300">
+          {!canMessageUser ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-md px-8">
                 <div className="mb-8">
@@ -185,7 +190,8 @@ export default function ConversationPage() {
                   Vous devez vous suivre mutuellement pour pouvoir communiquer.
                 </p>
               </div>
-            </div>) : currentMessages.length === 0 ? (
+            </div>
+          ) : currentMessages.length === 0 ? (
             /* État par défaut - Style similaire à "Sélectionnez un message" */
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-md px-8">
@@ -272,9 +278,11 @@ export default function ConversationPage() {
               <div ref={messagesEndRef} />
             </div>
           )}
-        </div>        {/* Message input */}
+        </div>
+
+        {/* Message input */}
         {canMessageUser && (
-          <div className="border-t border-gray-800/50 p-4 bg-gray-950/80 backdrop-blur-sm">
+          <div className="border-t border-gray-200/50 dark:border-gray-800/50 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm transition-colors duration-300">
             <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
               <div className="flex-1">
                 <textarea

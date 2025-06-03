@@ -99,9 +99,9 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen flex flex-col justify-between bg-white dark:bg-black text-gray-900 dark:text-white relative overflow-hidden transition-colors duration-300">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/20 dark:from-gray-900/20 via-transparent to-gray-100/20 dark:to-gray-900/20"></div>
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
       
@@ -139,7 +139,7 @@ export default function AuthPage() {
           
           {/* Formulaire d'inscription à droite */}
           <div className="flex flex-1 flex-col items-center justify-center max-w-md w-full">
-            <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-2xl px-8 py-10 w-full border border-gray-700/50 relative overflow-hidden">
+            <div className="bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-2xl px-8 py-10 w-full border border-gray-200/50 dark:border-gray-700/50 relative overflow-hidden transition-colors duration-300">
               {/* Subtle glow effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-blue-500/5 rounded-2xl"></div>
               

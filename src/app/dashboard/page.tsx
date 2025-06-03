@@ -20,6 +20,9 @@ export default function DashboardPage() {
   const [selectedStoryUserId, setSelectedStoryUserId] = useState<string | null>(null);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number | null>(null);
   const [isStoryOpen, setIsStoryOpen] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const loadMoreRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
@@ -34,12 +37,18 @@ export default function DashboardPage() {
     if (node) observer.current.observe(node);
   }, [loading, hasMore, loadMoreTweets]);
 
-  // Vérifier que l'utilisateur est authentifié
+  // Vérifier que l'utilisateur est authentifié plus rapidement
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/auth/login');
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          router.push('/auth/login');
+        }
+      } catch (error) {
+        console.error('Erreur d\'authentification:', error);
+      } finally {
+        setAuthChecked(true);
       }
     };
     checkAuth();
@@ -70,19 +79,45 @@ export default function DashboardPage() {
     };
   }, []);
 
+  // Fonction améliorée pour gérer la création d'un nouveau tweet
+  const handleTweetSuccess = async () => {
+    try {
+      setIsRefreshing(true);
+      // Attendre un petit délai pour s'assurer que le tweet est bien enregistré
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await refreshFeed();
+      console.log('Feed actualisé après création du tweet');
+    } catch (error) {
+      console.error('Erreur lors de l\'actualisation du feed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Afficher le contenu même pendant le chargement pour éviter l'écran blanc
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-center w-full">
+          <div className="w-8 h-8 border-4 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex bg-black text-gray-100 relative overflow-hidden">
+    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-gray-100 relative overflow-hidden transition-colors duration-300">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-800/6 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-700/4 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/20 dark:from-gray-900/20 via-transparent to-gray-100/20 dark:to-gray-900/20"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 dark:bg-gray-800/6 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 dark:bg-gray-700/4 rounded-full blur-3xl"></div>
 
       <Header />
       
       {/* Main content */}
       <div className="ml-64 flex-1 relative z-10">
         {/* Top search bar */}
-        <div className="sticky top-0 z-20 bg-gray-900/60 backdrop-blur-sm py-3 px-6 flex items-center justify-between border-b border-gray-800/40">
+        <div className="sticky top-0 z-20 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm py-3 px-6 flex items-center justify-between border-b border-gray-200/40 dark:border-gray-800/40 transition-colors duration-300">
           <div className="max-w-md w-64">
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-600/20 to-gray-500/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
@@ -91,21 +126,20 @@ export default function DashboardPage() {
                 placeholder="Parcourir le flow..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="relative w-full pl-10 pr-4 py-2 bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-700/50 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-red-500/70 focus:ring-2 focus:ring-red-500/20 transition-all duration-300"
+                className="relative w-full pl-10 pr-4 py-2 bg-gray-200/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-300/50 dark:border-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-red-500/70 focus:ring-2 focus:ring-red-500/20 transition-all duration-300"
               />
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
           </div>
-          <ThemeToggle />
         </div>
         
         {/* Stories section */}
-        <div className="py-6 px-6 border-b border-gray-800/40">
+        <div className="py-6 px-6 border-b border-gray-200/40 dark:border-gray-800/40">
           <div className="relative group">
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-800/40 overflow-hidden">
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/40 dark:border-gray-800/40 overflow-hidden transition-colors duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-gray-800/3 to-gray-700/3 rounded-2xl"></div>
               <div className="relative z-10 p-6">
-                <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300 bg-clip-text text-transparent">Stories</h2>
+                <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-gray-900 dark:from-gray-100 via-gray-700 dark:via-gray-200 to-gray-600 dark:to-gray-300 bg-clip-text text-transparent">Stories</h2>
                 {/* Afficher les stories sans overlay ici */}
                 <Story 
                   onStoryClick={handleOpenStory}
@@ -119,19 +153,37 @@ export default function DashboardPage() {
         <div className="p-6 space-y-6">
           {/* Section pour créer un nouveau tweet */}
           <div className="relative group">
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-800/40 overflow-hidden">
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/40 dark:border-gray-800/40 overflow-hidden transition-colors duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-gray-800/3 to-gray-700/3 rounded-2xl"></div>
               <div className="relative z-10 p-6">
-                <TweetComposer onSuccess={refreshFeed} />
+                <TweetComposer onSuccess={handleTweetSuccess} />
+                {isRefreshing && (
+                  <div className="mt-2 flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Actualisation du feed...</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Fil d'actualité */}
           <div className="relative group">
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-800/40 overflow-hidden">
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/40 dark:border-gray-800/40 overflow-hidden transition-colors duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-gray-800/3 to-gray-700/3 rounded-2xl"></div>
               <div className="relative z-10 p-8">
+                {error && (
+                  <div className="mb-4 p-4 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-red-700 dark:text-red-400">Erreur lors du chargement: {error}</p>
+                    <button 
+                      onClick={refreshFeed}
+                      className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                    >
+                      Réessayer
+                    </button>
+                  </div>
+                )}
+                
                 {tweets.length === 0 && !loading ? (
                   <div className="text-center py-16">
                     <div className="relative group">
@@ -150,10 +202,10 @@ export default function DashboardPage() {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text mb-3">
+                    <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-900 dark:from-gray-100 to-gray-600 dark:to-gray-300 bg-clip-text mb-3">
                       Aucun tweet dans votre fil d'actualité
                     </h3>
-                    <p className="text-gray-300 text-lg">
+                    <p className="text-gray-600 dark:text-gray-300 text-lg">
                       Commencez à suivre des personnes pour voir leurs tweets ici !
                     </p>
                   </div>
@@ -165,7 +217,7 @@ export default function DashboardPage() {
                 {loading && tweets.length > 0 && (
                   <div className="flex justify-center p-8">
                     <div className="relative">
-                      <div className="w-12 h-12 border-4 border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
+                      <div className="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
                       <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-red-400 rounded-full animate-spin animate-reverse"></div>
                     </div>
                   </div>

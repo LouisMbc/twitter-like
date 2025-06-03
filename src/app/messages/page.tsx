@@ -209,32 +209,33 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-black text-gray-50 relative overflow-hidden">
+    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-gray-50 relative overflow-hidden transition-colors duration-300">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-950/30 via-black to-gray-950/30"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-900/4 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-800/3 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/30 dark:from-gray-950/30 via-transparent to-gray-100/30 dark:to-gray-950/30"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/4 dark:bg-gray-900/4 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/3 dark:bg-gray-800/3 rounded-full blur-3xl"></div>
 
       <Header />
 
       {/* Main content */}
-      <div className="ml-64 flex-1 relative z-10 flex">        {/* Left Panel - Conversations */}
-        <div className="w-80 border-r border-gray-800/50 flex flex-col h-screen">
-          {/* Header Messages */}
-          <div className="sticky top-0 bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 p-4 flex items-center justify-between">
-            <h1 className="text-xl font-bold">Messages</h1>
+      <div className="ml-64 flex-1 relative z-10 flex">
+        {/* Left Panel - Conversations */}
+        <div className="w-80 border-r border-gray-200/50 dark:border-gray-800/50 flex flex-col h-screen">
+          {/* Header Messages sans bouton thème */}
+          <div className="sticky top-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 p-4 flex items-center justify-between transition-colors duration-300">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Messages</h1>
             <div className="flex items-center space-x-2">
-              <button className="p-2 hover:bg-gray-800/50 rounded-full transition-colors">
-                <Cog6ToothIcon className="w-5 h-5" />
+              <button className="p-2 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 rounded-full transition-colors">
+                <Cog6ToothIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
-              <button className="p-2 hover:bg-gray-800/50 rounded-full transition-colors">
-                <PencilSquareIcon className="w-5 h-5" />
+              <button className="p-2 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 rounded-full transition-colors">
+                <PencilSquareIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
           </div>
 
           {/* Search bar */}
-          <div className="p-4 border-b border-gray-800/50">
+          <div className="p-4 border-b border-gray-200/50 dark:border-gray-800/50">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -242,7 +243,7 @@ export default function MessagesPage() {
               <input
                 type="text"
                 placeholder="Rechercher des messages"
-                className="w-full pl-10 pr-4 py-2 bg-gray-900/60 border border-gray-700/50 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all"
+                className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-900/60 border border-gray-300 dark:border-gray-700/50 rounded-full text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all"
               />
             </div>
           </div>

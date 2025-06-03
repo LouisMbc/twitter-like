@@ -30,6 +30,7 @@ export const useProfile = () => {
     try {
       setLoading(true);
       
+      // Optimisation: Chargement du profil en priorité, autres données en arrière-plan
       const { data: profileData, error } = await profileService.getUserProfile(userId);
       
       if (error) {
@@ -41,18 +42,21 @@ export const useProfile = () => {
         return;
       }
       
+      // Afficher immédiatement le profil
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
-
-      // Charger les premiers lots de tweets et commentaires
-      await loadMoreTweets(profileData.id, 0);
-      await loadAllComments(profileData.id);
-      
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
+      setLoading(false); // Arrêter le loading principal ici
+
+      // Charger les tweets et commentaires en arrière-plan
+      Promise.allSettled([
+        loadMoreTweets(profileData.id, 0),
+        loadAllComments(profileData.id)
+      ]).catch(err => console.error('Erreur chargement arrière-plan:', err));
+
     } catch (error) {
       console.error('Erreur lors du chargement du profil:', error);
-    } finally {
       setLoading(false);
     }
   };
@@ -64,29 +68,25 @@ export const useProfile = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        // Ajouter une vérification explicite si l'utilisateur n'est pas connecté
         console.info('Aucune session utilisateur trouvée - utilisateur non connecté');
         setProfile(null);
         setLoading(false);
         return;
       }
 
-      // Récupérer les informations du profil
+      // Récupérer les informations du profil avec requête optimisée
       const { data: profileData, error: profileError } = await supabase
         .from('Profile')
-        .select('*')
+        .select('id, user_id, nickname, firstName, lastName, bio, profilePicture, created_at, follower_count, following_count, certified, is_premium, premium_features')
         .eq('user_id', session.user.id)
         .single();
 
       if (profileError) {
-        // Améliorer l'affichage de l'erreur avec plus de détails
         console.error('Erreur lors de la récupération du profil :', {
           code: profileError.code,
-          message: profileError.message,
-          details: profileError.details
+          message: profileError.message
         });
         
-        // Vérifier si c'est une erreur de "profil non trouvé"
         if (profileError.code === 'PGRST116') {
           console.warn('Profil non trouvé pour l\'utilisateur actuel - création nécessaire');
         }
@@ -94,35 +94,35 @@ export const useProfile = () => {
       }
 
       if (!profileData) {
-        console.warn('Aucune donnée de profil reçue - le profile est peut-être manquant');
+        console.warn('Aucune donnée de profil reçue');
         setProfile(null);
         setLoading(false);
         return;
       }
 
-      // Reste du code pour configurer le profil
+      // Afficher immédiatement le profil
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
-      
-      // Charger les premiers lots de tweets et commentaires
-      await loadMoreTweets(profileData.id, 0);
-      await loadAllComments(profileData.id);
-      
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
+      setLoading(false); // Arrêter le loading principal ici
+      
+      // Charger les tweets et commentaires en arrière-plan
+      Promise.allSettled([
+        loadMoreTweets(profileData.id, 0),
+        loadAllComments(profileData.id)
+      ]).catch(err => console.error('Erreur chargement arrière-plan:', err));
+      
     } catch (error) {
-      // Améliorer la gestion des erreurs pour obtenir plus d'informations
       const errorDetails = error instanceof Error 
-        ? { name: error.name, message: error.message, stack: error.stack }
+        ? { name: error.name, message: error.message }
         : { error };
         
       console.error('Erreur lors du chargement du profil connecté :', errorDetails);
       
-      // Vérifier si c'est une erreur d'authentification
       if (error instanceof Error && error.message.includes('auth')) {
-        console.warn('Possible problème d\'authentification - vérifiez que l\'utilisateur est connecté');
+        console.warn('Possible problème d\'authentification');
       }
-    } finally {
       setLoading(false);
     }
   }, []);

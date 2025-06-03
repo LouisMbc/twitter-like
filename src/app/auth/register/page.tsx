@@ -10,58 +10,58 @@ export default function RegisterPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen flex flex-col justify-between bg-white dark:bg-black text-gray-900 dark:text-white relative overflow-hidden transition-colors duration-300">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/20 dark:from-gray-900/20 via-transparent to-gray-100/20 dark:to-gray-900/20"></div>
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
       
       <div className="relative z-10 flex flex-col min-h-screen">
         <div className="w-full py-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-center bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-        Créer un compte
+          <h1 className="text-4xl md:text-6xl font-bold text-center bg-gradient-to-r from-gray-900 dark:from-white via-gray-700 dark:via-gray-200 to-gray-600 dark:to-gray-400 bg-clip-text text-transparent">
+            Créer un compte
           </h1>
-          <p className="text-center text-gray-400 mt-4 text-lg">
-        Rejoignez Flow en quelques clics
+          <p className="text-center text-gray-600 dark:text-gray-400 mt-4 text-lg">
+            Rejoignez Flow en quelques clics
           </p>
         </div>
         
         {/* Contenu principal centré */}
         <div className="flex-1 flex items-center justify-center px-8 -mt-16">
           <div className="w-full max-w-md">
-        <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-2xl px-8 py-10 w-full border border-gray-700/50 relative overflow-hidden">
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-blue-500/5 rounded-2xl"></div>
-          
-          <div className="relative z-10">
-            <div className="flex items-center mb-8 w-full">
-          <button
-            onClick={() => router.back()}
-            className="p-3 rounded-full hover:bg-gray-800 mr-4 text-white transition-all duration-200 hover:scale-110 group"
-          >
-            <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-200" />
-          </button>
-          <div className="text-2xl font-bold text-white">Créer un compte</div>
-            </div>
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-2xl px-8 py-10 w-full border border-gray-200/50 dark:border-gray-700/50 relative overflow-hidden transition-colors duration-300">
+              {/* Subtle glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-blue-500/5 rounded-2xl"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center mb-8 w-full">
+                  <button
+                    onClick={() => router.back()}
+                    className="p-3 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 mr-4 text-gray-900 dark:text-white transition-all duration-200 hover:scale-110 group"
+                  >
+                    <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-200" />
+                  </button>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">Créer un compte</div>
+                </div>
 
-            <RegisterForm />
-            
-            {/* Additional styling */}
-            <div className="mt-6 text-center">
-          <p className="text-sm text-gray-400">
-            En créant un compte, vous acceptez nos{' '}
-            <a href="/terms" className="text-red-400 hover:text-red-300 underline">
-              conditions d'utilisation
-            </a>
-          </p>
+                <RegisterForm />
+                
+                {/* Additional styling */}
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    En créant un compte, vous acceptez nos{' '}
+                    <a href="/terms" className="text-red-500 hover:text-red-400 underline">
+                      conditions d'utilisation
+                    </a>
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
           </div>
         </div>
         
         {/* Séparateur au-dessus du footer */}
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mt-auto" />
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent mt-auto" />
         
         {/* Footer */}
         <Footer />

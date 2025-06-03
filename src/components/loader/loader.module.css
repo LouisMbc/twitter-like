@@ -18,9 +18,9 @@
   height: 140px;
   border-radius: 50%;
   background: conic-gradient(#ff3333 0%, transparent 0%);
-  animation: pulse 2s infinite alternate;
+  animation: pulse 0.8s infinite alternate;
   box-shadow: 0 0 20px rgba(255, 51, 51, 0.6);
-  transition: background 0.3s ease;
+  transition: background 0.1s ease;
 }
 
 .progressCircleBg {
@@ -37,7 +37,7 @@
   height: 160px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 51, 51, 0.2) 0%, transparent 70%);
-  animation: haloEffect 3s infinite alternate;
+  animation: haloEffect 1s infinite alternate;
 }
 
 .reverseRotation {
@@ -46,7 +46,7 @@
   height: 120px;
   border-radius: 50%;
   border: 2px dashed rgba(255, 255, 255, 0.3);
-  animation: reverseRotate 10s linear infinite reverse;
+  animation: reverseRotate 3s linear infinite reverse;
 }
 
 .logoWrapper {
@@ -64,7 +64,7 @@
 
 .logo {
   filter: drop-shadow(0 0 8px rgba(255, 51, 51, 0.8));
-  animation: pulse 2s infinite alternate;
+  animation: pulse 0.8s infinite alternate;
   object-fit: contain;
   display: block;
   max-width: 100%;
@@ -77,7 +77,7 @@
   font-size: 16px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  animation: fadeInOut 1.5s infinite alternate;
+  animation: fadeInOut 0.8s infinite alternate;
   font-family: 'Arial', sans-serif;
 }
 
@@ -98,14 +98,14 @@
   width: 100%;
   height: 1px;
   top: 50%;
-  animation: expandHorizontal 2s infinite alternate;
+  animation: expandHorizontal 1s infinite alternate;
 }
 
 .verticalLine {
   width: 1px;
   height: 100%;
   left: 50%;
-  animation: expandVertical 2s infinite alternate;
+  animation: expandVertical 1s infinite alternate;
 }
 
 @keyframes pulse {

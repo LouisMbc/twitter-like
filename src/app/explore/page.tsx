@@ -8,6 +8,11 @@ import SearchBar from '@/components/searchBar/SearchBar';
 import supabase from '@/lib/supabase';
 import { Profile } from '@/types';
 
+interface Recommendation {
+  tag: string;
+  publications: string;
+}
+
 export default function ExplorePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,6 +25,18 @@ export default function ExplorePage() {
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
   const [followingLoading, setFollowingLoading] = useState<Record<string, boolean>>({});
   
+  // Données de démonstration pour les tendances
+  const recommendations: Recommendation[] = [
+    { tag: '#TypeScript', publications: '125K posts' },
+    { tag: '#React', publications: '89K posts' },
+    { tag: '#NextJS', publications: '67K posts' },
+    { tag: '#JavaScript', publications: '45K posts' },
+    { tag: '#WebDev', publications: '34K posts' },
+    { tag: '#TailwindCSS', publications: '23K posts' },
+    { tag: '#Supabase', publications: '12K posts' },
+    { tag: '#Flow', publications: '8K posts' },
+  ];
+
 // Recherche automatique si query dans l'URL
   useEffect(() => {
     if (query) {
@@ -139,14 +156,14 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-black text-white">
+    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
       <Header />
 
       {/* Main content area */}
       <div className="ml-64 flex-1">
-        {/* Search bar */}
-        <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
-          <div className="max-w-2xl mx-auto">
+        {/* Search bar sans bouton thème */}
+        <div className="sticky top-0 bg-white/80 dark:bg-black/80 z-10 p-4 border-b border-gray-300 dark:border-gray-800 backdrop-blur-sm transition-colors duration-300">
+          <div className="max-w-2xl">
             <SearchBar 
               onSearch={handleSearch}
               initialQuery={query}
@@ -156,42 +173,42 @@ export default function ExplorePage() {
         </div>
 
         {/* Navigation tabs */}
-        <div className="border-b border-gray-800">
+        <div className="border-b border-gray-300 dark:border-gray-800">
           <div className="flex justify-between overflow-x-auto">
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'pour-vous' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-3 text-sm font-medium ${activeTab === 'pour-vous' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('pour-vous')}
             >
               Pour vous
             </button>
             {hasSearched && (
               <button 
-                className={`px-4 py-3 text-sm font-medium ${activeTab === 'utilisateurs' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-400 hover:text-white'}`}
+                className={`px-4 py-3 text-sm font-medium ${activeTab === 'utilisateurs' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                 onClick={() => setActiveTab('utilisateurs')}
               >
                 Utilisateurs ({searchResults.length})
               </button>
             )}
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'tendances' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-3 text-sm font-medium ${activeTab === 'tendances' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('tendances')}
             >
               Tendances
             </button>
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'actualites' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-3 text-sm font-medium ${activeTab === 'actualites' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('actualites')}
             >
               Actualités
             </button>
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'sport' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-3 text-sm font-medium ${activeTab === 'sport' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('sport')}
             >
               Sport
             </button>
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'divertissement' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-3 text-sm font-medium ${activeTab === 'divertissement' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('divertissement')}
             >
               Divertissement
@@ -203,12 +220,12 @@ export default function ExplorePage() {
         <div className="p-4">
           {activeTab === 'pour-vous' && (
             <div className="space-y-4">
-              <div className="bg-gray-900 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4">Qui suivre</h2>
-                <p className="text-gray-400 mb-4">
+              <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-300">
+                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Qui suivre</h2>
+                <p className="text-gray-700 dark:text-gray-400 mb-4">
                   Utilisez la barre de recherche ci-dessus pour trouver des utilisateurs par leur pseudo.
                 </p>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-600 dark:text-gray-500">
                   💡 Astuce : Tapez au moins 2 caractères pour commencer votre recherche
                 </div>
               </div>
@@ -220,25 +237,24 @@ export default function ExplorePage() {
               {isSearching ? (
                 <div className="text-center py-8">
                   <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-400">Recherche en cours...</p>
+                  <p className="text-gray-700 dark:text-gray-400">Recherche en cours...</p>
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-3">
                   {searchResults.map((user) => (
                     <div
                       key={user.id}
-                      className="p-4 hover:bg-gray-900 rounded-lg transition-colors border border-gray-800"
+                      className="p-4 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors border border-gray-300 dark:border-gray-800"
                     >
                       <div className="flex items-center justify-between">
                         <div 
                           className="flex items-center space-x-3 flex-1 cursor-pointer"
                           onClick={() => {
                             console.log('Navigation vers profil, user:', user);
-                            // Utiliser l'ID du profil pour la navigation
                             router.push(`/profile/${user.id}`);
                           }}
                         >
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600 flex-shrink-0">
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 flex-shrink-0 border border-gray-400 dark:border-gray-500">
                             {user.profilePicture ? (
                               <img
                                 src={user.profilePicture}
@@ -247,7 +263,7 @@ export default function ExplorePage() {
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-white font-medium">
+                                <span className="text-gray-900 dark:text-white font-medium">
                                   {user.nickname?.charAt(0).toUpperCase() || '?'}
                                 </span>
                               </div>
@@ -255,17 +271,17 @@ export default function ExplorePage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
-                              <p className="font-medium text-white truncate">
+                              <p className="font-medium text-gray-900 dark:text-white truncate">
                                 {user.nickname || 'Utilisateur'}
                               </p>
                             </div>
                             {(user.firstName || user.lastName) && (
-                              <p className="text-sm text-gray-400 truncate">
+                              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                                 {user.firstName || ''} {user.lastName || ''}
                               </p>
                             )}
                             {user.bio && (
-                              <p className="text-sm text-gray-300 mt-1 line-clamp-2">
+                              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 line-clamp-2">
                                 {user.bio}
                               </p>
                             )}
@@ -280,14 +296,14 @@ export default function ExplorePage() {
                               handleFollowToggle(user.id!, followingStates[user.id!] || false);
                             }}
                             disabled={followingLoading[user.id!]}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ml-3 ${
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ml-3 border ${
                               followingStates[user.id!]
-                                ? 'bg-transparent border border-gray-600 text-white hover:bg-red-600 hover:border-red-600'
-                                : 'bg-red-500 text-white hover:bg-red-600'
+                                ? 'bg-transparent border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-red-600 hover:border-red-600 hover:text-white'
+                                : 'bg-red-500 text-white hover:bg-red-600 border-red-500'
                             } disabled:opacity-50`}
                           >
                             {followingLoading[user.id!] ? (
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                             ) : followingStates[user.id!] ? (
                               'Ne plus suivre'
                             ) : (
@@ -301,13 +317,13 @@ export default function ExplorePage() {
                 </div>
               ) : hasSearched ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-400">Aucun utilisateur trouvé pour "{query}"</p>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-gray-700 dark:text-gray-400">Aucun utilisateur trouvé pour "{query}"</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-500 mt-2">
                     Essayez avec un autre terme de recherche
                   </p>
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-600 dark:text-gray-500">
                   <p>Utilisez la barre de recherche pour trouver des utilisateurs</p>
                 </div>
               )}
@@ -315,16 +331,16 @@ export default function ExplorePage() {
           )}
 
           {activeTab === 'tendances' && (
-            <div className="divide-y divide-gray-800">
-              {recommendations.map((rec, index) => (
-                <div key={index} className="p-4 hover:bg-gray-900/50 transition-colors">
+            <div className="divide-y divide-gray-300 dark:divide-gray-800 border border-gray-300 dark:border-gray-800 rounded-lg overflow-hidden">
+              {recommendations.map((rec: Recommendation, index: number) => (
+                <div key={index} className="p-4 hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm text-gray-400">Tendance dans le monde</p>
-                      <p className="font-bold text-white">{rec.tag}</p>
-                      <p className="text-sm text-gray-400">{rec.publications}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Tendance dans le monde</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{rec.tag}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{rec.publications}</p>
                     </div>
-                    <button className="text-gray-400 hover:text-white">
+                    <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                       <FaEllipsisH />
                     </button>
                   </div>
@@ -335,7 +351,7 @@ export default function ExplorePage() {
 
           {/* Autres onglets avec contenu similaire */}
           {(activeTab === 'actualites' || activeTab === 'sport' || activeTab === 'divertissement') && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-600 dark:text-gray-500 border border-gray-300 dark:border-gray-800 rounded-lg">
               <p>Contenu pour {activeTab} à venir...</p>
               <p className="text-sm mt-2">En attendant, utilisez la recherche pour trouver des utilisateurs !</p>
             </div>

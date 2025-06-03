@@ -175,38 +175,40 @@ export default function NotificationsPage() {
     };
 
     return (
-        <div className="min-h-screen flex bg-black text-white">
+        <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
             <Header />
 
             {/* Main content area */}
             <div className="ml-64 flex-1">
-                {/* Search bar */}
-                <div className="sticky top-0 bg-black z-10 p-2 border-b border-gray-800">
-                    <div className="max-w-md mx-auto relative">
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaSearch className="text-gray-400" />
+                {/* Search bar sans bouton thème */}
+                <div className="sticky top-0 bg-white/80 dark:bg-black/80 z-10 p-2 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm transition-colors duration-300">
+                    <div className="flex items-center justify-center gap-4">
+                        <div className="max-w-md flex-1 relative">
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaSearch className="text-gray-400" />
+                                </div>
+                                <input
+                                    type="search"
+                                    className="block w-full pl-10 pr-3 py-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors duration-300"
+                                    placeholder="Parcourir le flow..."
+                                />
                             </div>
-                            <input
-                                type="search"
-                                className="block w-full pl-10 pr-3 py-2 rounded-full bg-gray-800 text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-500"
-                                placeholder="Parcourir le flow..."
-                            />
                         </div>
                     </div>
                 </div>
 
                 {/* Notification Tabs */}
-                <div className="border-b border-gray-800">
+                <div className="border-b border-gray-200 dark:border-gray-800">
                     <div className="flex overflow-x-auto">
                         <button
-                            className={`px-4 py-3 text-sm font-medium ${activeTab === 'tous' ? 'border-b-2 border-red-500 text-white' : 'text-gray-400'}`}
+                            className={`px-4 py-3 text-sm font-medium ${activeTab === 'tous' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
                             onClick={() => setActiveTab('tous')}
                         >
                             Tous ({notifications.length})
                         </button>
                         <button
-                            className={`px-4 py-3 text-sm font-medium ${activeTab === 'mention' ? 'border-b-2 border-red-500 text-white' : 'text-gray-400'}`}
+                            className={`px-4 py-3 text-sm font-medium ${activeTab === 'mention' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
                             onClick={() => setActiveTab('mention')}
                         >
                             Mentions ({notifications.filter(n => n.type === 'mention').length})
@@ -220,11 +222,11 @@ export default function NotificationsPage() {
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
                     </div>
                 ) : filteredNotifications.length > 0 ? (
-                    <div className="divide-y divide-gray-800">
+                    <div className="divide-y divide-gray-200 dark:divide-gray-800">
                         {filteredNotifications.map((notification) => (
                             <div 
                                 key={notification.id}
-                                className={`p-4 hover:bg-gray-900/50 transition-colors cursor-pointer ${notification.read ? '' : 'bg-gray-900/30 border-l-2 border-red-500'}`}
+                                className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors cursor-pointer ${notification.read ? '' : 'bg-red-50 dark:bg-gray-900/30 border-l-2 border-red-500'}`}
                                 onClick={() => {
                                     if (!notification.read) {
                                         markAsRead(notification.id);
@@ -284,7 +286,7 @@ export default function NotificationsPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         {activeTab === 'mention' 
                             ? 'Aucune mention pour le moment.' 
                             : 'Aucune notification pour le moment.'
