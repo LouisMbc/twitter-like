@@ -64,24 +64,26 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
   }
   if (story.media_type === 'image') {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-black rounded-2xl overflow-hidden">
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-teal-900 rounded-3xl overflow-hidden relative">
         <img 
           src={story.media_url}
           alt="Story"
-          className="max-w-full max-h-full object-contain rounded-2xl"
+          className="w-full h-full object-cover rounded-3xl"
           onError={(e) => {
             console.error('Erreur de chargement de l\'image:', e);
             (e.target as HTMLImageElement).src = '/placeholder-image.png';
           }}
         />
+        {/* Overlay gradient pour améliorer la lisibilité */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 rounded-3xl"></div>
       </div>
     );
   } else if (story.media_type === 'video') {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-black rounded-2xl overflow-hidden">
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-teal-900 rounded-3xl overflow-hidden relative">
         <video
           src={story.media_url}
-          className="w-full h-full object-cover rounded-2xl"
+          className="w-full h-full object-cover rounded-3xl"
           controls={false}
           autoPlay
           muted
@@ -98,6 +100,8 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
             console.log('Vidéo prête à être lue');
           }}
         />
+        {/* Overlay gradient pour améliorer la lisibilité */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 rounded-3xl"></div>
       </div>
     );
   }

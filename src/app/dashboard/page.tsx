@@ -17,6 +17,9 @@ export default function DashboardPage() {
   const { tweets, loading, error, refreshFeed, loadMoreTweets, hasMore } = useFeed();
   const observer = useRef<IntersectionObserver | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStoryUserId, setSelectedStoryUserId] = useState<string | null>(null);
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState<number | null>(null);
+  const [isStoryOpen, setIsStoryOpen] = useState(false);
   
   const loadMoreRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
@@ -41,6 +44,32 @@ export default function DashboardPage() {
     };
     checkAuth();
   }, [router]);
+
+  // Fonction pour ouvrir une story spécifique
+  const handleOpenStory = (userId: string, storyIndex: number = 0) => {
+    setSelectedStoryUserId(userId);
+    setSelectedStoryIndex(storyIndex);
+    setIsStoryOpen(true);
+    // Empêcher le scroll du body
+    document.body.style.overflow = 'hidden';
+  };
+
+  // Fonction pour fermer la story
+  const handleCloseStory = () => {
+    setSelectedStoryUserId(null);
+    setSelectedStoryIndex(null);
+    setIsStoryOpen(false);
+    // Restaurer le scroll du body
+    document.body.style.overflow = 'unset';
+  };
+
+  // Nettoyer le style du body au démontage du composant
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex bg-black text-gray-100 relative overflow-hidden">
       {/* Background effects */}
@@ -77,7 +106,10 @@ export default function DashboardPage() {
               <div className="absolute inset-0 bg-gradient-to-r from-gray-800/3 to-gray-700/3 rounded-2xl"></div>
               <div className="relative z-10 p-6">
                 <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300 bg-clip-text text-transparent">Stories</h2>
-                <Story />
+                {/* Afficher les stories sans overlay ici */}
+                <Story 
+                  onStoryClick={handleOpenStory}
+                />
               </div>
             </div>
           </div>
@@ -148,6 +180,21 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Overlay pour les stories en plein écran */}
+      {isStoryOpen && selectedStoryUserId && (
+        <div 
+          className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-[9999]"
+          style={{ zIndex: 9999 }}
+        >
+          <Story 
+            userId={selectedStoryUserId} 
+            initialStoryIndex={selectedStoryIndex || 0}
+            onClose={handleCloseStory}
+            isFullScreen={true}
+          />
+        </div>
+      )}
     </div>
   );
 }

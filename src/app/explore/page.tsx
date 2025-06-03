@@ -20,13 +20,7 @@ export default function ExplorePage() {
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
   const [followingLoading, setFollowingLoading] = useState<Record<string, boolean>>({});
   
-  // Mock data for recommendations
-  const recommendations = Array(6).fill({
-    tag: '#Kanye West',
-    publications: '107.3k publications'
-  });
-
-  // Recherche automatique si query dans l'URL
+// Recherche automatique si query dans l'URL
   useEffect(() => {
     if (query) {
       handleSearch(query);

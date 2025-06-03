@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import { useState, useRef, useEffect, FormEvent } from 'react';
 import { profileService } from '@/services/supabase/profile';
+import supabase from '@/lib/supabase';
 
 interface ContactType {
   id: string;
@@ -42,7 +43,94 @@ export default function MessagesPage() {
   const [message, setMessage] = useState('');
   const [canMessageUser, setCanMessageUser] = useState(true);
   const [checkingPermissions, setCheckingPermissions] = useState(false);
+  const [showNewMessageModal, setShowNewMessageModal] = useState(false);
+  const [followings, setFollowings] = useState<ContactType[]>([]);
+  const [loadingFollowings, setLoadingFollowings] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fonction pour charger les abonnements
+  const loadFollowings = async () => {
+    if (!profile?.id) {
+      console.log('Pas de profil trouvé:', profile);
+      return;
+    }
+    
+    console.log('Chargement des abonnements pour le profil:', profile.id);
+    setLoadingFollowings(true);
+    
+    try {
+      // Récupérer les abonnements directement depuis la table follows
+      const { data: followsData, error: followsError } = await supabase
+        .from('follows')
+        .select('*')
+        .eq('follower_id', profile.id);
+      
+      console.log('Résultat de la requête follows:', { followsData, followsError });
+      
+      if (followsError) {
+        console.error('Erreur lors du chargement des abonnements:', followsError);
+        return;
+      }
+      
+      if (followsData && followsData.length > 0) {
+        console.log('Abonnements bruts trouvés:', followsData);
+        
+        // Récupérer les profils des utilisateurs suivis
+        const followingIds = followsData.map(follow => follow.following_id);
+        console.log('IDs des utilisateurs suivis:', followingIds);
+        
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', followingIds);
+        
+        console.log('Résultat de la requête profiles:', { profilesData, profilesError });
+        
+        if (profilesError) {
+          console.error('Erreur lors du chargement des profils:', profilesError);
+          return;
+        }
+        
+        if (profilesData) {
+          const followingsWithProfiles = profilesData.map(profile => ({
+            id: profile.id,
+            nickname: profile.nickname || profile.name || profile.username || 'Utilisateur',
+            profilePicture: profile.profilePicture || profile.profile_picture || profile.avatar_url
+          }));
+          
+          console.log('Abonnements formatés:', followingsWithProfiles);
+          setFollowings(followingsWithProfiles);
+        }
+      } else {
+        console.log('Aucun abonnement trouvé dans la base de données');
+        setFollowings([]);
+      }
+    } catch (error) {
+      console.error('Erreur générale:', error);
+      setFollowings([]);
+    } finally {
+      setLoadingFollowings(false);
+    }
+  };
+
+  // Ouvrir le modal et charger les abonnements
+  const handleNewMessage = () => {
+    setShowNewMessageModal(true);
+    loadFollowings();
+  };
+
+  // Sélectionner un abonné pour démarrer une conversation
+  const handleSelectFollowing = async (userId: string) => {
+    setShowNewMessageModal(false);
+    setSearchQuery('');
+    await handleSelectConversation(userId);
+  };
+
+  // Filtrer les abonnements selon la recherche
+  const filteredFollowings = followings.filter(following =>
+    following.nickname.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Fonction pour sélectionner une conversation
   const handleSelectConversation = async (userId: string) => {
@@ -76,7 +164,14 @@ export default function MessagesPage() {
   // Fonction pour envoyer un message
   const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!message.trim() || !canMessageUser || !selectedUserId) return;
+    if (!message.trim() || !selectedUserId) return;
+    
+    // Vérifier si l'utilisateur peut envoyer un message (abonnement mutuel)
+    const canMessage = await checkCanMessage(selectedUserId);
+    if (!canMessage) {
+      console.error("Impossible d'envoyer un message : abonnement mutuel requis");
+      return;
+    }
     
     const success = await sendMessage(selectedUserId, message);
     if (success) {
@@ -366,7 +461,10 @@ export default function MessagesPage() {
                   Faites un choix dans vos conversations existantes, commencez-en une nouvelle ou ne changez rien.
                 </p>
                 
-                <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors text-sm">
+                <button 
+                  onClick={handleNewMessage}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors text-sm"
+                >
                   Nouveau message
                 </button>
               </div>
@@ -374,6 +472,93 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
+
+      {/* Modal Nouveau Message */}
+      {showNewMessageModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-2xl border border-gray-700/50 w-full max-w-md mx-4 max-h-[80vh] flex flex-col">
+            {/* Header du modal */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
+              <h3 className="text-xl font-bold text-white">Nouveau message</h3>
+              <button
+                onClick={() => {
+                  setShowNewMessageModal(false);
+                  setSearchQuery('');
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Barre de recherche */}
+            <div className="p-4 border-b border-gray-700/50">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Rechercher un abonnement"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-gray-800/60 border border-gray-600/50 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Liste des abonnements */}
+            <div className="flex-1 overflow-y-auto">
+              {loadingFollowings ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
+                </div>
+              ) : filteredFollowings.length === 0 ? (
+                <div className="text-center p-8">
+                  <div className="mb-4">
+                    <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400">
+                    {searchQuery ? 'Aucun abonnement trouvé' : 'Vous ne suivez personne encore'}
+                  </p>
+                </div>
+              ) : (
+                <div className="p-2">
+                  {filteredFollowings.map((following) => (
+                    <button
+                      key={following.id}
+                      onClick={() => handleSelectFollowing(following.id)}
+                      className="w-full flex items-center p-3 hover:bg-gray-800/50 rounded-xl transition-colors text-left"
+                    >
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 mr-3 flex-shrink-0">
+                        {following.profilePicture ? (
+                          <img
+                            src={following.profilePicture}
+                            alt={following.nickname}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white font-medium">
+                            {following.nickname.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-white truncate">{following.nickname}</p>
+                        <p className="text-sm text-gray-400">Démarrer une conversation</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
