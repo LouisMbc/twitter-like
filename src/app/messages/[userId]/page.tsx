@@ -79,7 +79,8 @@ export default function ConversationPage() {
         
         if (data) {
           console.log("Profil chargé:", data);
-          fetchMessages(data);
+          // Forcer le rechargement des messages
+          await fetchMessages(data);
         } else {
           console.log("Profil non trouvé pour ID:", userId);
         }
@@ -98,7 +99,7 @@ export default function ConversationPage() {
     if (profile && userId) {
       loadMessages();
     }
-  }, [userId, profile, fetchMessages, checkCanMessage]);
+  }, [userId, profile]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

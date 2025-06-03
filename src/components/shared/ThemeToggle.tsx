@@ -23,7 +23,7 @@ function ThemeToggleContent() {
   return (
     <div className="flex items-center">
       <label 
-        className="relative flex items-center w-[60px] h-fit bg-[#0c0f14] rounded-[30px] p-1 cursor-pointer overflow-hidden transition-all duration-500 select-none has-[:checked]:bg-[#cecece] shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform" 
+        className="relative flex items-center w-[60px] h-fit bg-[#0c0f14] rounded-[30px] p-1 cursor-pointer overflow-hidden transition-all duration-500 select-none has-[:checked]:bg-[#cecece] shadow-lg hover:shadow-xl transform hover:scale-105" 
         htmlFor="theme-switch"
         title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
       >

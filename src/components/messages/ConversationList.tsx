@@ -2,6 +2,7 @@
 import { useMessages } from '@/hooks/useMessages';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
 
 interface ConversationListProps {
   onSelectConversation: (userId: string) => Promise<void>;
@@ -10,6 +11,7 @@ interface ConversationListProps {
 
 export default function ConversationList({ onSelectConversation, selectedUserId }: ConversationListProps) {
   const { conversations, loading, error } = useMessages();
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -57,10 +59,10 @@ export default function ConversationList({ onSelectConversation, selectedUserId 
         }        return (
           <div 
             key={conversationId}
-            onClick={() => onSelectConversation(conversationId)}
-            className={`flex items-center p-4 hover:bg-gray-900 transition-colors border-l-4 cursor-pointer ${
+            onClick={() => router.push(`/messages/${conversationId}`)}
+            className={`flex items-center p-4 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 transition-colors border-l-4 cursor-pointer ${
               selectedUserId === conversationId 
-                ? 'border-red-500 bg-gray-900' 
+                ? 'border-red-500 bg-gray-200/50 dark:bg-gray-800/50' 
                 : 'border-transparent hover:border-red-500'
             }`}
           >

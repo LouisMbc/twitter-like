@@ -134,31 +134,8 @@ export default function MessagesPage() {
 
   // Fonction pour sélectionner une conversation
   const handleSelectConversation = async (userId: string) => {
-    try {
-      setSelectedUserId(userId);
-      setCheckingPermissions(true);
-      
-      console.log("Chargement du profil pour", userId);
-      
-      const { data, error } = await profileService.getProfileById(userId);
-      
-      if (error) {
-        console.error("Erreur lors du chargement du profil:", error);
-        return;
-      }
-      
-      if (data) {
-        console.log("Profil chargé:", data);
-        fetchMessages(data);
-      }
-      
-      const canMessage = await checkCanMessage(userId);
-      setCanMessageUser(canMessage);
-    } catch (err) {
-      console.error("Erreur lors du chargement:", err);
-    } finally {
-      setCheckingPermissions(false);
-    }
+    // Naviguer vers la page de conversation dédiée
+    router.push(`/messages/${userId}`);
   };
 
   // Fonction pour envoyer un message
