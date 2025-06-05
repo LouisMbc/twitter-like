@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { FaImage, FaTimes, FaGift } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
+import { tweetService } from '@/services/supabase/tweet';
 import { hashtagService } from '@/services/supabase/hashtag';
 import { mentionService } from '@/services/supabase/mention';
 import MentionTextarea from '@/components/mentions/MentionTextarea';

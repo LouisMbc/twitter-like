@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from 'react';
-import supabase from '@/lib/supabase';
+import React, { useState } from 'react';
+import { FaImage, FaTimes } from 'react-icons/fa';
+import { useProfile } from '@/hooks/useProfile';
+import { commentService } from '@/services/supabase/comment';
 import { mentionService } from '@/services/supabase/mention';
 import MentionTextarea from '@/components/mentions/MentionTextarea';
+import supabase from '@/lib/supabase';
 
 interface CommentFormProps {
   tweetId: string;

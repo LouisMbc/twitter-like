@@ -134,17 +134,8 @@ export default function ProfilePage() {
                 className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 transition-colors duration-300"
               >
                 <div className="flex items-center space-x-2 mb-2">
-                  {comment.author?.profilePicture ? (
-                    <img
-                      src={comment.author.profilePicture}
-                      alt={comment.author.nickname}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full" />
-                  )}
                   <span className="font-semibold text-gray-900 dark:text-white">
-                    {comment.author?.nickname || "Utilisateur inconnu"}
+                    {comment.nickname || 'Utilisateur'}
                   </span>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300">

@@ -1,20 +1,36 @@
 import supabase from '@/lib/supabase';
-import { notificationService } from './notification';
+
+export interface Mention {
+  id: string;
+  nickname: string;
+  profilePicture?: string;
+}
 
 export const mentionService = {
   // Extraire les mentions d'un texte
   extractMentions: (text: string): string[] => {
     const mentionRegex = /@(\w+)/g;
-    const matches = text.match(mentionRegex);
-    return matches ? matches.map(mention => mention.slice(1).toLowerCase()) : [];
+    const mentions: string[] = [];
+    let match;
+
+    while ((match = mentionRegex.exec(text)) !== null) {
+      mentions.push(match[1]);
+    }
+
+    return mentions;
   },
 
   // Rechercher des utilisateurs pour l'autocomplétion
   searchUsers: async (query: string, limit = 5) => {
+    if (query.length < 2) return [];
+
+    // S'assurer que la requête commence par @
+    const searchQuery = query.startsWith('@') ? query : `@${query}`;
+    
     const { data, error } = await supabase
       .from('Profile')
       .select('id, nickname, profilePicture')
-      .ilike('nickname', `@${query}%`)
+      .ilike('nickname', `${searchQuery}%`)
       .limit(limit);
 
     return { data, error };
@@ -22,10 +38,13 @@ export const mentionService = {
 
   // Vérifier si un pseudo est disponible
   isNicknameAvailable: async (nickname: string) => {
+    // S'assurer que le nickname commence par @
+    const searchNickname = nickname.startsWith('@') ? nickname : `@${nickname}`;
+    
     const { data, error } = await supabase
       .from('Profile')
       .select('id')
-      .eq('nickname', nickname)
+      .eq('nickname', searchNickname)
       .single();
 
     return { isAvailable: !data, error: error?.code === 'PGRST116' ? null : error };
@@ -39,7 +58,7 @@ export const mentionService = {
     const { data: mentionedUsers } = await supabase
       .from('Profile')
       .select('id, nickname, user_id')
-      .in('nickname', mentions.map(m => `@${m}`));
+      .in('nickname', mentions); // mentions contiennent déjà le @
 
     if (!mentionedUsers) return;
 
@@ -81,7 +100,7 @@ export const mentionService = {
     const { data: mentionedUsers } = await supabase
       .from('Profile')
       .select('id, nickname, user_id')
-      .in('nickname', mentions.map(m => `@${m}`));
+      .in('nickname', mentions); // mentions contiennent déjà le @
 
     if (!mentionedUsers) return;
 
@@ -106,5 +125,34 @@ export const mentionService = {
     }
 
     return { error: null };
+  },
+
+  createMentions: async (tweetId: string, mentions: string[]) => {
+    if (mentions.length === 0) return;
+
+    try {
+      // Récupérer les IDs des utilisateurs mentionnés
+      const { data: profiles, error: profileError } = await supabase
+        .from('Profile')
+        .select('id, nickname')
+        .in('nickname', mentions);
+
+      if (profileError) throw profileError;
+
+      if (profiles && profiles.length > 0) {
+        const mentionData = profiles.map(profile => ({
+          tweet_id: tweetId,
+          mentioned_user_id: profile.id
+        }));
+
+        const { error: insertError } = await supabase
+          .from('Mentions')
+          .insert(mentionData);
+
+        if (insertError) throw insertError;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création des mentions:', error);
+    }
   }
 };

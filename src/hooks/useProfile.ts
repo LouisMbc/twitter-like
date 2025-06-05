@@ -13,6 +13,7 @@ export const useProfile = () => {
   const [comments, setComments] = useState<any[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
   
@@ -287,17 +288,11 @@ export const useProfile = () => {
     loading,
     currentProfileId,
     loadProfileData,
-    getRandomLanguage,
-    refreshProfile: loadProfile,
-    incrementFollowingCount,
-    decrementFollowingCount,
-    // Propriétés pour infinite scroll
-    tweetsLoading,
-    commentsLoading,
-    hasTweetsMore,
-    hasCommentsMore,
-    loadMoreTweets: loadMoreTweetsData,
-    loadMoreComments: loadMoreCommentsData
+    loadMoreTweets,
+    loadAllComments,
+    loadMoreComments,
+    activeTab,
+    setActiveTab
   };
 };
 

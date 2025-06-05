@@ -1,52 +1,44 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { mentionService } from '@/services/supabase/mention';
+import { useState, useRef, KeyboardEvent } from 'react';
+import { mentionService, Mention } from '@/services/supabase/mention';
 
 interface MentionTextareaProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  rows?: number;
-  maxLength?: number;
+  disabled?: boolean;
 }
 
-export default function MentionTextarea({ 
-  value, 
-  onChange, 
-  placeholder,
-  className,
-  rows = 4,
-  maxLength 
+export default function MentionTextarea({
+  value,
+  onChange,
+  placeholder = "Quoi de neuf ?",
+  className = "",
+  disabled = false
 }: MentionTextareaProps) {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<Mention[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState(0);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleContentChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
-    const position = e.target.selectionStart;
-    
     onChange(newValue);
-    setCursorPosition(position);
 
-    // Détecter si l'utilisateur tape une mention
-    const textBeforeCursor = newValue.substring(0, position);
-    const words = textBeforeCursor.split(/\s/);
-    const lastWord = words[words.length - 1];
-    
-    if (lastWord.startsWith('@') && lastWord.length > 1) {
-      const query = lastWord.slice(1);
-      
-      try {
-        const { data } = await mentionService.searchUsers(query);
-        setSuggestions(data || []);
+    // Détecter les mentions (@)
+    const cursorPosition = e.target.selectionStart;
+    const textUpToCursor = newValue.slice(0, cursorPosition);
+    const mentionMatch = textUpToCursor.match(/@(\w*)$/);
+
+    if (mentionMatch) {
+      const query = mentionMatch[1];
+      if (query.length >= 0) {
+        const users = await mentionService.searchUsers(query);
+        setSuggestions(users);
         setShowSuggestions(true);
-      } catch (error) {
-        console.error('Erreur lors de la recherche d\'utilisateurs:', error);
-        setSuggestions([]);
-        setShowSuggestions(false);
+        setSelectedSuggestionIndex(0);
       }
     } else {
       setShowSuggestions(false);
@@ -54,83 +46,101 @@ export default function MentionTextarea({
     }
   };
 
-  const handleSuggestionClick = (nickname: string) => {
-    const textBeforeCursor = value.substring(0, cursorPosition);
-    const textAfterCursor = value.substring(cursorPosition);
-    
-    const words = textBeforeCursor.split(/\s/);
-    words[words.length - 1] = nickname;
-    
-    const newContent = words.join(' ') + textAfterCursor;
-    onChange(newContent);
-    setShowSuggestions(false);
-    setSuggestions([]);
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!showSuggestions) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex((prev) => 
+          prev < suggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex((prev) => 
+          prev > 0 ? prev - 1 : suggestions.length - 1
+        );
+        break;
+      case 'Enter':
+      case 'Tab':
+        e.preventDefault();
+        selectSuggestion(suggestions[selectedSuggestionIndex]);
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        break;
+    }
   };
 
-  const renderPreview = (text: string) => {
-    const parts = text.split(/(@\w+|#\w+)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith('@')) {
-        return (
-          <span key={index} className="text-green-500 font-medium">
-            {part}
-          </span>
-        );
-      } else if (part.startsWith('#')) {
-        return (
-          <span key={index} className="text-blue-500 font-medium">
-            {part}
-          </span>
-        );
+  const selectSuggestion = (suggestion: Mention) => {
+    if (!textareaRef.current) return;
+
+    const cursorPosition = textareaRef.current.selectionStart;
+    const textUpToCursor = value.slice(0, cursorPosition);
+    const textAfterCursor = value.slice(cursorPosition);
+    
+    const mentionMatch = textUpToCursor.match(/@(\w*)$/);
+    if (!mentionMatch) return;
+
+    const beforeMention = textUpToCursor.slice(0, mentionMatch.index);
+    const newValue = beforeMention + `@${suggestion.nickname} ` + textAfterCursor;
+    
+    onChange(newValue);
+    setShowSuggestions(false);
+    setSuggestions([]);
+
+    // Replacer le curseur après la mention
+    setTimeout(() => {
+      if (textareaRef.current) {
+        const newCursorPosition = beforeMention.length + suggestion.nickname.length + 2;
+        textareaRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
+        textareaRef.current.focus();
       }
-      return part;
-    });
+    }, 0);
   };
 
   return (
     <div className="relative">
       <textarea
+        ref={textareaRef}
         value={value}
-        onChange={handleContentChange}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={className}
-        rows={rows}
-        maxLength={maxLength}
+        disabled={disabled}
+        className={`resize-none ${className}`}
+        rows={3}
       />
       
-      {/* Suggestions d'autocomplétion */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
-          {suggestions.map((user) => (
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {suggestions.map((suggestion, index) => (
             <div
-              key={user.id}
-              onClick={() => handleSuggestionClick(user.nickname)}
-              className="p-3 hover:bg-gray-100 cursor-pointer flex items-center space-x-3"
+              key={suggestion.id}
+              className={`px-4 py-2 cursor-pointer flex items-center space-x-3 ${
+                index === selectedSuggestionIndex
+                  ? 'bg-gray-100 dark:bg-gray-700'
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+              onClick={() => selectSuggestion(suggestion)}
             >
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                {user.profilePicture ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600">
+                {suggestion.profilePicture ? (
                   <img
-                    src={user.profilePicture}
-                    alt={user.nickname}
+                    src={suggestion.profilePicture}
+                    alt={suggestion.nickname}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    {user.nickname.charAt(1).toUpperCase()}
+                  <div className="w-full h-full flex items-center justify-center text-white font-medium">
+                    {suggestion.nickname.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
-              <span className="font-medium text-blue-600">{user.nickname}</span>
+              <span className="text-gray-900 dark:text-white">@{suggestion.nickname}</span>
             </div>
           ))}
-        </div>
-      )}
-      
-      {/* Aperçu avec mentions et hashtags colorés */}
-      {value && (
-        <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
-          <span className="text-gray-600">Aperçu: </span>
-          {renderPreview(value)}
         </div>
       )}
     </div>
