@@ -43,7 +43,7 @@ export const useMessages = () => {
       const { data, error } = await messageService.getConversations(profile.id);
       if (error) throw error;
       
-      setConversations((data || []) as Conversation[]);
+      setConversations((data || []) as unknown as Conversation[]);
     } catch (err) {
       console.error('Erreur lors du chargement des conversations:', err);
       setError('Impossible de charger vos conversations');

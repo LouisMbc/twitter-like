@@ -15,7 +15,6 @@ export default function UserProfilePage() {
   const router = useRouter();
   const params = useParams();
   const userId = params.userId as string;
-
   // Vérifier si userId est un ID de profil ou un user_id
   const {
     profile,
@@ -28,8 +27,7 @@ export default function UserProfilePage() {
     currentProfileId,
     handleFollowToggle,
     activeTab,
-    setActiveTab,
-    isViewingStories
+    setActiveTab
   } = useUserProfile(userId);
 
   // Function to handle following count changes
@@ -39,25 +37,17 @@ export default function UserProfilePage() {
   };
 
   const isCurrentUser = currentProfileId === profile?.id;
-
   // Empêcher le scroll quand une story est ouverte
   useEffect(() => {
     const body = document.body;
     const html = document.documentElement;
     
-    if (isViewingStories) {
-      body.style.overflow = 'hidden';
-      html.style.overflow = 'hidden';
-    } else {
-      body.style.overflow = '';
-      html.style.overflow = '';
-    }
-    
+    // Plus besoin de gérer isViewingStories car cette propriété n'existe pas
     return () => {
       body.style.overflow = '';
       html.style.overflow = '';
     };
-  }, [isViewingStories]);
+  }, []);
 
   if (!userId) {
     return (
@@ -106,30 +96,33 @@ export default function UserProfilePage() {
   return (
     <div className="min-h-screen flex bg-black text-white">      
       <Header />
-      <div className="ml-64 flex-1">
-        <div className="w-full bg-black min-h-screen">
+      <div className="ml-64 flex-1">        <div className="w-full bg-black min-h-screen">
           <ProfileHeader
             profile={{
-              ...profile,
-              username: profile.username || profile.full_name || 'User',
-              full_name: profile.full_name || '',
-              languages: profile.languages || ((languages) => languages)
+              id: profile.id,
+              user_id: profile.user_id,
+              nickname: profile.nickname || 'Utilisateur',
+              firstName: profile.firstName || undefined,
+              lastName: profile.lastName || undefined,
+              bio: profile.bio || undefined,
+              profilePicture: profile.profilePicture || undefined,
+              certified: profile.certified,
+              is_premium: profile.is_premium,
+              premium_features: profile.premium_features,
+              follower_count: profile.follower_count,
+              following_count: profile.following_count,
+              created_at: profile.created_at
             }}
             followersCount={followersCount}
             followingCount={followingCount}
             currentProfileId={currentProfileId}
             isFollowing={isFollowing}
             onFollowToggle={handleFollowToggle}
-            isCurrentUser={isCurrentUser}
-          />
-
-          <div className="border-b border-gray-800 bg-black sticky top-0 z-10">
+          /><div className="border-b border-gray-800 bg-black sticky top-0 z-10">
             <ProfileTabs
-              activeTab={activeTab}
+              activeTab={activeTab === 'tweets' || activeTab === 'comments' ? activeTab : 'tweets'}
               onTabChange={(tab) => {
-                if (tab === 'tweets' || tab === 'comments') {
-                  setActiveTab(tab);
-                }
+                setActiveTab(tab);
               }}
             />
           </div>
@@ -142,11 +135,10 @@ export default function UserProfilePage() {
                     <TweetCard tweet={tweet} />
                   </div>
                 ))
-              ) : (
-                <div className="p-8 text-center">
+              ) : (                <div className="p-8 text-center">
                   <div className="text-6xl mb-4">📝</div>
                   <div className="text-lg font-medium text-white mb-2">Aucune publication</div>
-                  <div className="text-sm text-gray-500">@{profile.nickname} n'a pas encore publié.</div>
+                  <div className="text-sm text-gray-500">{profile.nickname} n'a pas encore publié.</div>
                 </div>
               )
             ) : (
@@ -162,11 +154,10 @@ export default function UserProfilePage() {
                     profilePicture: comment.profile_picture || undefined
                   }
                 }))} />
-              ) : (
-                <div className="p-8 text-center">
+              ) : (                <div className="p-8 text-center">
                   <div className="text-6xl mb-4">💬</div>
                   <div className="text-lg font-medium text-white mb-2">Aucune réponse</div>
-                  <div className="text-sm text-gray-500">@{profile.nickname} n'a pas encore répondu.</div>
+                  <div className="text-sm text-gray-500">{profile.nickname} n'a pas encore répondu.</div>
                 </div>
               )
             )}

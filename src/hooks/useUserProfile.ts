@@ -15,7 +15,7 @@ export function useUserProfile(userId: string) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'tweets' | 'comments' | 'media' | 'likes'>('tweets');
+  const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
 
   // Fonction pour charger les données du profil utilisateur
   const loadUserProfileData = useCallback(async () => {

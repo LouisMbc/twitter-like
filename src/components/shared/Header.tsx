@@ -4,11 +4,22 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Home, Search, Bell, Mail, User, Plus, LogOut, Sparkles, ArrowLeft, MoreHorizontal } from "lucide-react";
+import {
+  Home,
+  Search,
+  Bell,
+  Mail,
+  User,
+  Plus,
+  LogOut,
+  Sparkles,
+  ArrowLeft,
+  MoreHorizontal,
+} from "lucide-react";
 import supabase from "@/lib/supabase";
 import { messageService } from "@/services/supabase/message";
 import { notificationService } from "@/services/supabase/notification";
-import { ThemeToggle } from './ThemeToggle';
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Navbar() {
   return (
@@ -148,11 +159,10 @@ export default function Header() {
       setUnreadNotificationCount(0);
       return;
     }
-
     const fetchUnreadNotificationCount = async () => {
       try {
-        const { count } = await notificationService.getUnreadCount(profileId);
-        setUnreadNotificationCount(count);
+        // Pour l'instant, on met le count à 0 pour ne pas afficher de notifications de test
+        setUnreadNotificationCount(0);
       } catch (error) {
         console.error(
           "Erreur lors de la récupération des notifications non lues:",
@@ -162,7 +172,6 @@ export default function Header() {
     };
 
     fetchUnreadNotificationCount();
-
     const subscription = supabase
       .channel("notifications-count")
       .on(
@@ -174,7 +183,8 @@ export default function Header() {
           filter: `user_id=eq.${profileId}`,
         },
         () => {
-          fetchUnreadNotificationCount();
+          // Pour l'instant, on ne met pas à jour le count pour éviter les notifications de test
+          // fetchUnreadNotificationCount();
         }
       )
       .on(
@@ -186,7 +196,8 @@ export default function Header() {
           filter: `user_id=eq.${profileId}`,
         },
         () => {
-          fetchUnreadNotificationCount();
+          // Pour l'instant, on ne met pas à jour le count pour éviter les notifications de test
+          // fetchUnreadNotificationCount();
         }
       )
       .subscribe();
@@ -197,14 +208,7 @@ export default function Header() {
   }, [profileId]);
 
   // Pages qui nécessitent une flèche de retour
-  const pagesWithBackButton = [
-    "/premium/success",
-    "/premium/cancel",
-  ];
-  
-  const shouldShowBackButton = pagesWithBackButton.some((page) =>
-    pathname?.startsWith(page)
-  );
+  const pagesWithBackButton = ["/premium/success", "/premium/cancel"];
 
   // Retourner null après avoir déclaré tous les hooks si le header ne doit pas s'afficher
   if (!shouldDisplayHeader) {
@@ -212,12 +216,22 @@ export default function Header() {
   }
 
   const menuItems = [
-    { icon: Home, label: 'Accueil', path: '/dashboard' },
-    { icon: Search, label: 'Explorer', path: '/explore' },
-    { icon: Bell, label: 'Notifications', path: '/notifications', badge: unreadNotificationCount },
-    { icon: Mail, label: 'Messages', path: '/messages', badge: unreadMessageCount },
-    { icon: User, label: 'Profil', path: '/profile' },
-    { icon: Sparkles, label: 'Premium', path: '/premium' },
+    { icon: Home, label: "Accueil", path: "/dashboard" },
+    { icon: Search, label: "Explorer", path: "/explore" },
+    {
+      icon: Bell,
+      label: "Notifications",
+      path: "/notifications",
+      badge: unreadNotificationCount,
+    },
+    {
+      icon: Mail,
+      label: "Messages",
+      path: "/messages",
+      badge: unreadMessageCount,
+    },
+    { icon: User, label: "Profil", path: "/profile" },
+    { icon: Sparkles, label: "Premium", path: "/premium" },
   ];
 
   return (
@@ -235,15 +249,18 @@ export default function Header() {
           />
         </div>
         {/* Afficher le ThemeToggle uniquement en développement ou sur certaines pages */}
-        {(process.env.NODE_ENV === 'development' || ['/dashboard', '/explore'].some(route => pathname.startsWith(route))) && <ThemeToggle />}
+        {(process.env.NODE_ENV === "development" ||
+          ["/dashboard", "/explore"].some((route) =>
+            pathname.startsWith(route)
+          )) && <ThemeToggle />}
       </div>
-      
+
       {/* Navigation items */}
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
           const IconComponent = item.icon;
-          
+
           return (
             <Link key={item.path} href={item.path}>
               <div
@@ -257,7 +274,7 @@ export default function Header() {
                   <IconComponent />
                 </span>
                 <span className="text-lg">{item.label}</span>
-                
+
                 {item.badge && item.badge > 0 && (
                   <span className="absolute left-7 top-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {item.badge > 99 ? "99+" : item.badge}
@@ -266,8 +283,7 @@ export default function Header() {
               </div>
             </Link>
           );
-        })}
-
+        })}{" "}
         {/* Bouton Ajouter un post */}
         <button
           onClick={() => router.push("/tweets")}
@@ -277,65 +293,73 @@ export default function Header() {
             <Plus className="mr-2" size={16} />
             <span>Ajouter un post</span>
           </div>
-        </button>
-      </nav>
-
-      {/* User profile at bottom */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        </button>{" "}
+        {/* User profile section */}
         {profile && (
-          <div className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl cursor-pointer transition-all duration-200 group relative">
-            <Link href="/profile" className="flex items-center flex-1">
-              {profile.profilePicture || profile.avatar_url ? (
-                <div className="w-10 h-10 rounded-full mr-3 overflow-hidden">
-                  <Image
-                    src={profile.profilePicture || profile.avatar_url}
-                    alt={`${profile.nickname || profile.username}'s avatar`}
-                    width={40}
-                    height={40}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              ) : (
-                <div className="w-10 h-10 bg-gray-500 rounded-full mr-3 flex items-center justify-center text-white">
-                  <span className="text-sm font-medium">
-                    {(profile.nickname || profile.username || 'U').substring(0, 2).toUpperCase()}
-                  </span>
-                </div>
-              )}
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="font-medium text-black dark:text-white truncate">
-                  {profile.nickname || profile.username || "Votre pseudo"}
-                </span>
-              </div>
-            </Link>
+          <div className="mt-6 relative">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setShowProfileMenu(!showProfileMenu);
               }}
-              className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-all duration-200"
+              className="w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-xl transition-all duration-200 flex items-center justify-between group"
             >
-              <MoreHorizontal className="w-4 h-4 text-gray-400" />
+              <div className="flex items-center">
+                {profile.profilePicture || profile.avatar_url ? (
+                  <div className="w-10 h-10 rounded-full mr-3 overflow-hidden">
+                    <Image
+                      src={profile.profilePicture || profile.avatar_url}
+                      alt={`${profile.nickname || profile.username}'s avatar`}
+                      width={40}
+                      height={40}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 bg-gray-500 rounded-full mr-3 flex items-center justify-center text-white">
+                    <span className="text-sm font-medium">
+                      {(profile.nickname || profile.username || "U")
+                        .substring(0, 2)
+                        .toUpperCase()}
+                    </span>
+                  </div>
+                )}{" "}
+                <div className="flex flex-col items-start">
+                  <span className="font-bold text-black dark:text-white text-left">
+                    {profile.nickname || profile.username || "Votre pseudo"}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 text-left">
+                    {profile.nickname || profile.username || "Votre pseudo"}
+                  </span>
+                </div>
+              </div>
+              <MoreHorizontal className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
             </button>
-
-            {/* Profile dropdown menu */}
+            {/* Profile dropdown menu */}{" "}
             {showProfileMenu && (
-              <div className="absolute bottom-full right-0 mb-2 w-64 bg-white dark:bg-black rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 py-1 z-50">
+              <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-black rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
+                {/* Logout button */}
                 <button
                   onClick={() => {
                     handleSignOut();
                     setShowProfileMenu(false);
                   }}
-                  className="w-full flex items-center px-4 py-3 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                  className="w-full flex items-center px-4 py-3 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-200 text-left"
                 >
                   <LogOut className="mr-3" size={18} />
-                  <span>Se déconnecter de @{profile?.nickname || profile?.username}</span>
+                  <span className="font-medium">
+                    Se déconnecter de{" "}
+                    {profile.nickname || profile.username || "votre compte"}
+                  </span>
                 </button>
               </div>
             )}
           </div>
         )}
-      </div>
+      </nav>
+
+      {/* Empty bottom space */}
+      <div className="p-4"></div>
     </div>
   );
 }

@@ -15,6 +15,8 @@ export interface Profile {
 }
 
 export interface ProfileForm {
+  website: string;
+  location: string;
   lastName: string;
   firstName: string;
   nickname: string;

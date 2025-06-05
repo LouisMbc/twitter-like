@@ -25,8 +25,8 @@ interface MessageType {
 }
 
 export default function MessagesPage() {
-  const { profile, loading } = useProfile();
-  const { currentMessages, currentContact, loading: messagesLoading, sendingMessage, error, fetchMessages, sendMessage, checkCanMessage } = useMessages() as {
+  const { profile, loading } = useProfile();  const { conversations, currentMessages, currentContact, loading: messagesLoading, sendingMessage, error, fetchMessages, sendMessage, checkCanMessage } = useMessages() as {
+    conversations: any[];
     currentMessages: MessageType[];
     currentContact: ContactType | null;
     loading: boolean;
@@ -75,15 +75,32 @@ export default function MessagesPage() {
       
       if (followsData && followsData.length > 0) {
         console.log('Abonnements bruts trouvés:', followsData);
-        
-        // Récupérer les profils des utilisateurs suivis
+          // Récupérer les profils des utilisateurs suivis
         const followingIds = followsData.map(follow => follow.following_id);
         console.log('IDs des utilisateurs suivis:', followingIds);
         
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
+        // Essayer d'abord avec 'Profile' puis 'profiles'
+        let profilesData = null;
+        let profilesError = null;
+        
+        const { data: profileData, error: profileError } = await supabase
+          .from('Profile')
           .select('*')
           .in('id', followingIds);
+          
+        if (profileError) {
+          console.log('Tentative avec table profiles (minuscule) pour les abonnements...');
+          const { data: profilesDataLower, error: profilesErrorLower } = await supabase
+            .from('profiles')
+            .select('*')
+            .in('id', followingIds);
+            
+          profilesData = profilesDataLower;
+          profilesError = profilesErrorLower;
+        } else {
+          profilesData = profileData;
+          profilesError = profileError;
+        }
         
         console.log('Résultat de la requête profiles:', { profilesData, profilesError });
         
@@ -130,12 +147,108 @@ export default function MessagesPage() {
   // Filtrer les abonnements selon la recherche
   const filteredFollowings = followings.filter(following =>
     following.nickname.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Fonction pour sélectionner une conversation
+  );  // Fonction pour sélectionner une conversation
   const handleSelectConversation = async (userId: string) => {
-    // Naviguer vers la page de conversation dédiée
-    router.push(`/messages/${userId}`);
+    console.log('Sélection de la conversation:', userId);
+    setSelectedUserId(userId);
+    setCheckingPermissions(true);
+    
+    try {
+      // Récupérer les informations du contact depuis les conversations existantes d'abord
+      const existingConversation = conversations.find((conv: any) => 
+        conv.id === userId || conv.user?.id === userId
+      );
+      
+      if (existingConversation) {
+        console.log('Contact trouvé dans les conversations existantes:', existingConversation);
+        
+        // Utiliser les données de la conversation existante
+        const contact = {
+          id: existingConversation.id || existingConversation.user?.id || userId,
+          nickname: existingConversation.nickname || existingConversation.user?.nickname || 'Utilisateur',
+          profilePicture: existingConversation.profilePicture || existingConversation.user?.profilePicture
+        };
+        
+        console.log('Contact formaté:', contact);
+        
+        // Vérifier les permissions et charger les messages
+        const canMessage = await checkCanMessage(userId);
+        setCanMessageUser(canMessage);
+        
+        // Charger les messages via useMessages
+        fetchMessages(contact);
+        
+        return;
+      }
+      
+      // Si pas trouvé dans les conversations, chercher dans la base de données
+      console.log('Contact non trouvé dans les conversations, recherche dans la DB...');
+      
+      // Essayer d'abord avec la table 'Profile' (avec majuscule)
+      const { data: profileData, error: profileError } = await supabase
+        .from('Profile')
+        .select('id, nickname, profilePicture, profile_picture, avatar_url')
+        .eq('id', userId)
+        .single();
+        
+      if (profileData && !profileError) {
+        // Succès avec Profile
+        const contact = {
+          id: profileData.id,
+          nickname: profileData.nickname || 'Utilisateur',
+          profilePicture: profileData.profilePicture || profileData.profile_picture || profileData.avatar_url
+        };
+        
+        console.log('Contact trouvé dans Profile:', contact);
+        
+        // Vérifier les permissions et charger les messages
+        const canMessage = await checkCanMessage(userId);
+        setCanMessageUser(canMessage);
+        
+        // Charger les messages via useMessages
+        fetchMessages(contact);
+        
+        return;
+      }
+      
+      // Si échec avec Profile, essayer avec profiles
+      console.log('Tentative avec table profiles (minuscule)...');
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, nickname, profilePicture, profile_picture, avatar_url')
+        .eq('id', userId)
+        .single();
+        
+      if (profilesData && !profilesError) {
+        // Succès avec profiles
+        const contact = {
+          id: profilesData.id,
+          nickname: profilesData.nickname || 'Utilisateur',
+          profilePicture: profilesData.profilePicture || profilesData.profile_picture || profilesData.avatar_url
+        };
+        
+        console.log('Contact trouvé dans profiles:', contact);
+        
+        // Vérifier les permissions et charger les messages
+        const canMessage = await checkCanMessage(userId);
+        setCanMessageUser(canMessage);
+        
+        // Charger les messages via useMessages
+        fetchMessages(contact);
+        
+        return;
+      }
+      
+      // Si aucune des deux tables ne fonctionne
+      console.error('Impossible de trouver le contact dans Profile ou profiles');
+      console.error('Erreur Profile:', profileError);
+      console.error('Erreur profiles:', profilesError);
+      
+    } catch (error) {
+      console.error('Erreur lors de la sélection de conversation:', error);
+    } finally {
+      setCheckingPermissions(false);
+    }
   };
 
   // Fonction pour envoyer un message
