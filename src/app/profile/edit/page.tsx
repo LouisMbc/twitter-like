@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProfileEdit } from '@/hooks/useProfileEdit';
 import ProfileEditForm from '@/components/profile/ProfileEditForm';
@@ -16,19 +16,12 @@ export default function EditProfilePage() {
     loadProfile 
   } = useProfileEdit();
   const router = useRouter();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
-    const initializeProfile = async () => {
-      await loadProfile();
-      setIsInitialLoad(false);
-    };
-    
-    initializeProfile();
-  }, [loadProfile]);
+    loadProfile();
+  }, []);
 
-  // Show loading spinner during initial load
-  if (isInitialLoad || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
         <div className="flex items-center justify-center min-h-screen">

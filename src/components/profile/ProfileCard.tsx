@@ -28,7 +28,7 @@ export default function ProfileCard({
   followersCount, 
   followingCount, 
   onFollowingChange,
-  isCurrentUser = true
+  isCurrentUser = true // Par défaut, on considère que c'est le profil de l'utilisateur courant
 }: ProfileCardProps) {
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -154,8 +154,7 @@ export default function ProfileCard({
   };
 
   const handleEditProfile = () => {
-    // Utiliser window.location pour éviter les problèmes de Next.js router
-    window.location.href = '/profile/edit';
+    router.push('/profile/edit');
   };
 
   return (

@@ -2,177 +2,62 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { FaSearch, FaEllipsisH } from 'react-icons/fa';
+import { BellIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from '@/components/shared/Header';
-import supabase from '@/lib/supabase-browser';
-
-interface Notification {
-    id: string;
-    message: string;
-    timestamp: string;
-    read: boolean;
-    type: 'like' | 'comment' | 'follow' | 'mention' | 'new_post';
-    profilePicture?: string;
-    profileId?: string;
-    profileName?: string;
-    postId?: string;
-    fromUserId: string;
-    toUserId: string;
-}
+import { useNotifications } from '@/hooks/useNotifications';
+import { useAuth } from '@/hooks/useAuth';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function NotificationsPage() {
     const router = useRouter();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { notifications, unreadCount, loading, error, markAllAsRead, markAsRead } = useNotifications();
     const [activeTab, setActiveTab] = useState<'tous' | 'mention'>('tous');
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-    // Get current user
-    useEffect(() => {
-        const getCurrentUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                setCurrentUserId(user.id);
-            }
-        };
-        getCurrentUser();
-    }, []);
+    useAuth(); // Protection de la route
 
-    // Fetch notifications
-    const fetchNotifications = async () => {
-        if (!currentUserId) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('Notifications')
-                .select(`
-                    *,
-                    from_profile:from_user_id (
-                        nickname,
-                        profilePicture
-                    ),
-                    post:post_id (
-                        content
-                    )
-                `)
-                .eq('to_user_id', currentUserId)
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Erreur lors de la récupération des notifications:', error);
-                return;
-            }
-
-            const formattedNotifications: Notification[] = data.map(notif => ({
-                id: notif.id,
-                message: generateNotificationMessage(notif),
-                timestamp: notif.created_at,
-                read: notif.read,
-                type: notif.type,
-                profilePicture: notif.from_profile?.profilePicture || '/default-avatar.png',
-                profileId: notif.from_user_id,
-                profileName: notif.from_profile?.nickname || 'Utilisateur inconnu',
-                postId: notif.post_id,
-                fromUserId: notif.from_user_id,
-                toUserId: notif.to_user_id
-            }));
-
-            setNotifications(formattedNotifications);
-        } catch (error) {
-            console.error('Erreur:', error);
-        } finally {
-            setLoading(false);
+    // Déterminer l'URL de redirection en fonction du type de notification
+    const getNotificationUrl = (notification: any) => {
+        switch (notification.content_type) {
+            case 'tweet':
+                return `/tweets/${notification.content_id}`;
+            case 'story':
+                return `/profile/${notification.sender.id}`;
+            case 'follow':
+                return `/profile/${notification.sender.id}`;
+            case 'like':
+            case 'retweet':
+                return `/tweets/${notification.content_id}`;
+            default:
+                return '#';
         }
     };
 
-    // Generate notification message based on type
-    const generateNotificationMessage = (notif: any) => {
-        const userName = notif.from_profile?.nickname || 'Un utilisateur';
-        switch (notif.type) {
-            case 'like':
-                return `${userName} a aimé votre post`;
-            case 'comment':
-                return `${userName} a commenté votre post`;
-            case 'follow':
-                return `${userName} vous suit maintenant`;
-            case 'mention':
-                return `${userName} vous a mentionné dans un post`;
-            case 'new_post':
-                return `${userName} a publié un nouveau post`;
-            default:
-                return notif.message || 'Nouvelle notification';
+    // Formater la date
+    const formatNotificationDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return format(date, 'dd MMM HH:mm', { locale: fr });
+    };
+
+    // Marquer une notification comme lue et naviguer vers la cible
+    const handleNotificationClick = async (notification: any) => {
+        // Si la notification n'est pas lue, la marquer comme lue
+        if (!notification.is_read) {
+            await markAsRead(notification.id);
         }
+        // Naviguer vers la cible
+        router.push(getNotificationUrl(notification));
     };
 
     // Filter notifications based on active tab
-    const filteredNotifications = notifications.filter(notification => {
+    const filteredNotifications = notifications.filter((notification: any) => {
         if (activeTab === 'mention') {
             return notification.type === 'mention';
         }
         return true; // 'tous' shows all notifications
     });
-
-    useEffect(() => {
-        if (currentUserId) {
-            fetchNotifications();
-
-            // Set up real-time subscription
-            const channel = supabase
-                .channel('notifications')
-                .on(
-                    'postgres_changes',
-                    {
-                        event: 'INSERT',
-                        schema: 'public',
-                        table: 'Notifications',
-                        filter: `to_user_id=eq.${currentUserId}`
-                    },
-                    (payload) => {
-                        console.log('Nouvelle notification reçue:', payload);
-                        fetchNotifications(); // Refresh notifications
-                    }
-                )
-                .on(
-                    'postgres_changes',
-                    {
-                        event: 'UPDATE',
-                        schema: 'public',
-                        table: 'Notifications',
-                        filter: `to_user_id=eq.${currentUserId}`
-                    },
-                    (payload) => {
-                        console.log('Notification mise à jour:', payload);
-                        fetchNotifications(); // Refresh notifications
-                    }
-                )
-                .subscribe();
-
-            return () => {
-                supabase.removeChannel(channel);
-            };
-        }
-    }, [currentUserId]);
-
-    // Mark notification as read
-    const markAsRead = async (notificationId: string) => {
-        try {
-            await supabase
-                .from('Notifications')
-                .update({ read: true })
-                .eq('id', notificationId);
-            
-            // Update local state
-            setNotifications(prev => 
-                prev.map(notif => 
-                    notif.id === notificationId 
-                        ? { ...notif, read: true }
-                        : notif
-                )
-            );
-        } catch (error) {
-            console.error('Erreur lors du marquage comme lu:', error);
-        }
-    };
 
     return (
         <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
@@ -182,19 +67,20 @@ export default function NotificationsPage() {
             <div className="ml-64 flex-1">
                 {/* Search bar sans bouton thème */}
                 <div className="sticky top-0 bg-white/80 dark:bg-black/80 z-10 p-2 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm transition-colors duration-300">
-                    <div className="flex items-center justify-center gap-4">
-                        <div className="max-w-md flex-1 relative">
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <FaSearch className="text-gray-400" />
-                                </div>
-                                <input
-                                    type="search"
-                                    className="block w-full pl-10 pr-3 py-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors duration-300"
-                                    placeholder="Parcourir le flow..."
-                                />
-                            </div>
-                        </div>
+                    <div className="flex items-center justify-between gap-4 px-4">
+                        <h1 className="text-2xl font-bold">Notifications</h1>
+                        {unreadCount > 0 && (
+                            <button 
+                                onClick={() => {
+                                    markAllAsRead();
+                                    setTimeout(() => router.refresh(), 300);
+                                }}
+                                className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center transition-colors duration-200"
+                            >
+                                <CheckIcon className="h-5 w-5 mr-2" />
+                                Tout marquer comme lu
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -211,7 +97,7 @@ export default function NotificationsPage() {
                             className={`px-4 py-3 text-sm font-medium ${activeTab === 'mention' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
                             onClick={() => setActiveTab('mention')}
                         >
-                            Mentions ({notifications.filter(n => n.type === 'mention').length})
+                            Mentions ({notifications.filter((n: any) => n.type === 'mention').length})
                         </button>
                     </div>
                 </div>
@@ -221,32 +107,28 @@ export default function NotificationsPage() {
                     <div className="flex justify-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
                     </div>
+                ) : error ? (
+                    <div className="text-center py-8 text-red-500">
+                        {error}
+                    </div>
                 ) : filteredNotifications.length > 0 ? (
                     <div className="divide-y divide-gray-200 dark:divide-gray-800">
-                        {filteredNotifications.map((notification) => (
+                        {filteredNotifications.map((notification: any) => (
                             <div 
                                 key={notification.id}
-                                className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors cursor-pointer ${notification.read ? '' : 'bg-red-50 dark:bg-gray-900/30 border-l-2 border-red-500'}`}
-                                onClick={() => {
-                                    if (!notification.read) {
-                                        markAsRead(notification.id);
-                                    }
-                                    // Navigate to post if postId exists
-                                    if (notification.postId) {
-                                        router.push(`/post/${notification.postId}`);
-                                    } else if (notification.type === 'follow') {
-                                        router.push(`/profile/${notification.profileId}`);
-                                    }
-                                }}
+                                className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors cursor-pointer ${!notification.is_read ? 'bg-red-50 dark:bg-gray-900/30 border-l-2 border-red-500' : ''}`}
+                                onClick={() => handleNotificationClick(notification)}
                             >
                                 <div className="flex">
                                     <div className="mr-3 flex-shrink-0">
-                                        {notification.profilePicture && (
-                                            <Link href={`/profile/${notification.profileId}`}>
+                                        {notification.sender?.profilePicture && (
+                                            <Link href={`/profile/${notification.sender.id}`}>
                                                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600">
-                                                    <img
-                                                        src={notification.profilePicture}
-                                                        alt={notification.profileName || "User"}
+                                                    <Image
+                                                        src={notification.sender.profilePicture || '/default-avatar.png'}
+                                                        alt={notification.sender.nickname || "User"}
+                                                        width={40}
+                                                        height={40}
                                                         className="w-full h-full object-cover"
                                                     />
                                                 </div>
@@ -255,18 +137,18 @@ export default function NotificationsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            {notification.profileName && (
-                                                <Link href={`/profile/${notification.profileId}`} className="hover:underline font-medium">
-                                                    {notification.profileName}
+                                            {notification.sender?.nickname && (
+                                                <Link href={`/profile/${notification.sender.id}`} className="hover:underline font-medium">
+                                                    {notification.sender.nickname}
                                                 </Link>
                                             )}
-                                            {!notification.read && (
+                                            {!notification.is_read && (
                                                 <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                                             )}
                                         </div>
-                                        <p className="text-gray-300">{notification.message}</p>
+                                        <p className="text-gray-700 dark:text-gray-300">{notification.message}</p>
                                         <p className="text-sm text-gray-500 mt-1">
-                                            {new Date(notification.timestamp).toLocaleString()}
+                                            {formatNotificationDate(notification.created_at)}
                                         </p>
                                     </div>
                                     {/* Three dots menu button */}
@@ -287,10 +169,14 @@ export default function NotificationsPage() {
                     </div>
                 ) : (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        {activeTab === 'mention' 
-                            ? 'Aucune mention pour le moment.' 
-                            : 'Aucune notification pour le moment.'
-                        }
+                        <BellIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                        <p className="text-lg">
+                            {activeTab === 'mention' 
+                                ? 'Aucune mention pour le moment.' 
+                                : 'Vous n\'avez pas encore de notifications'
+                            }
+                        </p>
+                        <p className="text-sm mt-2">Les activités comme les nouveaux tweets, stories et suivis apparaîtront ici</p>
                     </div>
                 )}
             </div>

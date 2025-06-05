@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CommentForm from '@/components/comments/CommentForm';
 import supabase from '@/lib/supabase';
@@ -46,6 +47,7 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
   const [loading, setLoading] = useState(!initialComments && !!tweetId);
   const [error, setError] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const router = useRouter();
 
   const loadComments = useCallback(async () => {
     if (!tweetId) {
@@ -122,6 +124,43 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
     }
   }, [tweetId, initialComments, loadComments]); // loadComments is a dependency
 
+  const renderContentWithMentions = (content: string) => {
+    const parts = content.split(/(@\w+|#\w+)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/profile/username/${username}`);
+            }}
+            className="text-blue-400 hover:text-blue-600 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      } else if (part.startsWith('#')) {
+        const hashtagName = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/hashtags/${hashtagName}`);
+            }}
+            className="text-blue-400 hover:text-blue-600 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   if (loading) {
     return <div className="py-8 text-center text-gray-500">Chargement des commentaires...</div>;
   }
@@ -148,7 +187,7 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
     return levelComments.map((comment) => (
       <div 
         key={comment.id} 
-        className={`bg-white p-4 rounded-lg shadow ${level > 0 ? 'ml-8 mt-2' : ''}`}
+        className={`bg-gray-900 border border-gray-700 p-4 rounded-lg ${level > 0 ? 'ml-8 mt-2' : ''}`}
       >
         <div className="flex items-center space-x-2 mb-2">
           {comment.author.profilePicture ? (
@@ -158,12 +197,14 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
               className="w-8 h-8 rounded-full"
             />
           ) : (
-            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+            <div className="w-8 h-8 bg-gray-700 rounded-full" />
           )}
-          <span className="font-semibold">{comment.author.nickname}</span>
+          <span className="font-semibold text-white">{comment.author.nickname}</span>
         </div>
-        <p className="text-gray-700">{comment.content}</p>
-        <div className="mt-2 text-sm text-gray-500">
+        <p className="text-gray-100">
+          {renderContentWithMentions(comment.content)}
+        </p>
+        <div className="mt-2 text-sm text-gray-400">
           {formatDistance(new Date(comment.created_at), new Date(), {
             addSuffix: true,
             locale: fr
@@ -172,18 +213,18 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
         <ReactionBar commentId={comment.id} />
         <ViewCount contentId={comment.id} contentType="comment" initialCount={comment.view_count} />
         <button
-          className="text-blue-500 text-sm mt-2"
+          className="text-blue-400 hover:text-blue-300 text-sm mt-2"
           onClick={() => setReplyingTo(comment.id)}
         >
           Répondre
         </button>
         {replyingTo === comment.id && (
           <CommentForm
-            tweetId={comment.tweet_id || tweetId || ''} // Provide fallback values
+            tweetId={comment.tweet_id || tweetId || ''}
             parentCommentId={comment.id}
             onCommentAdded={() => {
               setReplyingTo(null);
-              loadComments(); // Now calls the useCallback version
+              loadComments();
             }}
             onCancel={() => setReplyingTo(null)}
           />
@@ -194,8 +235,8 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
   };
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold p-4 border-b border-gray-800">
+    <div className="bg-gray-900">
+      <h3 className="text-lg font-semibold p-4 border-b border-gray-700 text-white">
         Commentaires ({comments.length})
       </h3>
       {renderComments()}

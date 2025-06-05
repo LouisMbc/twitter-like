@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import supabase from '@/lib/supabase';
+import { mentionService } from '@/services/supabase/mention';
+import MentionTextarea from '@/components/mentions/MentionTextarea';
 
 interface CommentFormProps {
   tweetId: string;
@@ -22,32 +24,49 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) throw new Error('Non authentifié');
   
-        // Optionnel mais recommandé : Vérifier si un profil existe pour cet utilisateur
-        // même si nous utilisons session.user.id directement pour author_id.
-        // Cela garantit que l'auteur du commentaire a un profil associé.
+        // Vérifier que l'utilisateur a un profil
         const { data: userProfile, error: profileCheckError } = await supabase
           .from('Profile')
-          .select('user_id') // On peut sélectionner n'importe quelle colonne, juste pour vérifier l'existence
+          .select('id')
           .eq('user_id', session.user.id)
-          .maybeSingle(); // Utiliser maybeSingle pour ne pas lever d'erreur si aucun profil, et le gérer
-  
-        if (profileCheckError) throw profileCheckError;
-        if (!userProfile) {
-          console.error('Profil utilisateur non trouvé pour user_id:', session.user.id, '. Impossible de commenter.');
-          throw new Error('Profil utilisateur non trouvé. Impossible de commenter.');
+          .single();
+
+        if (profileCheckError || !userProfile) {
+          throw new Error('Profil utilisateur non trouvé');
         }
-  
-        // Créer le commentaire avec session.user.id comme author_id
-        const { error } = await supabase
+
+        // Créer le commentaire
+        const { data: commentData, error } = await supabase
           .from('Comments')
           .insert([{
             content,
             tweet_id: tweetId,
-            author_id: session.user.id, // MODIFIÉ : utiliser session.user.id directement
+            author_id: session.user.id,
             parent_comment_id: parentCommentId || null
-          }]);
-  
+          }])
+          .select()
+          .single();
+
         if (error) throw error; 
+
+        // Gérer les mentions dans les commentaires
+        try {
+          const mentions = mentionService.extractMentions(content);
+          console.log('👤 Mentions détectées dans le commentaire:', mentions);
+          
+          if (mentions.length > 0) {
+            console.log('📧 Création des notifications de mention...');
+            await mentionService.createCommentMentionNotifications(
+              commentData.id,
+              tweetId, 
+              userProfile.id,
+              mentions
+            );
+            console.log('✅ Notifications de mention créées');
+          }
+        } catch (mentionError) {
+          console.error('❌ Erreur avec les mentions:', mentionError);
+        }
   
         setContent('');
         onCommentAdded();
@@ -62,13 +81,12 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
     return (
       <form onSubmit={handleSubmit} className="mt-4">
         <div className="flex space-x-3">
-          <textarea
+          <MentionTextarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={setContent}
             placeholder={parentCommentId ? "Répondre au commentaire..." : "Poster votre réponse..."}
             className="flex-1 p-2 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
             rows={2}
-            required
           />
           <div className="flex flex-col space-y-2">
             <button

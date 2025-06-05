@@ -32,10 +32,7 @@ export default function SetupProfilePage() {
         {/* Form Container */}
         <div className="max-w-md mx-auto w-full">
           <ProfileSetupForm
-            formData={{
-              ...formData,
-              profilePicture: formData.profilePicture ?? null
-            }}
+            formData={formData}
             setFormData={setFormData}
             handleSubmit={handleSubmit}
             loading={loading}

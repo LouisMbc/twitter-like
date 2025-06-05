@@ -197,7 +197,7 @@ export default function SearchBar({
                               {result.profilePicture ? (
                                 <img
                                   src={result.profilePicture}
-                                  alt={result.nickname}
+                                  alt={result.nickname || ''}
                                   className="w-full h-full object-cover"
                                 />
                               ) : (

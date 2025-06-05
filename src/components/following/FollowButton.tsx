@@ -17,10 +17,10 @@ const FollowButton: FC<FollowButtonProps> = ({
   return (
     <button 
       onClick={onFollowToggle} 
-      className={`px-4 py-2 rounded-full font-medium ${
-        isFollowing 
-          ? 'bg-gray-200 hover:bg-red-100 hover:text-red-600' 
-          : 'bg-blue-500 text-white hover:bg-blue-600'
+      className={`px-4 py-2 rounded-full font-medium transition-colors ${
+      isFollowing 
+      ? 'bg-gray-100 hover:bg-red-50 hover:text-red-500 text-gray-700' 
+      : 'bg-red-600 text-white hover:bg-red-700'
       }`}
     >
       {isFollowing ? 'Se désabonner' : "S'abonner"}

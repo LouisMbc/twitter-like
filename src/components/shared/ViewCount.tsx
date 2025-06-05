@@ -6,7 +6,7 @@ import supabase from '@/lib/supabase';
 interface ViewCounterProps {
   contentId: string;
   contentType: 'tweet' | 'comment';
-  initialCount?: number;
+  initialCount?: number; // Ajouter cette propriété
 }
 
 // Fonction pour générer un UUID
@@ -19,7 +19,7 @@ function generateUUID() {
 }
 
 export default function ViewCounter({ contentId, contentType, initialCount = 0 }: ViewCounterProps) {
-  const [views, setViews] = useState(initialCount);
+  const [views, setViews] = useState(initialCount); // Utiliser la valeur initiale
   
   useEffect(() => {
     // Ne pas recompter si nous avons déjà une valeur initiale non nulle
@@ -52,6 +52,7 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .select('view_count')
           .eq('id', contentId)
           .single();
+          
         
         // Vérifier si l'entrée existe déjà dans la table views
         const { data: viewData } = await supabase
@@ -59,6 +60,7 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .select('id, views_count, viewers')
           .eq(idColumn, contentId)
           .single();
+          
         
         // Vérifier si l'utilisateur a déjà vu ce contenu
         // IMPORTANT: viewers est un JSONB array, pas un JavaScript array
@@ -83,9 +85,9 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
               hasViewed = currentViewers.includes(visitorId);
             }
           } catch (e) {
-            console.error('Error parsing viewers:', e);
           }
         }
+        
         
         // Si l'utilisateur a déjà vu ce contenu, juste retourner le compte actuel
         if (hasViewed) {
@@ -96,6 +98,7 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
         // L'utilisateur n'a pas encore vu ce contenu, incrémenter le compteur
         const newViewCount = ((viewData?.views_count || contentData?.view_count) || 0) + 1;
         const updatedViewers = [...currentViewers, visitorId];
+        
         
         // Préparer les données pour l'upsert
         const viewsData = {
@@ -110,7 +113,6 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .upsert([viewsData]);
           
         if (viewsError) {
-          console.error('Error updating views table:', viewsError);
           return;
         }
         
@@ -121,15 +123,12 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .eq('id', contentId);
           
         if (contentError) {
-          console.error('Error updating content table:', contentError);
           return;
         }
         
         // Mettre à jour l'affichage
         setViews(newViewCount);
-        console.log('View count updated successfully to', newViewCount);
       } catch (error) {
-        console.error('Error in view counter:', error);
       }
     };
 
