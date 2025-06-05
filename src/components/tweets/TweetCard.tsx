@@ -70,11 +70,26 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
     router.push(`/tweets/${tweet.id}#comments`);
   };
 
-  const renderContentWithHashtags = (content: string) => {
-    const parts = content.split(/(#\w+)/g);
+  // Remplacez la fonction renderContentWithMentions par cette version complète qui gère hashtags ET mentions
+  const renderContentWithMentions = (content: string) => {
+    const parts = content.split(/(@\w+|#\w+)/g);
     
     return parts.map((part, index) => {
-      if (part.startsWith('#')) {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/profile/username/${username}`);
+            }}
+            className="text-blue-500 hover:text-blue-700 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      } else if (part.startsWith('#')) {
         const hashtagName = part.slice(1);
         return (
           <span
@@ -138,7 +153,7 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
         
         {/* Contenu du tweet courant */}
         <p className="text-gray-800 mb-4">
-          {renderContentWithHashtags(tweet.content)}
+          {renderContentWithMentions(tweet.content)}
         </p>
 
         {tweet.picture && tweet.picture.length > 0 && (
@@ -207,7 +222,7 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
               </div>
               
               <p className="text-gray-800 text-sm">
-                {renderContentWithHashtags(originalTweet.content)}
+                {renderContentWithMentions(originalTweet.content)}
               </p>
               
               {originalTweet.picture && originalTweet.picture.length > 0 && (

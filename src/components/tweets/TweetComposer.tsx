@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
 import { hashtagService } from '@/services/supabase/hashtag';
+import { mentionService } from '@/services/supabase/mention';
+import MentionTextarea from '@/components/mentions/MentionTextarea';
 
 interface TweetComposerProps {
   onSuccess?: () => void;
@@ -182,6 +184,20 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         console.error('❌ Erreur avec les hashtags:', hashtagError);
       }
 
+      // NOUVEAU : Gérer les mentions
+      try {
+        const mentions = mentionService.extractMentions(content);
+        console.log('👤 Mentions détectées:', mentions);
+        
+        if (mentions.length > 0) {
+          console.log('📧 Création des notifications de mention...');
+          await mentionService.createMentionNotifications(tweet.id, profile.id, mentions);
+          console.log('✅ Notifications de mention créées');
+        }
+      } catch (mentionError) {
+        console.error('❌ Erreur avec les mentions:', mentionError);
+      }
+
       let finalMediaUrls: string[] = [];
       if (media.length > 0) {
         console.log('[TweetComposer] handleSubmit - Téléversement des médias...');
@@ -230,11 +246,17 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   };
 
   const renderTextWithHashtags = (text: string) => {
-    const parts = text.split(/(#\w+)/g);
+    const parts = text.split(/(@\w+|#\w+)/g);
     return parts.map((part, index) => {
       if (part.startsWith('#')) {
         return (
           <span key={index} className="text-blue-500 font-medium">
+            {part}
+          </span>
+        );
+      } else if (part.startsWith('@')) {
+        return (
+          <span key={index} className="text-green-500 font-medium">
             {part}
           </span>
         );
@@ -247,15 +269,16 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     <div>
       <form onSubmit={handleSubmit} className="mb-4 p-4 bg-white rounded-lg shadow">
         <div className="relative">
-          <textarea
+          <MentionTextarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Quoi de neuf ? Utilisez # pour les hashtags"
+            onChange={setContent}
+            placeholder="Quoi de neuf ? Utilisez # pour les hashtags et @ pour mentionner"
             className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
             rows={4}
             maxLength={280}
-            required
           />
+          
+          {/* Aperçu avec mentions et hashtags colorés */}
           {content && (
             <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
               <span className="text-gray-600">Aperçu: </span>

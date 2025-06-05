@@ -12,7 +12,7 @@ export const useProfileSetup = () => {
   const [formData, setFormData] = useState<ProfileForm>({
     lastName: '',
     firstName: '',
-    nickname: '',
+    nickname: '@', // MODIFIÉ : Initialiser avec @
     bio: '',
     profilePicture: null,
     password: '',
@@ -20,8 +20,11 @@ export const useProfileSetup = () => {
   });
 
   const validateForm = () => {
-    if (!formData.nickname.trim()) {
+    if (!formData.nickname.trim() || formData.nickname === '@') {
       throw new Error("Le nom d'utilisateur est requis");
+    }
+    if (formData.nickname.length < 2) { // @ + au moins 1 caractère
+      throw new Error("Le nom d'utilisateur doit contenir au moins 1 caractère après le @");
     }
     if (!formData.password) {
       throw new Error('Le mot de passe est requis');

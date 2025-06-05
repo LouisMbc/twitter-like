@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import CommentForm from '@/components/comments/CommentForm';
@@ -20,12 +21,10 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
   const [loading, setLoading] = useState(!initialComments && !!tweetId);
   const [error, setError] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const router = useRouter();
 
   const loadComments = useCallback(async () => {
     if (!tweetId) {
-      // If initialComments were provided, this function might be called to refresh,
-      // but refreshing without a tweetId doesn't make sense unless we re-use initialComments.
-      // For now, if tweetId is missing, we assume we can't load/refresh.
       if (!initialComments) {
         setError('ID du tweet manquant pour charger les commentaires.');
       }
@@ -96,6 +95,43 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
     }
   }, [tweetId, initialComments, loadComments]); // loadComments is a dependency
 
+  const renderContentWithMentions = (content: string) => {
+    const parts = content.split(/(@\w+|#\w+)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/profile/username/${username}`);
+            }}
+            className="text-green-500 hover:text-green-700 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      } else if (part.startsWith('#')) {
+        const hashtagName = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/hashtags/${hashtagName}`);
+            }}
+            className="text-blue-500 hover:text-blue-700 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   if (loading) {
     return <div className="text-center text-gray-500">Chargement des commentaires...</div>;
   }
@@ -136,7 +172,9 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
           )}
           <span className="font-semibold">{comment.author.nickname}</span>
         </div>
-        <p className="text-gray-700">{comment.content}</p>
+        <p className="text-gray-700">
+          {renderContentWithMentions(comment.content)}
+        </p>
         <div className="mt-2 text-sm text-gray-500">
           {formatDistance(new Date(comment.created_at), new Date(), {
             addSuffix: true,
