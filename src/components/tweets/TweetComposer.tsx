@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
+import { hashtagService } from '@/services/supabase/hashtag';
 
 interface TweetComposerProps {
   onSuccess?: () => void;
@@ -109,12 +110,17 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     const urls = await Promise.all(uploadPromises);
     // Filtrer les URLs nulles si le téléversement a échoué pour certaines images
     const validUrls = urls.filter(url => url !== null) as string[];
-    console.log('[TweetComposer] URLs valides après téléversement:', validUrls);
     return validUrls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Test d'extraction des hashtags
+    const hashtagNames = hashtagService.extractHashtags(content);
+    console.log('🏷️ Hashtags détectés dans le contenu:', content);
+    console.log('🏷️ Hashtags extraits:', hashtagNames);
+    
     setUploading(true);
     setError('');
     console.log('[TweetComposer] handleSubmit - Début');
@@ -154,6 +160,27 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         throw tweetError;
       }
       console.log('[TweetComposer] handleSubmit - Tweet inséré avec ID:', tweet.id);
+
+      // NOUVEAU : Gérer les hashtags
+      try {
+        const hashtagNames = hashtagService.extractHashtags(content);
+        console.log('🔍 Hashtags extraits:', hashtagNames);
+        
+        if (hashtagNames.length > 0) {
+          console.log('📝 Création/récupération des hashtags...');
+          const hashtags = await hashtagService.createOrGetHashtags(hashtagNames);
+          console.log('✅ Hashtags créés:', hashtags);
+          
+          if (hashtags.length > 0) {
+            const hashtagIds = hashtags.map(h => h.id);
+            console.log('🔗 Liaison avec le tweet, IDs:', hashtagIds);
+            const result = await hashtagService.linkHashtagsToTweet(tweet.id, hashtagIds);
+            console.log('🎯 Résultat de la liaison:', result);
+          }
+        }
+      } catch (hashtagError) {
+        console.error('❌ Erreur avec les hashtags:', hashtagError);
+      }
 
       let finalMediaUrls: string[] = [];
       if (media.length > 0) {
@@ -202,18 +229,40 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     }
   };
 
+  const renderTextWithHashtags = (text: string) => {
+    const parts = text.split(/(#\w+)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('#')) {
+        return (
+          <span key={index} className="text-blue-500 font-medium">
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="mb-4 p-4 bg-white rounded-lg shadow">
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Quoi de neuf ?"
-          className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
-          rows={4}
-          maxLength={280}
-          required
-        />
+        <div className="relative">
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Quoi de neuf ? Utilisez # pour les hashtags"
+            className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
+            maxLength={280}
+            required
+          />
+          {content && (
+            <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
+              <span className="text-gray-600">Aperçu: </span>
+              {renderTextWithHashtags(content)}
+            </div>
+          )}
+        </div>
 
         {preview.length > 0 && (
           <div className="mt-2 grid grid-cols-2 gap-2">

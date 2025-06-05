@@ -53,7 +53,6 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .eq('id', contentId)
           .single();
           
-        console.log('Current view count from content table:', contentData);
         
         // Vérifier si l'entrée existe déjà dans la table views
         const { data: viewData } = await supabase
@@ -62,7 +61,6 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .eq(idColumn, contentId)
           .single();
           
-        console.log('View data from views table:', viewData);
         
         // Vérifier si l'utilisateur a déjà vu ce contenu
         // IMPORTANT: viewers est un JSONB array, pas un JavaScript array
@@ -87,15 +85,12 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
               hasViewed = currentViewers.includes(visitorId);
             }
           } catch (e) {
-            console.error('Error parsing viewers:', e);
           }
         }
         
-        console.log('Viewer status:', { hasViewed, currentViewers });
         
         // Si l'utilisateur a déjà vu ce contenu, juste retourner le compte actuel
         if (hasViewed) {
-          console.log('User already viewed this content');
           setViews(viewData?.views_count || contentData?.view_count || 0);
           return;
         }
@@ -104,7 +99,6 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
         const newViewCount = ((viewData?.views_count || contentData?.view_count) || 0) + 1;
         const updatedViewers = [...currentViewers, visitorId];
         
-        console.log('Updating view count:', { newViewCount, updatedViewers });
         
         // Préparer les données pour l'upsert
         const viewsData = {
@@ -119,7 +113,6 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .upsert([viewsData]);
           
         if (viewsError) {
-          console.error('Error updating views table:', viewsError);
           return;
         }
         
@@ -130,15 +123,12 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
           .eq('id', contentId);
           
         if (contentError) {
-          console.error('Error updating content table:', contentError);
           return;
         }
         
         // Mettre à jour l'affichage
         setViews(newViewCount);
-        console.log('View count updated successfully to', newViewCount);
       } catch (error) {
-        console.error('Error in view counter:', error);
       }
     };
 

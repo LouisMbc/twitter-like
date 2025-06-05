@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import supabase from '@/lib/supabase';
 import { Tweet } from '@/types';
 import { tweetService } from '@/services/supabase/tweet';
+import { hashtagService } from '@/services/supabase/hashtag';
 
 export default function useFeed() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
@@ -230,6 +231,56 @@ export default function useFeed() {
       } catch (formatError) {
         console.error('Erreur lors du formatage des tweets:', formatError);
         throw formatError;
+      }
+      
+      // 7. Récupérer les tweets des hashtags suivis
+      console.log('7. Récupération des tweets des hashtags suivis...');
+      const { data: hashtagSubscriptions } = await supabase
+        .from('hashtag_subscriptions') 
+        .select('hashtag_id')
+        .eq('profile_id', profileData.id);
+
+      if (hashtagSubscriptions && hashtagSubscriptions.length > 0) {
+        const hashtagIds = hashtagSubscriptions.map(sub => sub.hashtag_id);
+        
+        const { data: hashtagTweets } = await supabase
+          .from('tweet_hashtags') // CORRIGÉ : minuscule avec underscore
+          .select(`
+            Tweets (
+              id,
+              content,
+              picture,
+              published_at,
+              view_count,
+              retweet_id,
+              author_id,
+              author:author_id (
+                id,
+                nickname,
+                profilePicture
+              )
+            )
+          `)
+          .in('hashtag_id', hashtagIds)
+          .order('created_at', { ascending: false })
+          .range(pageToLoad * TWEETS_PER_PAGE, (pageToLoad + 1) * TWEETS_PER_PAGE - 1);
+
+        if (hashtagTweets) {
+          const formattedHashtagTweets = hashtagTweets
+            .filter(item => item.Tweets)
+            .map(item => item.Tweets);
+          
+          // Fusionner avec les tweets existants et supprimer les doublons
+          const allTweetsCombined = [...(allTweets || []), ...formattedHashtagTweets];
+          const uniqueTweets = allTweetsCombined.filter((tweet, index, self) => 
+            index === self.findIndex(t => t.id === tweet.id)
+          );
+          
+          // Trier par date
+          allTweets = uniqueTweets.sort((a, b) => 
+            new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+          );
+        }
       }
       
       console.log('--- CHARGEMENT DU FEED TERMINÉ AVEC SUCCÈS ---');

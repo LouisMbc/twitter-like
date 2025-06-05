@@ -69,7 +69,6 @@ export interface Subscription {
   customer_id?: string;
 }
 
-// Ajouter cette nouvelle interface à la fin du fichier
 export interface ProfileForm {
   lastName: string;
   firstName: string;
@@ -79,4 +78,35 @@ export interface ProfileForm {
   currentProfilePicture?: string | null;
   password?: string | null;
   confirmPassword?: string | null;
+}
+
+export interface Hashtag {
+  id: string;
+  name: string;
+  usage_count: number;
+  created_at: string;
+}
+
+export interface TweetHashtag {
+  id: string;
+  tweet_id: string;
+  hashtag_id: string;
+  created_at: string;
+  hashtag?: Hashtag;
+}
+
+export interface HashtagSubscription {
+  id: string;
+  profile_id: string;
+  hashtag_id: string;
+  created_at: string;
+  hashtag?: Hashtag;
+}
+
+export interface HashtagBlock {
+  id: string;
+  profile_id: string;
+  hashtag_id: string;
+  created_at: string;
+  hashtag?: Hashtag;
 }

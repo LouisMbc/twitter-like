@@ -161,6 +161,12 @@ export default function Header() {
             </div>
 
             <nav className="flex items-center space-x-4">
+              <Link 
+                href="/explore" 
+                className="text-gray-600 hover:text-blue-600 font-medium"
+              >
+                Explorer
+              </Link>
               
               {isAuthenticated ? (
                 <>

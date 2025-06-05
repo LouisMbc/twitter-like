@@ -3,7 +3,7 @@
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
-import { ArrowPathIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline'; // Ajout de l'import
+import { ArrowPathIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline'; 
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import RetweetButton from './RetweetButton';
@@ -70,6 +70,29 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
     router.push(`/tweets/${tweet.id}#comments`);
   };
 
+  const renderContentWithHashtags = (content: string) => {
+    const parts = content.split(/(#\w+)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('#')) {
+        const hashtagName = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/hashtags/${hashtagName}`);
+            }}
+            className="text-blue-500 hover:text-blue-700 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   if (!tweet) {
     console.error('Tweet manquant');
     return <div>Tweet non disponible</div>;
@@ -114,7 +137,9 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
         </div>
         
         {/* Contenu du tweet courant */}
-        <p className="text-gray-800 mb-4">{tweet.content}</p>
+        <p className="text-gray-800 mb-4">
+          {renderContentWithHashtags(tweet.content)}
+        </p>
 
         {tweet.picture && tweet.picture.length > 0 && (
           <div className="mb-4">
@@ -181,7 +206,9 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                 </div>
               </div>
               
-              <p className="text-gray-800 text-sm">{originalTweet.content}</p>
+              <p className="text-gray-800 text-sm">
+                {renderContentWithHashtags(originalTweet.content)}
+              </p>
               
               {originalTweet.picture && originalTweet.picture.length > 0 && (
                 <div className="mt-2">
