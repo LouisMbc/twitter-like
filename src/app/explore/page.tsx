@@ -6,7 +6,9 @@ import { FaEllipsisH } from 'react-icons/fa';
 import Header from '@/components/shared/Header';
 import SearchBar from '@/components/searchBar/SearchBar';
 import supabase from '@/lib/supabase';
-import { Profile } from '@/types';
+import { hashtagService } from '@/services/supabase/hashtag';
+import { useAuth } from '@/hooks/useAuth';
+import { Profile, Hashtag } from '@/types';
 
 interface Recommendation {
   tag: string;
@@ -24,7 +26,11 @@ export default function ExplorePage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
   const [followingLoading, setFollowingLoading] = useState<Record<string, boolean>>({});
+  const [popularHashtags, setPopularHashtags] = useState<Hashtag[]>([]);
+  const [hashtagsLoading, setHashtagsLoading] = useState(true);
   
+  useAuth();
+
   // Données de démonstration pour les tendances
   const recommendations: Recommendation[] = [
     { tag: '#TypeScript', publications: '125K posts' },
@@ -63,6 +69,22 @@ export default function ExplorePage() {
     };
     
     getCurrentUser();
+  }, []);
+
+  // Charger les hashtags populaires
+  useEffect(() => {
+    const fetchPopularHashtags = async () => {
+      try {
+        const { data } = await hashtagService.getPopularHashtags(30);
+        setPopularHashtags(data || []);
+      } catch (error) {
+        console.error('Erreur lors du chargement des hashtags populaires:', error);
+      } finally {
+        setHashtagsLoading(false);
+      }
+    };
+
+    fetchPopularHashtags();
   }, []);
 
   // Vérifier l'état de suivi pour chaque utilisateur dans les résultats
@@ -219,7 +241,7 @@ export default function ExplorePage() {
         {/* Content based on active tab */}
         <div className="p-4">
           {activeTab === 'pour-vous' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-300">
                 <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Qui suivre</h2>
                 <p className="text-gray-700 dark:text-gray-400 mb-4">
@@ -228,6 +250,44 @@ export default function ExplorePage() {
                 <div className="text-sm text-gray-600 dark:text-gray-500">
                   💡 Astuce : Tapez au moins 2 caractères pour commencer votre recherche
                 </div>
+              </div>
+
+              {/* Section Hashtags populaires */}
+              <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-300">
+                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Tendances populaires</h2>
+                
+                {hashtagsLoading ? (
+                  <div className="text-center py-4">
+                    <div className="w-6 h-6 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                    <p className="text-gray-700 dark:text-gray-400 text-sm">Chargement des tendances...</p>
+                  </div>
+                ) : popularHashtags.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {popularHashtags.map((hashtag) => (
+                      <div
+                        key={hashtag.id}
+                        onClick={() => router.push(`/hashtags/${hashtag.name}`)}
+                        className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                            <span className="text-red-600 dark:text-red-400 font-bold text-xl">#</span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-red-600 dark:text-red-400">#{hashtag.name}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {hashtag.usage_count} publication{hashtag.usage_count > 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                    Aucun hashtag populaire pour le moment
+                  </div>
+                )}
               </div>
             </div>
           )}

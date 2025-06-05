@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import supabase from "@/lib/supabase";
+import SearchBar from "@/components/searchBar/SearchBar";
 import { messageService } from "@/services/supabase/message";
 import { notificationService } from "@/services/supabase/notification";
 import { ThemeToggle } from "./ThemeToggle";
@@ -236,23 +237,30 @@ export default function Header() {
 
   return (
     <div className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 z-50 flex flex-col transition-colors duration-300">
-      {/* Header avec logo et bouton thème */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center">
-          <Image
-            src="/logo_Flow.png"
-            alt="Flow Logo"
-            width={120}
-            height={40}
-            priority
-            className="object-contain"
-          />
+      {/* Header avec logo, barre de recherche et bouton thème */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Image
+              src="/logo_Flow.png"
+              alt="Flow Logo"
+              width={120}
+              height={40}
+              priority
+              className="object-contain"
+            />
+          </div>
+          {/* Afficher le ThemeToggle uniquement en développement ou sur certaines pages */}
+          {(process.env.NODE_ENV === "development" ||
+            ["/dashboard", "/explore"].some((route) =>
+              pathname.startsWith(route)
+            )) && <ThemeToggle />}
         </div>
-        {/* Afficher le ThemeToggle uniquement en développement ou sur certaines pages */}
-        {(process.env.NODE_ENV === "development" ||
-          ["/dashboard", "/explore"].some((route) =>
-            pathname.startsWith(route)
-          )) && <ThemeToggle />}
+
+        {/* Barre de recherche */}
+        <div className="w-full">
+          <SearchBar />
+        </div>
       </div>
 
       {/* Navigation items */}

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
+import { hashtagService } from '@/services/supabase/hashtag';
 import { Profile } from '@/types';
 
 interface SearchBarProps {
@@ -13,8 +14,14 @@ interface SearchBarProps {
   showInlineResults?: boolean;
 }
 
+interface HashtagResult {
+  id: string;
+  name: string;
+  usage_count: number;
+}
+
 export default function SearchBar({ 
-  placeholder = "Rechercher des utilisateurs...",
+  placeholder = "Rechercher utilisateurs, #hashtags...",
   autoFocus = false,
   onSearch,
   initialQuery = '',
@@ -23,6 +30,7 @@ export default function SearchBar({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [searchResults, setSearchResults] = useState<Partial<Profile>[]>([]);
+  const [hashtagResults, setHashtagResults] = useState<HashtagResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -49,6 +57,7 @@ export default function SearchBar({
 
     if (query.length < 2) {
       setSearchResults([]);
+      setHashtagResults([]);
       setShowResults(false);
       return;
     }
@@ -57,17 +66,33 @@ export default function SearchBar({
     setShowResults(true);
 
     try {
-      const { data, error } = await supabase
+      // Recherche d'utilisateurs
+      const { data: users, error: userError } = await supabase
         .from('Profile')
         .select('id, user_id, nickname, profilePicture, firstName, lastName')
         .ilike('nickname', `%${query}%`)
         .limit(8);
 
-      if (error) throw error;
-      setSearchResults(data || []);
+      if (userError) throw userError;
+
+      // Recherche de hashtags
+      let hashtags: HashtagResult[] = [];
+      if (query.startsWith('#')) {
+        const hashtagQuery = query.slice(1);
+        const { data: hashtagData } = await hashtagService.searchHashtags(hashtagQuery, 5);
+        hashtags = hashtagData || [];
+      } else {
+        // Rechercher aussi les hashtags sans #
+        const { data: hashtagData } = await hashtagService.searchHashtags(query, 3);
+        hashtags = hashtagData || [];
+      }
+
+      setSearchResults(users || []);
+      setHashtagResults(hashtags);
     } catch (error) {
       console.error('Erreur de recherche:', error);
       setSearchResults([]);
+      setHashtagResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +101,12 @@ export default function SearchBar({
   const handleUserClick = (profileId: string) => {
     console.log('Navigation vers profil depuis SearchBar, profileId:', profileId);
     router.push(`/profile/${profileId}`);
+    setShowResults(false);
+    setSearchQuery('');
+  };
+
+  const handleHashtagClick = (hashtagName: string) => {
+    router.push(`/hashtags/${hashtagName}`);
     setShowResults(false);
     setSearchQuery('');
   };
@@ -115,50 +146,84 @@ export default function SearchBar({
 
           {!isLoading && searchQuery.length >= 2 && (
             <div className="absolute w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50 max-h-96 overflow-y-auto">
-              {searchResults.length > 0 ? (
+              {(searchResults.length > 0 || hashtagResults.length > 0) ? (
                 <>
-                  <div className="p-3 border-b border-gray-700">
-                    <p className="text-sm font-medium text-gray-300">
-                      {searchResults.length} utilisateur{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''}
-                    </p>
-                  </div>
-                  
-                  {searchResults.map((result) => (
-                    <div
-                      key={result.id}
-                      className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700 last:border-b-0"
-                      onClick={() => handleUserClick(result.id!)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600 flex-shrink-0">
-                          {result.profilePicture ? (
-                            <img
-                              src={result.profilePicture}
-                              alt={result.nickname}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-white font-medium">
-                                {result.nickname?.charAt(0).toUpperCase() || '?'}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-white truncate">
-                            {result.nickname}
-                          </p>
-                          {(result.firstName || result.lastName) && (
-                            <p className="text-sm text-gray-400 truncate">
-                              {result.firstName || ''} {result.lastName || ''}
-                            </p>
-                          )}
-                          <p className="text-xs text-gray-500">Profil utilisateur</p>
-                        </div>
+                  {/* Résultats hashtags */}
+                  {hashtagResults.length > 0 && (
+                    <div>
+                      <div className="p-3 border-b border-gray-700">
+                        <p className="text-sm font-medium text-gray-300">HASHTAGS</p>
                       </div>
+                      {hashtagResults.map((hashtag) => (
+                        <div
+                          key={hashtag.id}
+                          className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700"
+                          onClick={() => handleHashtagClick(hashtag.name)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                              <span className="text-red-600 dark:text-red-400 font-bold text-xl">#</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-red-400 truncate">#{hashtag.name}</p>
+                              <p className="text-sm text-gray-400">
+                                {hashtag.usage_count} publication{hashtag.usage_count > 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  {/* Résultats utilisateurs */}
+                  {searchResults.length > 0 && (
+                    <div>
+                      {hashtagResults.length > 0 && <div className="border-t border-gray-700"></div>}
+                      <div className="p-3 border-b border-gray-700">
+                        <p className="text-sm font-medium text-gray-300">
+                          UTILISATEURS ({searchResults.length})
+                        </p>
+                      </div>
+                      
+                      {searchResults.map((result) => (
+                        <div
+                          key={result.id}
+                          className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700 last:border-b-0"
+                          onClick={() => handleUserClick(result.id!)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600 flex-shrink-0">
+                              {result.profilePicture ? (
+                                <img
+                                  src={result.profilePicture}
+                                  alt={result.nickname}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-white font-medium">
+                                    {result.nickname?.charAt(0).toUpperCase() || '?'}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-white truncate">
+                                {result.nickname}
+                              </p>
+                              {(result.firstName || result.lastName) && (
+                                <p className="text-sm text-gray-400 truncate">
+                                  {result.firstName || ''} {result.lastName || ''}
+                                </p>
+                              )}
+                              <p className="text-xs text-gray-500">Profil utilisateur</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   
                   <div 
                     className="p-3 text-center text-red-400 hover:bg-gray-700 cursor-pointer border-t border-gray-700"
@@ -171,7 +236,7 @@ export default function SearchBar({
                 </>
               ) : (
                 <div className="p-4 text-center">
-                  <p className="text-gray-400">Aucun utilisateur trouvé pour "{searchQuery}"</p>
+                  <p className="text-gray-400">Aucun résultat trouvé pour "{searchQuery}"</p>
                   <p className="text-sm text-gray-500 mt-1">
                     Essayez avec un autre terme de recherche
                   </p>

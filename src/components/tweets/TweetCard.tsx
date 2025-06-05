@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import RetweetButton from './RetweetButton';
@@ -88,6 +88,44 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
     }
   };
 
+  // Fonction pour rendre le contenu avec mentions et hashtags
+  const renderContentWithMentions = (content: string) => {
+    const parts = content.split(/(@\w+|#\w+)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/profile/username/${username}`);
+            }}
+            className="text-blue-500 hover:text-blue-700 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      } else if (part.startsWith('#')) {
+        const hashtagName = part.slice(1);
+        return (
+          <span
+            key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/hashtags/${hashtagName}`);
+            }}
+            className="text-blue-500 hover:text-blue-700 cursor-pointer font-medium"
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   const handleClick = () => {
     if (!detailed) {
       router.push(`/tweets/${tweet.id}`);
@@ -150,7 +188,7 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
           
           {/* Contenu du tweet */}
           <div className="mb-3">
-            <p className="text-white">{tweet.content}</p>
+            <p className="text-white">{renderContentWithMentions(tweet.content)}</p>
           </div>
           
           {/* Médias du tweet */}
@@ -217,7 +255,7 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                   </div>
                 </div>
                 
-                <p className="text-white text-sm">{originalTweet.content}</p>
+                <p className="text-white text-sm">{renderContentWithMentions(originalTweet.content)}</p>
                 
                 {originalTweet.picture && originalTweet.picture.length > 0 && (
                   <div className="mt-2">
@@ -247,7 +285,8 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                 onClick={handleCommentClick}
                 className="flex items-center text-gray-500 hover:text-blue-500"
               >
-                <span className="mr-1">{commentCount}</span> Commentaires
+                <ChatBubbleOvalLeftIcon className="h-5 w-5 mr-1" />
+                <span>{commentCount} Commentaires</span>
               </button>
               
               {showRetweetButton && (

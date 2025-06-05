@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import supabase from '@/lib/supabase';
 import { Tweet } from '@/types';
 import { tweetService } from '@/services/supabase/tweet';
+import { hashtagService } from '@/services/supabase/hashtag';
 
 export default function useFeed() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
@@ -109,6 +110,56 @@ export default function useFeed() {
       
       console.log('Tweets récupérés:', allTweets?.length || 0);
       
+      // 7. Récupérer les tweets des hashtags suivis
+      console.log('7. Récupération des tweets des hashtags suivis...');
+      const { data: hashtagSubscriptions } = await supabase
+        .from('hashtag_subscriptions') 
+        .select('hashtag_id')
+        .eq('profile_id', profileData.id);
+
+      if (hashtagSubscriptions && hashtagSubscriptions.length > 0) {
+        const hashtagIds = hashtagSubscriptions.map(sub => sub.hashtag_id);
+        
+        const { data: hashtagTweets } = await supabase
+          .from('tweet_hashtags')
+          .select(`
+            Tweets (
+              id,
+              content,
+              picture,
+              published_at,
+              view_count,
+              retweet_id,
+              author_id,
+              author:author_id (
+                id,
+                nickname,
+                profilePicture
+              )
+            )
+          `)
+          .in('hashtag_id', hashtagIds)
+          .order('created_at', { ascending: false })
+          .range(pageToLoad * TWEETS_PER_PAGE, (pageToLoad + 1) * TWEETS_PER_PAGE - 1);
+
+        if (hashtagTweets) {
+          const formattedHashtagTweets = hashtagTweets
+            .filter(item => item.Tweets)
+            .map(item => item.Tweets);
+          
+          // Fusionner avec les tweets existants et supprimer les doublons
+          const allTweetsCombined = [...(allTweets || []), ...formattedHashtagTweets];
+          const uniqueTweets = allTweetsCombined.filter((tweet, index, self) => 
+            index === self.findIndex(t => t.id === tweet.id)
+          );
+          
+          // Trier par date
+          allTweets = uniqueTweets.sort((a, b) => 
+            new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+          );
+        }
+      }
+      
       // 7. S'assurer que les données sont valides
       if (!allTweets) {
         console.error('allTweets est undefined ou null');
@@ -146,17 +197,11 @@ export default function useFeed() {
             
             if (!author) {
               console.warn(`Tweet ${tweet.id}: Auteur manquant, utilisation d'une valeur par défaut`);
-              author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null, verified: false };
-            } else {
-              // S'assurer que la propriété verified existe
-              author = {
-                ...author,
-                verified: (author as any).verified !== undefined ? (author as any).verified : false
-              };
+              author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
             }
           } catch (authorError) {
             console.error(`Erreur lors du traitement de l'auteur pour le tweet ${tweet.id}:`, authorError);
-            author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null, verified: false };
+            author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
           }
           
           return {
@@ -192,11 +237,13 @@ export default function useFeed() {
             .select(`
               id,
               content,
+              picture,
+              published_at,
+              view_count,
               author:Profile!author_id (
                 id,
                 nickname,
-                profilePicture,
-                verified
+                profilePicture
               )
             `)
             .in('id', retweetIds);
