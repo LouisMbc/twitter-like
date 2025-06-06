@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import TweetCard from "@/components/tweets/TweetCard";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
+import ViewCounter from "@/components/shared/ViewCount";
 import { useRef, useCallback } from "react";
 
 export default function ProfilePage() {
@@ -21,11 +22,6 @@ export default function ProfilePage() {
     followingCount,
     loading,
     currentProfileId,
-    incrementFollowingCount,
-    decrementFollowingCount,
-    // Garder uniquement les props pour les tweets
-    tweetsLoading,
-    hasTweetsMore,
     loadMoreTweets,
   } = useProfile();
 
@@ -37,28 +33,22 @@ export default function ProfilePage() {
   // Callback uniquement pour les tweets
   const lastTweetElementRef = useCallback(
     (node: HTMLDivElement) => {
-      if (tweetsLoading) return;
+      if (loading) return;
       if (tweetsObserver.current) tweetsObserver.current.disconnect();
 
       tweetsObserver.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasTweetsMore) {
-          loadMoreTweets();
+        if (entries[0].isIntersecting && tweets.length > 0) {
+          loadMoreTweets(currentProfileId || "", 1);
         }
       });
 
       if (node) tweetsObserver.current.observe(node);
     },
-    [tweetsLoading, hasTweetsMore, loadMoreTweets]
+    [loading, tweets.length, loadMoreTweets, currentProfileId]
   );
 
   // Fonction pour gérer le changement du nombre d'abonnements
-  const handleFollowingChange = (change: number) => {
-    if (change > 0) {
-      incrementFollowingCount();
-    } else {
-      decrementFollowingCount();
-    }
-  };
+  const handleFollowingChange = (change: number) => {};
 
   if (loading) {
     return (
@@ -82,11 +72,11 @@ export default function ProfilePage() {
         profile={{
           id: profile.id,
           user_id: profile.user_id,
-          firstName: profile.firstName || undefined,
-          lastName: profile.lastName || undefined,
+          firstName: profile.firstName || null,
+          lastName: profile.lastName || null,
           nickname: profile.nickname || "Utilisateur",
-          bio: profile.bio || undefined,
-          profilePicture: profile.profilePicture || undefined,
+          bio: profile.bio || null,
+          profilePicture: profile.profilePicture || null,
           created_at: profile.created_at,
           follower_count: profile.follower_count,
           following_count: profile.following_count,
@@ -113,12 +103,12 @@ export default function ProfilePage() {
               className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
             >
               <TweetCard tweet={tweet} />
-              {index === tweets.length - 1 && hasTweetsMore && (
+              {index === tweets.length - 1 && (
                 <div ref={lastTweetElementRef} className="h-10"></div>
               )}
             </div>
           ))}
-          {tweetsLoading && (
+          {loading && (
             <div className="flex justify-center p-4">
               <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
@@ -126,7 +116,6 @@ export default function ProfilePage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {console.log("Rendu de", comments.length, "commentaires")}
           {comments.length > 0 ? (
             comments.map((comment) => (
               <div
@@ -135,7 +124,7 @@ export default function ProfilePage() {
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <span className="font-semibold text-gray-900 dark:text-white">
-                    {comment.nickname || 'Utilisateur'}
+                    {comment.nickname || "Utilisateur"}
                   </span>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300">
@@ -148,7 +137,14 @@ export default function ProfilePage() {
                   })}
                 </div>
                 <div className="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="mr-2">👁️ {comment.view_count}</span>
+                  <span className="mr-4">
+                    👁️{" "}
+                    <ViewCounter
+                      contentId={comment.id}
+                      contentType="comment"
+                      initialCount={comment.view_count || 0}
+                    />
+                  </span>
                   <span className="mr-2">
                     💬 Sur{" "}
                     <a

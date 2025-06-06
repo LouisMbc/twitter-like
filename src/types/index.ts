@@ -72,6 +72,7 @@ export interface ProfilePageData {
 }
 
 export interface ProfileForm {
+  website: string;
   lastName: string;
   firstName: string;
   nickname: string;

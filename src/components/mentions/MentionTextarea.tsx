@@ -35,7 +35,8 @@ export default function MentionTextarea({
     if (mentionMatch) {
       const query = mentionMatch[1];
       if (query.length >= 0) {
-        const users = await mentionService.searchUsers(query);
+        const response = await mentionService.searchUsers(query);
+        const users = Array.isArray(response) ? response : (response.data || []);
         setSuggestions(users);
         setShowSuggestions(true);
         setSelectedSuggestionIndex(0);

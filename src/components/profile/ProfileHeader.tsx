@@ -147,7 +147,7 @@ export default function ProfileHeader({
                       {profile.profilePicture ? (
                         <img
                           src={profile.profilePicture}
-                          alt={profile.nickname}
+                          alt={profile.nickname || ''}
                           className="w-32 h-32 object-cover rounded-full cursor-pointer border-2 border-black"
                         />
                       ) : (
@@ -167,7 +167,7 @@ export default function ProfileHeader({
                     {profile.profilePicture ? (
                       <img
                         src={profile.profilePicture}
-                        alt={profile.nickname}
+                        alt={profile.nickname || ''}
                         className="w-32 h-32 object-cover rounded-full border-4 border-black shadow-lg"
                       />
                     ) : (

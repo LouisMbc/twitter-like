@@ -288,8 +288,6 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
             onChange={setContent}
             placeholder="Quoi de neuf ? Utilisez # pour les hashtags et @ pour mentionner"
             className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
-            rows={4}
-            maxLength={280}
           />
           
           {/* Aperçu avec mentions et hashtags colorés */}

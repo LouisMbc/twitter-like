@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FaImage, FaTimes } from 'react-icons/fa';
-import { useProfile } from '@/hooks/useProfile';
-import { commentService } from '@/services/supabase/comment';
 import { mentionService } from '@/services/supabase/mention';
 import MentionTextarea from '@/components/mentions/MentionTextarea';
 import supabase from '@/lib/supabase';
@@ -89,7 +86,6 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
             onChange={setContent}
             placeholder={parentCommentId ? "Répondre au commentaire..." : "Poster votre réponse..."}
             className="flex-1 p-2 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
-            rows={2}
           />
           <div className="flex flex-col space-y-2">
             <button
