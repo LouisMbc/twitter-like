@@ -72,6 +72,8 @@ export interface ProfilePageData {
 }
 
 export interface ProfileForm {
+  location: any;
+  currentCoverPicture: any;
   website: string;
   lastName: string;
   firstName: string;
