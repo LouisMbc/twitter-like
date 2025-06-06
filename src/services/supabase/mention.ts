@@ -6,15 +6,15 @@ export interface Mention {
   profilePicture?: string;
 }
 
-export const mentionService = {
-  // Extraire les mentions d'un texte
+export const mentionService = {  // Extraire les mentions d'un texte
   extractMentions: (text: string): string[] => {
     const mentionRegex = /@(\w+)/g;
     const mentions: string[] = [];
     let match;
 
     while ((match = mentionRegex.exec(text)) !== null) {
-      mentions.push(match[1]);
+      // Retourner le pseudo complet avec le @ pour la cohérence
+      mentions.push(`@${match[1]}`);
     }
 
     return mentions;

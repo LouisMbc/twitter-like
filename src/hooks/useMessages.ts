@@ -77,10 +77,15 @@ export const useMessages = () => {
       setLoading(false);
     }
   }, [profile, fetchConversations]);
-
   // Envoyer un nouveau message
   const sendMessage = useCallback(async (recipientId: string, content: string) => {
-    if (!profile || !content.trim()) return;
+    if (!profile || !content.trim()) return false;
+    
+    // Empêcher d'envoyer des messages à soi-même
+    if (profile.id === recipientId) {
+      setError('Impossible d\'envoyer un message à soi-même');
+      return false;
+    }
     
     setSendingMessage(true);
     try {
@@ -104,10 +109,12 @@ export const useMessages = () => {
       setSendingMessage(false);
     }
   }, [profile, fetchConversations]);
-
   // Vérifier si l'utilisateur peut envoyer un message à quelqu'un
   const checkCanMessage = useCallback(async (otherUserId: string) => {
     if (!profile) return false;
+    
+    // Empêcher les interactions avec soi-même
+    if (profile.id === otherUserId) return false;
     
     try {
       const { canMessage, error } = await messageService.canMessage(profile.id, otherUserId);

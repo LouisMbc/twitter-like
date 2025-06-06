@@ -48,15 +48,15 @@ export const messageService = {
 
     // Regrouper les messages par conversation (par utilisateur)
     const conversations: Record<string, Conversation> = {};
-    
-    data?.forEach((message: any) => {
+      data?.forEach((message: any) => {
       const sender = Array.isArray(message.sender) ? message.sender[0] : message.sender;
       const recipient = Array.isArray(message.recipient) ? message.recipient[0] : message.recipient;
       
       const otherUserId = sender?.id === userId ? recipient?.id : sender?.id;
       const otherUser = sender?.id === userId ? recipient : sender;
       
-      if (!otherUserId || !otherUser) return;
+      // Éviter les conversations avec soi-même
+      if (!otherUserId || !otherUser || otherUserId === userId) return;
       
       if (!conversations[otherUserId]) {
         conversations[otherUserId] = {
@@ -84,9 +84,13 @@ export const messageService = {
 
     return { data: Object.values(conversations) };
   },
-
   // Récupérer les messages d'une conversation spécifique
   getMessages: async (userId: string, otherUserId: string) => {
+    // Éviter de récupérer des messages avec soi-même
+    if (userId === otherUserId) {
+      return { data: [], error: null };
+    }
+
     const { data, error } = await supabase
       .from('Messages')
       .select(`
@@ -102,9 +106,13 @@ export const messageService = {
 
     return { data, error };
   },
-
   // Envoyer un nouveau message
   sendMessage: async (senderId: string, recipientId: string, content: string) => {
+    // Empêcher d'envoyer des messages à soi-même
+    if (senderId === recipientId) {
+      return { data: null, error: { message: 'Impossible d\'envoyer un message à soi-même' } };
+    }
+
     const { data, error } = await supabase
       .from('Messages')
       .insert([
@@ -158,10 +166,14 @@ export const messageService = {
 
     return { data, error };
   },
-
   // Vérifier si deux utilisateurs peuvent échanger des messages
   // (ils doivent se suivre mutuellement)
   canMessage: async (userId: string, otherUserId: string) => {
+    // Empêcher de se parler à soi-même
+    if (userId === otherUserId) {
+      return { canMessage: false, error: null };
+    }
+
     // Vérifier si l'utilisateur suit l'autre
     const { data: follows, error: followsError } = await supabase
       .from('Following')

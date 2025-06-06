@@ -73,7 +73,6 @@ export default function MentionTextarea({
         break;
     }
   };
-
   const selectSuggestion = (suggestion: Mention) => {
     if (!textareaRef.current) return;
 
@@ -85,7 +84,8 @@ export default function MentionTextarea({
     if (!mentionMatch) return;
 
     const beforeMention = textUpToCursor.slice(0, mentionMatch.index);
-    const newValue = beforeMention + `@${suggestion.nickname} ` + textAfterCursor;
+    // Le pseudo contient déjà le @, donc pas besoin d'en ajouter un autre
+    const newValue = beforeMention + `${suggestion.nickname} ` + textAfterCursor;
     
     onChange(newValue);
     setShowSuggestions(false);
@@ -139,7 +139,7 @@ export default function MentionTextarea({
                   </div>
                 )}
               </div>
-              <span className="text-gray-900 dark:text-white">@{suggestion.nickname}</span>
+              <span className="text-gray-900 dark:text-white">{suggestion.nickname}</span>
             </div>
           ))}
         </div>
