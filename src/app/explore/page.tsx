@@ -2,18 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaEllipsisH } from 'react-icons/fa';
 import Header from '@/components/shared/Header';
 import SearchBar from '@/components/searchBar/SearchBar';
 import supabase from '@/lib/supabase';
 import { hashtagService } from '@/services/supabase/hashtag';
 import { useAuth } from '@/hooks/useAuth';
 import { Profile, Hashtag } from '@/types';
-
-interface Recommendation {
-  tag: string;
-  publications: string;
-}
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -63,7 +57,7 @@ export default function ExplorePage() {
   useEffect(() => {
     const fetchPopularHashtags = async () => {
       try {
-        const { data } = await hashtagService.getPopularHashtags(30);
+        const { data } = await hashtagService.getPopularHashtags(50); // Augmenter la limite pour plus de hashtags
         setPopularHashtags(data || []);
       } catch (error) {
         console.error('Erreur lors du chargement des hashtags populaires:', error);
@@ -163,6 +157,10 @@ export default function ExplorePage() {
     } finally {
       setFollowingLoading(prev => ({ ...prev, [userId]: false }));
     }
+  };
+
+  const handleHashtagClick = (hashtagName: string) => {
+    router.push(`/hashtags/${hashtagName}`);
   };
 
   return (
@@ -379,21 +377,78 @@ export default function ExplorePage() {
           )}
 
           {activeTab === 'tendances' && (
-            <div className="divide-y divide-gray-300 dark:divide-gray-800 border border-gray-300 dark:border-gray-800 rounded-lg overflow-hidden">
-              {recommendations.map((rec: Recommendation, index: number) => (
-                <div key={index} className="p-4 hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Tendance dans le monde</p>
-                      <p className="font-bold text-gray-900 dark:text-white">{rec.tag}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{rec.publications}</p>
-                    </div>
-                    <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                      <FaEllipsisH />
-                    </button>
-                  </div>
+            <div className="space-y-4">
+              <div className="mb-6">
+                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Tendances populaires
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
+                  Découvrez les hashtags les plus populaires en ce moment
+                </p>
+              </div>
+
+              {hashtagsLoading ? (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-700 dark:text-gray-400">Chargement des tendances...</p>
                 </div>
-              ))}
+              ) : popularHashtags.length > 0 ? (
+                <div className="divide-y divide-gray-300 dark:divide-gray-800 border border-gray-300 dark:border-gray-800 rounded-lg overflow-hidden">
+                  {popularHashtags.map((hashtag, index) => (
+                    <div 
+                      key={hashtag.id}
+                      onClick={() => handleHashtagClick(hashtag.name)}
+                      className="p-4 hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-red-600 dark:text-red-400 font-bold text-xl">#</span>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Tendance #{index + 1} • Mondial
+                            </p>
+                            <p className="font-bold text-gray-900 dark:text-white text-lg lg:text-xl">
+                              #{hashtag.name}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {hashtag.usage_count} publication{hashtag.usage_count > 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-gray-400 dark:text-gray-500">
+                          <svg 
+                            className="w-5 h-5" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round" 
+                              strokeWidth={2} 
+                              d="M9 5l7 7-7 7" 
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border border-gray-300 dark:border-gray-800 rounded-lg">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-gray-400 dark:text-gray-500 text-2xl">#</span>
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-400 text-lg font-medium mb-2">
+                    Aucune tendance disponible
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-500 text-sm">
+                    Les hashtags populaires apparaîtront ici dès qu'ils seront utilisés
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

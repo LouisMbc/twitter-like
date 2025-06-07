@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { hashtagService } from '@/services/supabase/hashtag';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,9 +8,11 @@ import { Tweet } from '@/types';
 import { Hashtag } from '@/types/index';
 import supabase from '@/lib/supabase';
 
-export default function HashtagPage() {
-    const params = useParams();
-    const hashtagName = params.name as string;
+interface HashtagViewProps {
+    hashtagName: string;
+}
+
+export default function HashtagView({ hashtagName }: HashtagViewProps) {
     const [tweets, setTweets] = useState<Tweet[]>([]);
     const [hashtag, setHashtag] = useState<Hashtag | null>(null);
     const [loading, setLoading] = useState(true);
@@ -82,7 +83,9 @@ export default function HashtagPage() {
             }
         };
 
-        fetchData();
+        if (hashtagName) {
+            fetchData();
+        }
     }, [hashtagName, profileId]);
 
     const handleSubscribe = async () => {
@@ -119,21 +122,21 @@ export default function HashtagPage() {
     };
 
     if (loading) {
-        return <div className="flex justify-center p-8 text-slate-600">Chargement...</div>;
+        return <div className="flex justify-center p-8 text-gray-400">Chargement...</div>;
     }
 
     if (!hashtag) {
-        return <div className="flex justify-center p-8 text-slate-600">Hashtag non trouvé</div>;
+        return <div className="flex justify-center p-8 text-gray-400">Hashtag non trouvé</div>;
     }
 
     return (
-        <div className="max-w-2xl mx-auto p-4 bg-slate-50 min-h-screen">
+        <div className="space-y-6">
             {/* En-tête du hashtag */}
-            <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-6">
+            <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-sky-500">#{hashtag.name}</h1>
-                        <p className="text-slate-500 mt-1">
+                        <h1 className="text-3xl font-bold text-blue-400">#{hashtag.name}</h1>
+                        <p className="text-gray-400 mt-1">
                             {hashtag.usage_count} tweet{hashtag.usage_count > 1 ? 's' : ''}
                         </p>
                     </div>
@@ -144,8 +147,8 @@ export default function HashtagPage() {
                                 onClick={handleSubscribe}
                                 className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
                                     isSubscribed
-                                        ? 'bg-sky-500 text-white hover:bg-sky-600 shadow-md'
-                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
+                                        ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-md'
+                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
                                 }`}
                             >
                                 {isSubscribed ? 'Abonné' : 'S\'abonner'}
@@ -156,7 +159,7 @@ export default function HashtagPage() {
                                 className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
                                     isBlocked
                                         ? 'bg-red-500 text-white hover:bg-red-600 shadow-md'
-                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
+                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
                                 }`}
                             >
                                 {isBlocked ? 'Débloqué' : 'Bloquer'}
@@ -169,7 +172,7 @@ export default function HashtagPage() {
             {/* Liste des tweets */}
             <div className="space-y-4">
                 {tweets.length === 0 ? (
-                    <div className="text-center text-slate-500 py-12 bg-white rounded-xl border border-slate-200">
+                    <div className="text-center text-gray-400 py-12 bg-gray-800 rounded-xl border border-gray-700">
                         <div className="text-lg font-medium mb-2">Aucun tweet trouvé</div>
                         <div className="text-sm">pour #{hashtag.name}</div>
                     </div>
