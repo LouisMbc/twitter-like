@@ -1,7 +1,6 @@
 // src/app/premium/cancel/page.tsx
 "use client";
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import Header from '@/components/shared/Header';

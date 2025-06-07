@@ -62,8 +62,13 @@ export default function MentionTextarea({
     try {
       const { data, error } = await mentionService.searchUsers(query, 5);
       if (!error && data) {
-        setSuggestions(data);
-        setShowSuggestions(data.length > 0);
+        // S'assurer que les nicknames n'ont pas de @ en préfixe
+        const cleanedData = data.map(user => ({
+          ...user,
+          nickname: user.nickname?.startsWith('@') ? user.nickname.substring(1) : user.nickname
+        }));
+        setSuggestions(cleanedData);
+        setShowSuggestions(cleanedData.length > 0);
         setSelectedIndex(0);
       }
     } catch (error) {

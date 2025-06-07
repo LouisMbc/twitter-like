@@ -139,7 +139,7 @@ export default function NotificationsPage() {
                                         <div className="flex items-center gap-2">
                                             {notification.sender?.nickname && (
                                                 <Link href={`/profile/${notification.sender.id}`} className="hover:underline font-medium">
-                                                    {notification.sender.nickname}
+                                                    @{notification.sender.nickname.replace(/^@+/, '')}
                                                 </Link>
                                             )}
                                             {!notification.is_read && (

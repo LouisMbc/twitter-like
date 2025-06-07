@@ -49,7 +49,6 @@ export default function SearchBar({
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
 
-    // Si onSearch est fourni, l'utiliser au lieu de la recherche interne
     if (onSearch) {
       onSearch(query);
       return;
@@ -66,7 +65,6 @@ export default function SearchBar({
     setShowResults(true);
 
     try {
-      // Recherche d'utilisateurs
       const { data: users, error: userError } = await supabase
         .from('Profile')
         .select('id, user_id, nickname, profilePicture, firstName, lastName')
@@ -75,14 +73,12 @@ export default function SearchBar({
 
       if (userError) throw userError;
 
-      // Recherche de hashtags
       let hashtags: HashtagResult[] = [];
       if (query.startsWith('#')) {
         const hashtagQuery = query.slice(1);
         const { data: hashtagData } = await hashtagService.searchHashtags(hashtagQuery, 5);
         hashtags = hashtagData || [];
       } else {
-        // Rechercher aussi les hashtags sans #
         const { data: hashtagData } = await hashtagService.searchHashtags(query, 3);
         hashtags = hashtagData || [];
       }
@@ -99,7 +95,6 @@ export default function SearchBar({
   };
 
   const handleUserClick = (profileId: string) => {
-    console.log('Navigation vers profil depuis SearchBar, profileId:', profileId);
     router.push(`/profile/${profileId}`);
     setShowResults(false);
     setSearchQuery('');

@@ -39,31 +39,22 @@ export function useStories() {
         throw error;
       }
       
-      console.log('Données brutes des stories:', data);
-
       // S'assurer que les données ne sont pas null/undefined
       if (!data || data.length === 0) {
-        console.log('Aucune story trouvée');
         setStories([]);
         return;
       }
 
       // Formater les données pour correspondre à l'interface Story
-      const formattedStories = data.map((story: any) => {
-        // Log pour chaque story pour vérifier sa structure
-        console.log('Story brute:', story);
-        
-        return {
-          ...story,
-          author: story.Profile || {
-            id: 'unknown',
-            nickname: 'Utilisateur',
-            profilePicture: null
-          }
-        };
-      });
+      const formattedStories = data.map((story: any) => ({
+        ...story,
+        author: story.Profile || {
+          id: 'unknown',
+          nickname: 'Utilisateur',
+          profilePicture: null
+        }
+      }));
 
-      console.log('Stories formatées:', formattedStories);
       setStories(formattedStories);
     } catch (err) {
       console.error('Erreur lors du chargement des stories:', err);

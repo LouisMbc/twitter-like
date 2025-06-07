@@ -56,8 +56,8 @@ export function useUserProfile(userId: string) {
         .maybeSingle();
 
       if (profileById) {
-        console.log('Profil trouvé par ID:', profileById);
         profileData = profileById;
+        console.log('Profil trouvé par ID:', profileData);
       } else {
         // Tentative 2: récupérer par user_id
         const { data: profileByUserId, error: errorByUserId } = await supabase
@@ -67,27 +67,55 @@ export function useUserProfile(userId: string) {
           .maybeSingle();
 
         if (profileByUserId) {
-          console.log('Profil trouvé par user_id:', profileByUserId);
           profileData = profileByUserId;
+          console.log('Profil trouvé par user_id:', profileData);
         } else {
-          console.error('Profil non trouvé par ID ni par user_id:', { errorById, errorByUserId });
+          console.error('Profil non trouvé:', { errorById, errorByUserId });
+          setLoading(false);
+          return;
         }
       }
 
-      if (!profileData) {
-        console.error('Aucun profil trouvé pour:', userId);
-        setProfile(null);
-        return;
+      // Nettoyer le nickname s'il contient des @
+      if (profileData.nickname && profileData.nickname.startsWith('@')) {
+        profileData.nickname = profileData.nickname.substring(1);
       }
 
       setProfile(profileData);
 
-      // Charger les tweets du profil
+      // Récupérer les compteurs de followers/following et l'état de suivi
+      const [followersResult, followingResult, isFollowingResult] = await Promise.all([
+        supabase
+          .from('Following')
+          .select('*', { count: 'exact' })
+          .eq('following_id', profileData.id),
+        supabase
+          .from('Following')
+          .select('*', { count: 'exact' })
+          .eq('follower_id', profileData.id),
+        currentUserProfile ? supabase
+          .from('Following')
+          .select('*')
+          .eq('follower_id', currentUserProfile.id)
+          .eq('following_id', profileData.id)
+          .maybeSingle() : Promise.resolve({ data: null, error: null })
+      ]);
+
+      setFollowersCount(followersResult.count || 0);
+      setFollowingCount(followingResult.count || 0);
+      setIsFollowing(!!isFollowingResult.data);
+
+      // Charger les tweets de l'utilisateur
       const { data: tweetsData, error: tweetsError } = await supabase
         .from('Tweets')
         .select(`
-          id, content, picture, published_at, view_count, retweet_id, author_id,
-          author:author_id (id, nickname, profilePicture)
+          id,
+          content,
+          picture,
+          published_at,
+          view_count,
+          retweet_id,
+          author:Profile!author_id (id, nickname, profilePicture)
         `)
         .eq('author_id', profileData.id)
         .order('published_at', { ascending: false });
@@ -95,61 +123,62 @@ export function useUserProfile(userId: string) {
       if (tweetsError) {
         console.error('Erreur lors du chargement des tweets:', tweetsError);
       } else {
-        setTweets(tweetsData || []);
+        // Nettoyer les nicknames des auteurs
+        const cleanedTweets = (tweetsData || []).map(tweet => ({
+          ...tweet,
+          author: tweet.author ? {
+            ...tweet.author,
+            nickname: tweet.author.nickname?.replace(/^@+/, '') || ''
+          } : null
+        }));
+        setTweets(cleanedTweets);
       }
 
-      // Charger les commentaires du profil
+      // Charger les commentaires de l'utilisateur
       const { data: commentsData, error: commentsError } = await supabase
         .from('Comments')
-        .select('*, tweet:Tweets(*), author:Profile(*)')
-        .eq('author_id', profileData.user_id || profileData.id)
+        .select(`
+          id,
+          content,
+          created_at,
+          view_count,
+          parent_comment_id,
+          tweet:tweet_id ( id, content ),
+          author:author_id (
+            id,
+            nickname,
+            profilePicture
+          )
+        `)
+        .eq('author_id', profileData.id)
         .order('created_at', { ascending: false });
 
       if (commentsError) {
         console.error('Erreur lors du chargement des commentaires:', commentsError);
       } else {
-        setComments(commentsData || []);
-      }
-
-      // Charger les statistiques de suivi
-      const [followersResult, followingResult] = await Promise.all([
-        supabase
-          .from('Following')
-          .select('id')
-          .eq('following_id', profileData.id),
-        supabase
-          .from('Following')
-          .select('id')
-          .eq('follower_id', profileData.id)
-      ]);
-
-      setFollowersCount(followersResult.data?.length || 0);
-      setFollowingCount(followingResult.data?.length || 0);
-
-      // Vérifier si l'utilisateur actuel suit ce profil
-      if (currentUserProfile && profileData.id !== currentUserProfile.id) {
-        const { data: followingData } = await supabase
-          .from('Following')
-          .select('id')
-          .eq('follower_id', currentUserProfile.id)
-          .eq('following_id', profileData.id)
-          .maybeSingle();
-
-        setIsFollowing(!!followingData);
+        // Nettoyer les nicknames des auteurs de commentaires
+        const cleanedComments = (commentsData || []).map(comment => ({
+          ...comment,
+          author: comment.author ? {
+            ...comment.author,
+            nickname: comment.author.nickname?.replace(/^@+/, '') || ''
+          } : null
+        }));
+        setComments(cleanedComments);
       }
 
     } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
+      console.error('Erreur lors du chargement des données du profil utilisateur:', error);
       setProfile(null);
     } finally {
       setLoading(false);
     }
-  }, [userId, router]);
+  }, [userId]);
 
-  // Handle follow/unfollow
+  // Fonction pour gérer le follow/unfollow
   const handleFollowToggle = async () => {
     try {
-      if (!currentProfileId) return;
+      if (!currentProfileId || !profile) return;
 
       if (isFollowing) {
         // Unfollow
@@ -157,7 +186,7 @@ export function useUserProfile(userId: string) {
           .from('Following')
           .delete()
           .eq('follower_id', currentProfileId)
-          .eq('following_id', userId);
+          .eq('following_id', profile.id);
 
         if (error) throw error;
         setFollowersCount(prev => prev - 1);
@@ -166,7 +195,7 @@ export function useUserProfile(userId: string) {
         const { error } = await supabase
           .from('Following')
           .insert([
-            { follower_id: currentProfileId, following_id: userId }
+            { follower_id: currentProfileId, following_id: profile.id }
           ]);
 
         if (error) throw error;
@@ -174,23 +203,20 @@ export function useUserProfile(userId: string) {
       }
       setIsFollowing(!isFollowing);
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur lors du follow/unfollow:', error);
     }
   };
 
-  // Load data on mount and when userId changes
   useEffect(() => {
-    if (userId) {
-      loadUserProfileData();
-    }
-  }, [userId, loadUserProfileData]);
+    loadUserProfileData();
+  }, [loadUserProfileData]);
 
   return {
     profile,
     tweets,
     comments,
     followersCount,
-    followingCount, 
+    followingCount,
     isFollowing,
     loading,
     currentProfileId,

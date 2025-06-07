@@ -23,6 +23,16 @@ export const notificationService = {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
+    // Nettoyer les nicknames des expéditeurs pour éviter les @ doubles
+    if (data) {
+      data.forEach(notification => {
+        if (notification.sender && notification.sender.nickname) {
+          // Supprimer tous les @ en début de nickname
+          notification.sender.nickname = notification.sender.nickname.replace(/^@+/, '');
+        }
+      });
+    }
+
     return { data, error };
   },
 

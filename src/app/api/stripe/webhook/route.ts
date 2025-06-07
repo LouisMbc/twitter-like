@@ -55,19 +55,16 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  // Récupérer l'ID du profil depuis les métadonnées
   const profileId = session.metadata?.profileId;
   
   if (!profileId) return;
 
-  // Récupérer l'ID de l'abonnement
   if (!session.subscription) return;
 
   const subscriptionId = typeof session.subscription === 'string' 
     ? session.subscription
     : session.subscription.id;
 
-  // Alternative: Accéder directement aux propriétés dont vous avez besoin
   const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId);
   const { data, error } = await supabase
     .from('Subscriptions')
@@ -82,11 +79,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   if (error) {
     console.error('Erreur Supabase upsert Subscriptions:', error);
-  } else {
-    console.log('Upsert Subscriptions réussi:', data);
   }
 
-  // Mettre à jour le statut premium du profil
   const { error: profileUpdateError } = await supabase
     .from('Profile')
     .update({
@@ -102,9 +96,6 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   if (profileUpdateError) {
     console.error('Erreur Supabase update Profile:', profileUpdateError);
-    // Envisagez de retourner une réponse d'erreur à Stripe ici, par exemple :
-    // return new NextResponse(JSON.stringify({ error: 'Failed to update profile premium status' }), { status: 500 });
-    // Ou une autre logique pour gérer cette incohérence potentielle.
   }
 }
 

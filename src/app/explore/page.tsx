@@ -31,19 +31,7 @@ export default function ExplorePage() {
   
   useAuth();
 
-  // Données de démonstration pour les tendances
-  const recommendations: Recommendation[] = [
-    { tag: '#TypeScript', publications: '125K posts' },
-    { tag: '#React', publications: '89K posts' },
-    { tag: '#NextJS', publications: '67K posts' },
-    { tag: '#JavaScript', publications: '45K posts' },
-    { tag: '#WebDev', publications: '34K posts' },
-    { tag: '#TailwindCSS', publications: '23K posts' },
-    { tag: '#Supabase', publications: '12K posts' },
-    { tag: '#Flow', publications: '8K posts' },
-  ];
-
-// Recherche automatique si query dans l'URL
+  // Recherche automatique si query dans l'URL
   useEffect(() => {
     if (query) {
       handleSearch(query);
@@ -181,10 +169,10 @@ export default function ExplorePage() {
     <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
       <Header />
 
-      {/* Main content area */}
-      <div className="ml-64 flex-1">
-        {/* Search bar sans bouton thème */}
-        <div className="sticky top-0 bg-white/80 dark:bg-black/80 z-10 p-4 border-b border-gray-300 dark:border-gray-800 backdrop-blur-sm transition-colors duration-300">
+      {/* Main content area - Responsive margins */}
+      <div className="lg:ml-64 flex-1 pt-16 lg:pt-0 pb-20 lg:pb-0">
+        {/* Search bar - Responsive padding */}
+        <div className="sticky top-16 lg:top-0 bg-white/80 dark:bg-black/80 z-10 p-4 border-b border-gray-300 dark:border-gray-800 backdrop-blur-sm transition-colors duration-300">
           <div className="max-w-2xl">
             <SearchBar 
               onSearch={handleSearch}
@@ -194,43 +182,43 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* Navigation tabs */}
-        <div className="border-b border-gray-300 dark:border-gray-800">
-          <div className="flex justify-between overflow-x-auto">
+        {/* Navigation tabs - Scrollable on mobile */}
+        <div className="border-b border-gray-300 dark:border-gray-800 overflow-x-auto">
+          <div className="flex justify-between min-w-max lg:min-w-0">
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'pour-vous' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+              className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'pour-vous' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('pour-vous')}
             >
               Pour vous
             </button>
             {hasSearched && (
               <button 
-                className={`px-4 py-3 text-sm font-medium ${activeTab === 'utilisateurs' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'utilisateurs' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                 onClick={() => setActiveTab('utilisateurs')}
               >
                 Utilisateurs ({searchResults.length})
               </button>
             )}
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'tendances' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+              className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'tendances' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('tendances')}
             >
               Tendances
             </button>
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'actualites' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+              className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'actualites' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('actualites')}
             >
               Actualités
             </button>
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'sport' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+              className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'sport' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('sport')}
             >
               Sport
             </button>
             <button 
-              className={`px-4 py-3 text-sm font-medium ${activeTab === 'divertissement' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+              className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'divertissement' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('divertissement')}
             >
               Divertissement
@@ -238,13 +226,13 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* Content based on active tab */}
+        {/* Content based on active tab - Responsive padding */}
         <div className="p-4">
           {activeTab === 'pour-vous' && (
-            <div className="space-y-6">
-              <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-300">
-                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Qui suivre</h2>
-                <p className="text-gray-700 dark:text-gray-400 mb-4">
+            <div className="space-y-4 lg:space-y-6">
+              <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 lg:p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-300">
+                <h2 className="text-lg lg:text-xl font-bold mb-4 text-gray-900 dark:text-white">Qui suivre</h2>
+                <p className="text-gray-700 dark:text-gray-400 mb-4 text-sm lg:text-base">
                   Utilisez la barre de recherche ci-dessus pour trouver des utilisateurs par leur pseudo.
                 </p>
                 <div className="text-sm text-gray-600 dark:text-gray-500">
@@ -252,9 +240,9 @@ export default function ExplorePage() {
                 </div>
               </div>
 
-              {/* Section Hashtags populaires */}
-              <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-300">
-                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Tendances populaires</h2>
+              {/* Section Hashtags populaires - Responsive grid */}
+              <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 lg:p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-300">
+                <h2 className="text-lg lg:text-xl font-bold mb-4 text-gray-900 dark:text-white">Tendances populaires</h2>
                 
                 {hashtagsLoading ? (
                   <div className="text-center py-4">
@@ -262,7 +250,7 @@ export default function ExplorePage() {
                     <p className="text-gray-700 dark:text-gray-400 text-sm">Chargement des tendances...</p>
                   </div>
                 ) : popularHashtags.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {popularHashtags.map((hashtag) => (
                       <div
                         key={hashtag.id}
@@ -270,11 +258,11 @@ export default function ExplorePage() {
                         className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                            <span className="text-red-600 dark:text-red-400 font-bold text-xl">#</span>
+                          <div className="w-10 lg:w-12 h-10 lg:h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-red-600 dark:text-red-400 font-bold text-lg lg:text-xl">#</span>
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-red-600 dark:text-red-400">#{hashtag.name}</h3>
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-red-600 dark:text-red-400 truncate">#{hashtag.name}</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                               {hashtag.usage_count} publication{hashtag.usage_count > 1 ? 's' : ''}
                             </p>
@@ -294,6 +282,7 @@ export default function ExplorePage() {
 
           {activeTab === 'utilisateurs' && (
             <div>
+              {/* ...existing search results with responsive styling... */}
               {isSearching ? (
                 <div className="text-center py-8">
                   <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -304,17 +293,16 @@ export default function ExplorePage() {
                   {searchResults.map((user) => (
                     <div
                       key={user.id}
-                      className="p-4 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors border border-gray-300 dark:border-gray-800"
+                      className="p-3 lg:p-4 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg transition-colors border border-gray-300 dark:border-gray-800"
                     >
                       <div className="flex items-center justify-between">
                         <div 
-                          className="flex items-center space-x-3 flex-1 cursor-pointer"
+                          className="flex items-center space-x-3 flex-1 cursor-pointer min-w-0"
                           onClick={() => {
-                            console.log('Navigation vers profil, user:', user);
                             router.push(`/profile/${user.id}`);
                           }}
                         >
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 flex-shrink-0 border border-gray-400 dark:border-gray-500">
+                          <div className="w-10 lg:w-12 h-10 lg:h-12 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 flex-shrink-0 border border-gray-400 dark:border-gray-500">
                             {user.profilePicture ? (
                               <img
                                 src={user.profilePicture}
@@ -323,7 +311,7 @@ export default function ExplorePage() {
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-gray-900 dark:text-white font-medium">
+                                <span className="text-gray-900 dark:text-white font-medium text-sm lg:text-base">
                                   {user.nickname?.charAt(0).toUpperCase() || '?'}
                                 </span>
                               </div>
@@ -331,24 +319,24 @@ export default function ExplorePage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
-                              <p className="font-medium text-gray-900 dark:text-white truncate">
+                              <p className="font-medium text-gray-900 dark:text-white truncate text-sm lg:text-base">
                                 {user.nickname || 'Utilisateur'}
                               </p>
                             </div>
                             {(user.firstName || user.lastName) && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                              <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 truncate">
                                 {user.firstName || ''} {user.lastName || ''}
                               </p>
                             )}
                             {user.bio && (
-                              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 line-clamp-2">
+                              <p className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 mt-1 line-clamp-2">
                                 {user.bio}
                               </p>
                             )}
                           </div>
                         </div>
                         
-                        {/* Bouton Follow/Unfollow */}
+                        {/* Bouton Follow/Unfollow - Responsive */}
                         {currentUserId && user.id !== currentUserId && (
                           <button
                             onClick={(e) => {
@@ -356,16 +344,16 @@ export default function ExplorePage() {
                               handleFollowToggle(user.id!, followingStates[user.id!] || false);
                             }}
                             disabled={followingLoading[user.id!]}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ml-3 border ${
+                            className={`px-3 lg:px-4 py-1.5 rounded-full text-xs lg:text-sm font-medium transition-colors ml-3 border flex-shrink-0 ${
                               followingStates[user.id!]
                                 ? 'bg-transparent border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-red-600 hover:border-red-600 hover:text-white'
                                 : 'bg-red-500 text-white hover:bg-red-600 border-red-500'
                             } disabled:opacity-50`}
                           >
                             {followingLoading[user.id!] ? (
-                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                              <div className="w-3 lg:w-4 h-3 lg:h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                             ) : followingStates[user.id!] ? (
-                              'Ne plus suivre'
+                              <span className="hidden sm:inline">Ne plus suivre</span>
                             ) : (
                               'Suivre'
                             )}

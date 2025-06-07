@@ -197,45 +197,6 @@ export default function PremiumPage() {
               )}
             </div>
           </div>
-          
-          {/* Section test cards */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 mt-8 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Cartes de test Stripe</h2>
-            <p className="mb-4 text-gray-600 dark:text-gray-300">Utilisez ces numéros de carte pour tester l'intégration de paiement:</p>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-100 dark:bg-gray-800">
-                  <tr>
-                    <th className="px-6 py-3">Numéro de carte</th>
-                    <th className="px-6 py-3">Date d'expiration</th>
-                    <th className="px-6 py-3">CVC</th>
-                    <th className="px-6 py-3">Résultat</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">4242 4242 4242 4242</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">Toute date future</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">Trois chiffres</td>
-                    <td className="px-6 py-4 text-green-600 dark:text-green-400">Paiement réussi</td>
-                  </tr>
-                  <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">4000 0027 6000 3184</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">Toute date future</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">Trois chiffres</td>
-                    <td className="px-6 py-4 text-yellow-600 dark:text-yellow-400">3D Secure requis</td>
-                  </tr>
-                  <tr className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">4000 0000 0000 9995</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">Toute date future</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">Trois chiffres</td>
-                    <td className="px-6 py-4 text-red-600 dark:text-red-400">Paiement refusé</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </div>
     </div>

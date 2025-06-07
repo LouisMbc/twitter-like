@@ -142,12 +142,10 @@ export default function ProfileEditForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Vérifier s'il y a des erreurs
     if (Object.keys(errors).length > 0) {
       return;
     }
 
-    // Validation finale
     if (!formData.nickname || formData.nickname.length < 3) {
       setErrors(prev => ({ ...prev, nickname: 'Le pseudo est requis (minimum 3 caractères)' }));
       return;

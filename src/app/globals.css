@@ -94,56 +94,75 @@
   background-color: rgba(239, 68, 68, 0.05); 
 }
 
+ /* Notification badge styling - Updated to match design */
 .notification-badge {
   position: absolute;
-  top: -6px;
-  left: 12px;
+  top: -8px;
+  right: -8px;
   min-width: 18px;
   height: 18px;
-  padding: 0 5px;
+  padding: 0 4px;
   background: #ef4444;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: bold;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
   border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   box-shadow: 0 0 0 2px var(--background);
+  border: 2px solid var(--background);
 }
 
-/* Styles spécifiques pour la page d'authentification */
+/* Badge animation when appearing */
+@keyframes badge-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.notification-badge {
+  animation: badge-appear 0.3s ease-out;
+}
+
+.notification-badge[data-count="0"] {
+  display: none;
+}
+
 .auth-logo {
   filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
 }
 
-/* Amélioration du style des boutons d'authentification */
 .auth-button-hover:hover {
   transition: all 0.2s ease;
   transform: translateY(-2px);
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .hide-scrollbar::-webkit-scrollbar,
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .hide-scrollbar,
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* Styles pour les stories */
 .story-container {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Animation pour la barre de progression des stories */
 .story-progress {
   animation: progress-fill 1s linear;
 }
@@ -153,12 +172,10 @@
   100% { width: 100%; }
 }
 
-/* Optimisations pour réduire les lags de navigation */
 .page-transition {
   transition: opacity 0.15s ease-out;
 }
 
-/* Spinner plus rapide */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -168,7 +185,6 @@
   animation: spin 0.8s linear infinite;
 }
 
-/* Transitions plus rapides pour éviter les délais */
 * {
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }

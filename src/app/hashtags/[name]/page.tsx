@@ -111,7 +111,7 @@ export default function HashtagPage() {
             } else {
                 await hashtagService.blockHashtag(profileId, hashtag.id);
                 setIsBlocked(true);
-                setIsSubscribed(false); // Se désabonner automatiquement si on bloque
+                setIsSubscribed(false);
             }
         } catch (error) {
             console.error('Erreur lors du blocage:', error);

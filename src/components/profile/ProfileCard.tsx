@@ -181,7 +181,7 @@ export default function ProfileCard({
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-white">{profile.nickname}</h1>
+              <h1 className="text-3xl font-bold text-white">@{profile.nickname}</h1>
               <p className="text-gray-400 text-lg">
                 {profile.firstName} {profile.lastName}
               </p>

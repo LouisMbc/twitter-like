@@ -52,21 +52,16 @@ export default function MessagesPage() {
   // Fonction pour charger les abonnements
   const loadFollowings = async () => {
     if (!profile?.id) {
-      console.log('Pas de profil trouvé:', profile);
       return;
     }
     
-    console.log('Chargement des abonnements pour le profil:', profile.id);
     setLoadingFollowings(true);
     
     try {
-      // Récupérer les abonnements directement depuis la table follows
       const { data: followsData, error: followsError } = await supabase
         .from('follows')
         .select('*')
         .eq('follower_id', profile.id);
-      
-      console.log('Résultat de la requête follows:', { followsData, followsError });
       
       if (followsError) {
         console.error('Erreur lors du chargement des abonnements:', followsError);
@@ -74,12 +69,8 @@ export default function MessagesPage() {
       }
       
       if (followsData && followsData.length > 0) {
-        console.log('Abonnements bruts trouvés:', followsData);
-          // Récupérer les profils des utilisateurs suivis
         const followingIds = followsData.map(follow => follow.following_id);
-        console.log('IDs des utilisateurs suivis:', followingIds);
         
-        // Essayer d'abord avec 'Profile' puis 'profiles'
         let profilesData = null;
         let profilesError = null;
         
@@ -89,7 +80,6 @@ export default function MessagesPage() {
           .in('id', followingIds);
           
         if (profileError) {
-          console.log('Tentative avec table profiles (minuscule) pour les abonnements...');
           const { data: profilesDataLower, error: profilesErrorLower } = await supabase
             .from('profiles')
             .select('*')
@@ -101,8 +91,6 @@ export default function MessagesPage() {
           profilesData = profileData;
           profilesError = profileError;
         }
-        
-        console.log('Résultat de la requête profiles:', { profilesData, profilesError });
         
         if (profilesError) {
           console.error('Erreur lors du chargement des profils:', profilesError);
@@ -116,11 +104,9 @@ export default function MessagesPage() {
             profilePicture: profile.profilePicture || profile.profile_picture || profile.avatar_url
           }));
           
-          console.log('Abonnements formatés:', followingsWithProfiles);
           setFollowings(followingsWithProfiles);
         }
       } else {
-        console.log('Aucun abonnement trouvé dans la base de données');
         setFollowings([]);
       }
     } catch (error) {
@@ -307,18 +293,21 @@ export default function MessagesPage() {
 
       <Header />
 
-      {/* Main content */}
-      <div className="ml-64 flex-1 relative z-10 flex">
-        {/* Left Panel - Conversations */}
-        <div className="w-80 border-r border-gray-200/50 dark:border-gray-800/50 flex flex-col h-screen">
-          {/* Header Messages sans bouton thème */}
+      {/* Main content - Responsive layout */}
+      <div className="lg:ml-64 flex-1 relative z-10 flex pt-16 lg:pt-0 pb-20 lg:pb-0">
+        {/* Left Panel - Conversations - Hidden on mobile when chat is open */}
+        <div className={`w-full lg:w-80 border-r border-gray-200/50 dark:border-gray-800/50 flex flex-col h-screen ${selectedUserId ? 'hidden lg:flex' : 'flex'}`}>
+          {/* Header Messages */}
           <div className="sticky top-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 p-4 flex items-center justify-between transition-colors duration-300">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Messages</h1>
             <div className="flex items-center space-x-2">
               <button className="p-2 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 rounded-full transition-colors">
                 <Cog6ToothIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
-              <button className="p-2 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 rounded-full transition-colors">
+              <button 
+                onClick={handleNewMessage}
+                className="p-2 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 rounded-full transition-colors"
+              >
                 <PencilSquareIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
@@ -344,8 +333,8 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {/* Right Panel - Message Area */}
-        <div className="flex-1 flex flex-col bg-gray-950/40">
+        {/* Right Panel - Message Area - Full width on mobile when chat is open */}
+        <div className={`flex-1 flex flex-col bg-gray-950/40 ${selectedUserId ? 'flex' : 'hidden lg:flex'}`}>
           {selectedUserId && currentContact ? (
             <>
               {/* Conversation header */}
@@ -358,7 +347,7 @@ export default function MessagesPage() {
                     <ArrowLeftIcon className="w-5 h-5" />
                   </button>
                   <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 mr-3">
+                    <div className="w-8 lg:w-10 h-8 lg:h-10 rounded-full overflow-hidden bg-gray-600 mr-3">
                       {currentContact.profilePicture ? (
                         <img
                           src={currentContact.profilePicture}
@@ -366,13 +355,13 @@ export default function MessagesPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white font-medium">
+                        <div className="w-full h-full flex items-center justify-center text-white font-medium text-sm">
                           {currentContact.nickname.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div>
-                      <h2 className="font-semibold text-white">{currentContact.nickname}</h2>
+                      <h2 className="font-semibold text-white text-sm lg:text-base">{currentContact.nickname}</h2>
                       <p className="text-xs text-gray-400">En ligne</p>
                     </div>
                   </div>
@@ -382,8 +371,8 @@ export default function MessagesPage() {
                 </button>
               </div>
 
-              {/* Messages area */}
-              <div className="flex-1 overflow-y-auto p-4">
+              {/* Messages area - Responsive padding */}
+              <div className="flex-1 overflow-y-auto p-2 lg:p-4">
                 {checkingPermissions || messagesLoading ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
@@ -392,39 +381,39 @@ export default function MessagesPage() {
                     </div>
                   </div>
                 ) : !canMessageUser ? (
-                  <div className="text-center p-8">
-                    <div className="bg-gray-900/60 rounded-xl p-6 border border-gray-800/50">
+                  <div className="text-center p-4 lg:p-8">
+                    <div className="bg-gray-900/60 rounded-xl p-4 lg:p-6 border border-gray-800/50">
                       <div className="mb-4">
-                        <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-10 lg:w-12 h-10 lg:h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 15v2m0 0v2m0-2h2m-2 0H10m0 0V9a3 3 0 116 0v6z" />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-medium text-white mb-2">Impossible d'envoyer des messages</h3>
-                      <p className="text-gray-400">Vous devez vous suivre mutuellement pour pouvoir communiquer.</p>
+                      <h3 className="text-base lg:text-lg font-medium text-white mb-2">Impossible d'envoyer des messages</h3>
+                      <p className="text-gray-400 text-sm lg:text-base">Vous devez vous suivre mutuellement pour pouvoir communiquer.</p>
                     </div>
                   </div>
                 ) : currentMessages.length === 0 ? (
-                  <div className="text-center p-8">
+                  <div className="text-center p-4 lg:p-8">
                     <div className="mb-4">
-                      <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-12 lg:w-16 h-12 lg:h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.418 8-9.293 8.293a1 1 0 01-.607-.094L7 18l-2.293.293A1 1 0 014 17V9a8 8 0 018-8c4.418 0 8 3.582 8 8z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-medium text-white mb-2">Aucun message</h3>
-                    <p className="text-gray-400 mb-4">
+                    <h3 className="text-base lg:text-lg font-medium text-white mb-2">Aucun message</h3>
+                    <p className="text-gray-400 mb-4 text-sm lg:text-base">
                       Commencez la conversation en envoyant le premier message !
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3 pb-4">
+                  <div className="space-y-2 lg:space-y-3 pb-4">
                     {currentMessages.map((msg) => (
                       <div 
                         key={msg.id} 
-                        className={`flex items-start space-x-3 ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'}`}
+                        className={`flex items-start space-x-2 lg:space-x-3 ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'}`}
                       >
                         {msg.sender_id !== profile?.id && (
                           <div className="flex-shrink-0">
-                            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600">
+                            <div className="w-6 lg:w-8 h-6 lg:h-8 rounded-full overflow-hidden bg-gray-600">
                               {currentContact?.profilePicture ? (
                                 <img
                                   src={currentContact.profilePicture}
@@ -442,13 +431,13 @@ export default function MessagesPage() {
                         
                         <div className={`flex flex-col ${msg.sender_id === profile?.id ? 'items-end' : 'items-start'}`}>
                           <div 
-                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl relative ${
+                            className={`max-w-xs lg:max-w-md px-3 lg:px-4 py-2 rounded-2xl relative ${
                               msg.sender_id === profile?.id 
                                 ? 'bg-red-500 text-white' 
                                 : 'bg-gray-700 text-white'
                             }`}
                           >
-                            <p className="break-words">{msg.content}</p>
+                            <p className="break-words text-sm lg:text-base">{msg.content}</p>
                           </div>
                           <p className="text-xs text-gray-500 mt-1 px-2">
                             {new Date(msg.created_at).toLocaleTimeString([], { 
@@ -461,7 +450,7 @@ export default function MessagesPage() {
 
                         {msg.sender_id === profile?.id && (
                           <div className="flex-shrink-0">
-                            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600">
+                            <div className="w-6 lg:w-8 h-6 lg:h-8 rounded-full overflow-hidden bg-gray-600">
                               {profile?.profilePicture ? (
                                 <img
                                   src={profile.profilePicture}
@@ -483,16 +472,16 @@ export default function MessagesPage() {
                 )}
               </div>
 
-              {/* Message input */}
+              {/* Message input - Responsive */}
               {canMessageUser && (
-                <div className="border-t border-gray-800/50 p-4 bg-gray-950/80 backdrop-blur-sm">
-                  <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
+                <div className="border-t border-gray-800/50 p-3 lg:p-4 bg-gray-950/80 backdrop-blur-sm">
+                  <form onSubmit={handleSendMessage} className="flex items-end space-x-2 lg:space-x-3">
                     <div className="flex-1">
                       <textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Écrivez votre message..."
-                        className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 resize-none max-h-32"
+                        className="w-full px-3 lg:px-4 py-2 lg:py-3 bg-gray-900/60 border border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 resize-none max-h-32 text-sm lg:text-base"
                         disabled={sendingMessage}
                         rows={1}
                         onKeyDown={(e) => {
@@ -505,7 +494,7 @@ export default function MessagesPage() {
                         }}
                         style={{
                           height: 'auto',
-                          minHeight: '48px'
+                          minHeight: '40px'
                         }}
                         onInput={(e) => {
                           const target = e.target as HTMLTextAreaElement;
@@ -516,7 +505,7 @@ export default function MessagesPage() {
                     </div>
                     <button
                       type="submit"
-                      className={`p-3 rounded-full transition-all duration-200 ${
+                      className={`p-2 lg:p-3 rounded-full transition-all duration-200 ${
                         message.trim() && !sendingMessage
                           ? 'bg-red-600 hover:bg-red-700 text-white' 
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -524,9 +513,9 @@ export default function MessagesPage() {
                       disabled={sendingMessage || !message.trim()}
                     >
                       {sendingMessage ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 lg:w-5 h-4 lg:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       ) : (
-                        <PaperAirplaneIcon className="w-5 h-5" />
+                        <PaperAirplaneIcon className="w-4 lg:w-5 h-4 lg:h-5" />
                       )}
                     </button>
                   </form>
@@ -534,18 +523,17 @@ export default function MessagesPage() {
               )}
             </>          ) : (
             /* État par défaut - Sélectionner un message */
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-md px-8">
+            <div className="flex items-center justify-center h-full p-4">
+              <div className="text-center max-w-md">
                 <div className="mb-8">
-                  {/* Icône de message avec style similaire à l'image */}
-                  <div className="w-20 h-20 bg-gray-800/20 rounded-full flex items-center justify-center mx-auto mb-8 border border-gray-700/30">
-                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 lg:w-20 h-16 lg:h-20 bg-gray-800/20 rounded-full flex items-center justify-center mx-auto mb-8 border border-gray-700/30">
+                    <svg className="w-8 lg:w-10 h-8 lg:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
                 </div>
                 
-                <h2 className="text-2xl font-bold mb-4 text-white">
+                <h2 className="text-xl lg:text-2xl font-bold mb-4 text-white">
                   Sélectionnez un message.
                 </h2>
                 <p className="text-gray-400 mb-8 leading-relaxed text-sm">
@@ -554,7 +542,7 @@ export default function MessagesPage() {
                 
                 <button 
                   onClick={handleNewMessage}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors text-sm"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 lg:px-6 py-2 lg:py-2.5 rounded-full font-medium transition-colors text-sm"
                 >
                   Nouveau message
                 </button>
@@ -564,13 +552,13 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* Modal Nouveau Message */}
+      {/* Modal Nouveau Message - Responsive */}
       {showNewMessageModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-2xl border border-gray-700/50 w-full max-w-md mx-4 max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl border border-gray-700/50 w-full max-w-md max-h-[80vh] flex flex-col">
             {/* Header du modal */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
-              <h3 className="text-xl font-bold text-white">Nouveau message</h3>
+            <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-700/50">
+              <h3 className="text-lg lg:text-xl font-bold text-white">Nouveau message</h3>
               <button
                 onClick={() => {
                   setShowNewMessageModal(false);
@@ -578,7 +566,7 @@ export default function MessagesPage() {
                 }}
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 lg:w-6 h-5 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -595,7 +583,7 @@ export default function MessagesPage() {
                   placeholder="Rechercher un abonnement"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-800/60 border border-gray-600/50 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-800/60 border border-gray-600/50 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all text-sm lg:text-base"
                 />
               </div>
             </div>
@@ -607,13 +595,13 @@ export default function MessagesPage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
                 </div>
               ) : filteredFollowings.length === 0 ? (
-                <div className="text-center p-8">
+                <div className="text-center p-6 lg:p-8">
                   <div className="mb-4">
-                    <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-10 lg:w-12 h-10 lg:h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <p className="text-gray-400">
+                  <p className="text-gray-400 text-sm lg:text-base">
                     {searchQuery ? 'Aucun abonnement trouvé' : 'Vous ne suivez personne encore'}
                   </p>
                 </div>
@@ -625,7 +613,7 @@ export default function MessagesPage() {
                       onClick={() => handleSelectFollowing(following.id)}
                       className="w-full flex items-center p-3 hover:bg-gray-800/50 rounded-xl transition-colors text-left"
                     >
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 mr-3 flex-shrink-0">
+                      <div className="w-8 lg:w-10 h-8 lg:h-10 rounded-full overflow-hidden bg-gray-600 mr-3 flex-shrink-0">
                         {following.profilePicture ? (
                           <img
                             src={following.profilePicture}
@@ -633,14 +621,14 @@ export default function MessagesPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white font-medium">
+                          <div className="w-full h-full flex items-center justify-center text-white font-medium text-sm">
                             {following.nickname.charAt(0).toUpperCase()}
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-white truncate">{following.nickname}</p>
-                        <p className="text-sm text-gray-400">Démarrer une conversation</p>
+                        <p className="font-medium text-white truncate text-sm lg:text-base">{following.nickname}</p>
+                        <p className="text-xs lg:text-sm text-gray-400">Démarrer une conversation</p>
                       </div>
                     </button>
                   ))}

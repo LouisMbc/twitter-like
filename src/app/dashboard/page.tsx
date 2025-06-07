@@ -37,7 +37,6 @@ export default function DashboardPage() {
     if (node) observer.current.observe(node);
   }, [loading, hasMore, loadMoreTweets]);
 
-  // Vérifier que l'utilisateur est authentifié plus rapidement
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -54,39 +53,31 @@ export default function DashboardPage() {
     checkAuth();
   }, [router]);
 
-  // Fonction pour ouvrir une story spécifique
   const handleOpenStory = (userId: string, storyIndex: number = 0) => {
     setSelectedStoryUserId(userId);
     setSelectedStoryIndex(storyIndex);
     setIsStoryOpen(true);
-    // Empêcher le scroll du body
     document.body.style.overflow = 'hidden';
   };
 
-  // Fonction pour fermer la story
   const handleCloseStory = () => {
     setSelectedStoryUserId(null);
     setSelectedStoryIndex(null);
     setIsStoryOpen(false);
-    // Restaurer le scroll du body
     document.body.style.overflow = 'unset';
   };
 
-  // Nettoyer le style du body au démontage du composant
   useEffect(() => {
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, []);
 
-  // Fonction améliorée pour gérer la création d'un nouveau tweet
   const handleTweetSuccess = async () => {
     try {
       setIsRefreshing(true);
-      // Attendre un petit délai pour s'assurer que le tweet est bien enregistré
       await new Promise(resolve => setTimeout(resolve, 500));
       await refreshFeed();
-      console.log('Feed actualisé après création du tweet');
     } catch (error) {
       console.error('Erreur lors de l\'actualisation du feed:', error);
     } finally {
@@ -94,7 +85,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Afficher le contenu même pendant le chargement pour éviter l'écran blanc
   if (!authChecked) {
     return (
       <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-gray-100">

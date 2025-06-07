@@ -84,8 +84,6 @@ export const usePremium = () => {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Statut de la réponse:', response.status);
-        console.error('Texte d\'erreur complet:', errorText);
         throw new Error(`Erreur lors de la création de la session: ${response.statusText}`);
       }
       

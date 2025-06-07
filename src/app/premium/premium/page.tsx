@@ -12,7 +12,6 @@ export default function SuccessPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Vérifier que la session ID est présente
     const sessionId = searchParams.get('session_id');
     
     if (!sessionId) {
@@ -20,7 +19,6 @@ export default function SuccessPage() {
       return;
     }
     
-    // Vérifier le statut du paiement auprès de Stripe
     const verifyPayment = async () => {
       try {
         const response = await fetch('/api/stripe/verify-session', {
@@ -32,19 +30,16 @@ export default function SuccessPage() {
         const { success, error } = await response.json();
         
         if (!success) {
-          console.error('Erreur lors de la vérification du paiement:', error);
           router.push('/premium?error=payment_verification_failed');
           return;
         }
         
         setLoading(false);
         
-        // Rediriger vers la page premium après un délai
         setTimeout(() => {
           router.push('/premium');
         }, 5000);
       } catch (err) {
-        console.error('Erreur:', err);
         router.push('/premium?error=unexpected_error');
       }
     };

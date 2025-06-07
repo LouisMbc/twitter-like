@@ -26,11 +26,9 @@ export const useProfileEdit = () => {
   async function loadProfile() {
     try {
       setLoading(true);
-      console.log("Début du chargement du profil");
 
       const sessionResult = await authService.getSession();
       if (!sessionResult.session) {
-        console.log("Aucune session trouvée, redirection vers la page de connexion");
         router.push('/auth/login');
         return;
       }
@@ -62,11 +60,17 @@ export const useProfileEdit = () => {
       } catch (err) {
         console.error('Exception lors de la vérification de l\'abonnement:', err);
       }
+      
+      // Nettoyer le nickname s'il contient un @
+      const cleanNickname = profile.nickname?.startsWith('@') 
+        ? profile.nickname.substring(1) 
+        : profile.nickname || '';
+      
       setFormData(prev => ({
         ...prev,
         lastName: profile.lastName || '',
         firstName: profile.firstName || '',
-        nickname: profile.nickname || '',
+        nickname: cleanNickname,
         bio: profile.bio || '',
         website: profile.website || '',
         location: profile.location || '',
@@ -85,12 +89,14 @@ export const useProfileEdit = () => {
   const validateForm = (data: ProfileForm) => {
     const errors: string[] = [];
     
-    // Validation du pseudo
-    if (!data.nickname.trim()) {
+    // Nettoyer et valider le pseudo
+    const cleanNickname = data.nickname.replace(/^@+/, '').trim();
+    
+    if (!cleanNickname) {
       errors.push('Le pseudo est requis');
-    } else if (data.nickname.length < 2) {
+    } else if (cleanNickname.length < 2) {
       errors.push('Le pseudo doit contenir au moins 2 caractères');
-    } else if (data.nickname.length > 50) {
+    } else if (cleanNickname.length > 50) {
       errors.push('Le pseudo ne peut pas dépasser 50 caractères');
     }
     
@@ -155,7 +161,7 @@ export const useProfileEdit = () => {
       await profileService.updateProfile(sessionResult.session.user.id, {
         lastName: formData.lastName.trim(),
         firstName: formData.firstName.trim(),
-        nickname: formData.nickname.trim(),
+        nickname: formData.nickname.replace(/^@+/, '').trim(), // Nettoyer le nickname
         bio: formData.bio.trim(),
         profilePicture: profilePictureUrl,
       });

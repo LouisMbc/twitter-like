@@ -38,10 +38,19 @@ export const useNotifications = () => {
       const { data, error } = await notificationService.getNotifications(profile.id);
       if (error) throw error;
 
-      setNotifications((data || []) as Notification[]);
+      // Nettoyer les nicknames pour éviter les @ doubles
+      const cleanedData = (data || []).map(notification => ({
+        ...notification,
+        sender: notification.sender ? {
+          ...notification.sender,
+          nickname: notification.sender.nickname?.replace(/^@+/, '') || ''
+        } : null
+      }));
+
+      setNotifications(cleanedData as Notification[]);
       
       // Mettre à jour le compteur de notifications non lues
-      const unreadNotifications = data ? data.filter(notif => !notif.is_read) : [];
+      const unreadNotifications = cleanedData.filter(notif => !notif.is_read);
       setUnreadCount(unreadNotifications.length);
     } catch (err) {
       console.error('Erreur lors du chargement des notifications:', err);

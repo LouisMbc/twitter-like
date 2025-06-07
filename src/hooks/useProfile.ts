@@ -62,20 +62,17 @@ export const useProfile = () => {
     }
   };
 
-  // Utilisez useCallback pour éviter les re-créations inutiles de la fonction
   const loadProfile = useCallback(async () => {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        console.info('Aucune session utilisateur trouvée - utilisateur non connecté');
         setProfile(null);
         setLoading(false);
         return;
       }
 
-      // Récupérer les informations du profil avec requête optimisée
       const { data: profileData, error: profileError } = await supabase
         .from('Profile')
         .select('id, user_id, nickname, firstName, lastName, bio, profilePicture, created_at, follower_count, following_count, certified, is_premium, premium_features')
@@ -95,13 +92,16 @@ export const useProfile = () => {
       }
 
       if (!profileData) {
-        console.warn('Aucune donnée de profil reçue');
         setProfile(null);
         setLoading(false);
         return;
       }
 
-      // Afficher immédiatement le profil
+      // Nettoyer le nickname s'il contient un @
+      if (profileData.nickname && profileData.nickname.startsWith('@')) {
+        profileData.nickname = profileData.nickname.substring(1);
+      }
+
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
       setFollowersCount(profileData.follower_count || 0);

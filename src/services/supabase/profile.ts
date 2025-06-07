@@ -113,22 +113,5 @@ export const profileService = {
       .single();
     
     return { data, error };
-  },
-
-  updatePremiumStatus: async (userId: string, isPremium: boolean) => {
-    const { error } = await supabase
-      .from('Profile')
-      .update({ 
-        is_premium: isPremium,
-        premium_features: { unlimited_tweets: true, no_ads: true } // Ajoutez les fonctionnalités premium ici
-      })
-      .eq('user_id', userId);
-    
-    if (error) {
-      console.error('Erreur lors de la mise à jour du statut premium:', error);
-      throw error;
-    }
-    
-    return true;
   }
 };

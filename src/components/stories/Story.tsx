@@ -152,23 +152,19 @@ const Story = ({
     };
   }, [currentStory, goToPrevStory, goToNextStory, handleClose, isClient]);
 
-  // Fonction pour gérer la suppression
   const handleStoryDeleted = () => {
     if (currentStoryIndex !== null) {
-      // Si c'était la dernière story, fermer la vue
       if (filteredStories.length <= 1) {
         setCurrentStoryIndex(null);
       } 
-      // Sinon passer à la story suivante ou revenir à la précédente
       else if (currentStoryIndex >= filteredStories.length - 1) {
         setCurrentStoryIndex(currentStoryIndex - 1);
       }
       
-      refreshStories(); // Recharger la liste des stories
+      refreshStories();
     }
   };
 
-  // Ne rien afficher si on n'est pas encore côté client pour éviter l'erreur d'hydration
   if (!isClient) {
     return null;
   }
@@ -208,7 +204,6 @@ const Story = ({
                         alt={firstStory.Profile.nickname || 'Profile'}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          console.log('Erreur chargement photo de profil');
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
@@ -256,7 +251,6 @@ const Story = ({
                     alt={filteredStories[0].Profile.nickname || 'Profile'}
                     className="w-full h-full rounded-full object-cover"
                     onError={(e) => {
-                      console.log('Erreur chargement photo de profil header');
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />

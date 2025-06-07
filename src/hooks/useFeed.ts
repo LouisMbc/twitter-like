@@ -13,12 +13,10 @@ export default function useFeed() {
   const TWEETS_PER_PAGE = 10;
 
   const fetchFeed = async (pageToLoad = 0) => {
-    console.log(`--- CHARGEMENT DU FEED (Page ${pageToLoad}) ---`);
     try {
       setLoading(true);
       
       // 1. Obtenir l'identifiant de l'utilisateur connecté
-      console.log('1. Récupération de la session utilisateur...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -30,10 +28,8 @@ export default function useFeed() {
         console.error('Pas de session trouvée');
         throw new Error("Utilisateur non authentifié");
       }
-      console.log('Session utilisateur trouvée, ID:', session.user.id);
       
       // 2. Récupérer le profil de l'utilisateur
-      console.log('2. Récupération du profil utilisateur...');
       const { data: profileData, error: profileError } = await supabase
         .from('Profile')
         .select('id')
@@ -46,10 +42,8 @@ export default function useFeed() {
         console.error('Erreur de profil:', profileError);
         throw profileError;
       }
-      console.log('Profil trouvé, ID:', profileData.id);
 
       // 3. Récupérer la liste des utilisateurs suivis
-      console.log('3. Récupération des utilisateurs suivis...');
       const { data: followingData, error: followingError } = await supabase
         .from('Following')
         .select('following_id')
@@ -63,8 +57,6 @@ export default function useFeed() {
       // 4. Préparer un tableau avec les IDs des utilisateurs suivis + l'utilisateur lui-même
       const followingIds = followingData?.map(item => item.following_id) || [];
       const userIds = [...followingIds, profileData.id];
-      console.log('Nombre d\'utilisateurs suivis:', followingIds.length);
-      console.log('Liste des utilisateurs (suivis + soi-même):', userIds);
       
       // 5. Si l'utilisateur ne suit personne, afficher un message approprié
       if (followingIds.length === 0) {
@@ -72,7 +64,6 @@ export default function useFeed() {
       }
       
       // 6. Récupérer tous les tweets des utilisateurs suivis + les siens
-      console.log('6. Récupération des tweets...');
       if (userIds.length === 0) {
         console.error('Aucun ID d\'utilisateur pour récupérer les tweets');
         setTweets([]);
@@ -99,19 +90,16 @@ export default function useFeed() {
         .order('published_at', { ascending: false })
         .range(pageToLoad * TWEETS_PER_PAGE, (pageToLoad + 1) * TWEETS_PER_PAGE - 1);
 
-      console.log('Requête préparée:', query);
-
-      const { data: allTweets, error: tweetsError } = await query;
+      const { data: initialTweets, error: tweetsError } = await query;
       
       if (tweetsError) {
         console.error('Erreur lors de la récupération des tweets:', tweetsError);
         throw tweetsError;
       }
       
-      console.log('Tweets récupérés:', allTweets?.length || 0);
+      let allTweets = initialTweets;
       
       // 7. Récupérer les tweets des hashtags suivis
-      console.log('7. Récupération des tweets des hashtags suivis...');
       const { data: hashtagSubscriptions } = await supabase
         .from('hashtag_subscriptions') 
         .select('hashtag_id')
@@ -145,7 +133,7 @@ export default function useFeed() {
         if (hashtagTweets) {
           const formattedHashtagTweets = hashtagTweets
             .filter(item => item.Tweets)
-            .map(item => item.Tweets);
+            .map(item => item.Tweets as any);
           
           // Fusionner avec les tweets existants et supprimer les doublons
           const allTweetsCombined = [...(allTweets || []), ...formattedHashtagTweets];
@@ -179,14 +167,9 @@ export default function useFeed() {
         return;
       }
       
-      // Debugger le premier tweet pour voir sa structure
-      console.log('Structure du premier tweet:', JSON.stringify(allTweets[0], null, 2));
-
       // Transformer les données pour correspondre à votre interface Tweet
-      console.log('7. Transformation des données...');
       try {
         const formattedTweets = allTweets.map((tweet, index) => {
-          console.log(`Traitement du tweet ${index + 1}/${allTweets.length}, ID: ${tweet.id}`);
           
           // Vérifier si author est un tableau et prendre le premier élément si c'est le cas
           let author;
@@ -216,8 +199,6 @@ export default function useFeed() {
           };
         });
         
-        console.log('Tweets formatés avec succès:', formattedTweets.length);
-
         // Pour chaque retweet, récupérer le tweet original
         // Typer la fonction d'enrichissement pour les retweets
         const enrichTweetsWithOriginals = async (tweets: Tweet[]): Promise<Tweet[]> => {
@@ -272,7 +253,6 @@ export default function useFeed() {
           setTweets(prev => [...prev, ...enrichedTweets]);
         }
         
-        // Déterminer s'il y a plus de tweets à charger
         setHasMore(enrichedTweets.length === TWEETS_PER_PAGE);
         setPage(pageToLoad);
       } catch (formatError) {
@@ -280,14 +260,9 @@ export default function useFeed() {
         throw formatError;
       }
       
-      console.log('--- CHARGEMENT DU FEED TERMINÉ AVEC SUCCÈS ---');
     } catch (err) {
       console.error('Erreur lors du chargement du feed:', err);
-      console.error('Type d\'erreur:', typeof err);
-      console.error('Message d\'erreur:', err instanceof Error ? err.message : 'Erreur inconnue');
-      console.error('Stack trace:', err instanceof Error ? err.stack : 'Pas de stack trace disponible');
       setError(err instanceof Error ? err.message : 'Erreur lors du chargement du feed');
-      setTweets([]);
     } finally {
       setLoading(false);
     }

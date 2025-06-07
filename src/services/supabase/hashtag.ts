@@ -150,7 +150,7 @@ export const hashtagService = {
   // Débloquer un hashtag
   unblockHashtag: async (profileId: string, hashtagId: string) => {
     const { error } = await supabase
-      .from('hashtag_blocks') // CORRIGÉ : minuscule avec underscore
+      .from('hashtag_blocks')
       .delete()
       .eq('profile_id', profileId)
       .eq('hashtag_id', hashtagId);

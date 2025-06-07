@@ -110,25 +110,17 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         .from('tweets')
         .getPublicUrl(fileName);
       
-      console.log('[TweetComposer] URL publique obtenue:', urlData.publicUrl);
-      if (!urlData.publicUrl) {
-        console.error('[TweetComposer] L\'URL publique est vide pour:', fileName);
-      }
       return urlData.publicUrl;
     });
 
-    // Attendre que toutes les promesses de téléversement soient résolues
     const urls = await Promise.all(uploadPromises);
-    // Filtrer les URLs nulles si le téléversement a échoué pour certaines images
     const validUrls = urls.filter(url => url !== null) as string[];
-    console.log('[TweetComposer] URLs valides après téléversement:', validUrls);
     return validUrls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Test d'extraction des hashtags
     const hashtagNames = hashtagService.extractHashtags(content);
     console.log('🏷️ Hashtags détectés dans le contenu:', content);
     console.log('🏷️ Hashtags extraits:', hashtagNames);

@@ -1,22 +1,17 @@
-// src/services/stripe.ts
 import Stripe from 'stripe';
-import  supabase  from '@/lib/supabase';
+import supabase from '@/lib/supabase';
 
-// Vérifiez que la clé API Stripe est définie
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY est manquant');
 }
 
-// Initialisation de l'instance Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-05-28.basil', // Utilisez la dernière version de l'API
+  apiVersion: '2025-05-28.basil',
 });
 
 export const stripeService = {
-  // Créer un client Stripe pour l'utilisateur
   createCustomer: async (profileId: string, email: string, name: string) => {
     try {
-      // Vérifier si le client existe déjà
       const { data: existingCustomer } = await supabase
         .from('Subscriptions')
         .select('customer_id')
@@ -27,14 +22,12 @@ export const stripeService = {
         return { customerId: existingCustomer.customer_id };
       }
 
-      // Créer un nouveau client Stripe
       const customer = await stripe.customers.create({
         email,
         name,
         metadata: { profileId }
       });
 
-      // Enregistrer l'ID client dans Supabase
       await supabase
         .from('Subscriptions')
         .insert({
@@ -51,10 +44,8 @@ export const stripeService = {
     }
   },
 
-  // Créer une session de paiement
   createCheckoutSession: async (profileId: string, priceId: string, customerId: string) => {
     try {
-      // Créer une session de checkout
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ['card'],
@@ -79,7 +70,6 @@ export const stripeService = {
     }
   },
 
-  // Récupérer les détails d'un abonnement
   getSubscription: async (subscriptionId: string) => {
     try {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -90,7 +80,6 @@ export const stripeService = {
     }
   },
 
-  // Annuler un abonnement
   cancelSubscription: async (subscriptionId: string) => {
     try {
       const subscription = await stripe.subscriptions.update(subscriptionId, {
@@ -103,7 +92,6 @@ export const stripeService = {
     }
   },
 
-  // Réactiver un abonnement annulé
   reactivateSubscription: async (subscriptionId: string) => {
     try {
       const subscription = await stripe.subscriptions.update(subscriptionId, {

@@ -18,80 +18,15 @@ export const mentionService = {
   createMentionNotifications: async (tweetId: string, authorId: string, mentions: string[]) => {
     if (mentions.length === 0) return;
 
-    try {
-      // Récupérer les IDs des utilisateurs mentionnés
-      const { data: mentionedUsers, error: usersError } = await supabase
-        .from('Profile')
-        .select('id, nickname')
-        .in('nickname', mentions);
-
-      if (usersError) throw usersError;
-
-      if (mentionedUsers && mentionedUsers.length > 0) {
-        // Créer une notification pour chaque utilisateur mentionné
-        const notifications = mentionedUsers
-          .filter(user => user.id !== authorId) // Ne pas notifier l'auteur
-          .map(user => ({
-            user_id: user.id,
-            sender_id: authorId,
-            content_id: tweetId,
-            content_type: 'tweet',
-            type: 'mention',
-            message: `vous a mentionné dans un tweet`
-          }));
-
-        if (notifications.length > 0) {
-          const { error: notifError } = await supabase
-            .from('Notifications')
-            .insert(notifications);
-
-          if (notifError) throw notifError;
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors de la création des notifications de mention:', error);
-      throw error;
-    }
+    // Ne plus créer de notifications automatiques pour les mentions
+    console.log('Mentions détectées:', mentions, 'mais notifications désactivées');
+    return;
   },
 
   // Créer des notifications pour les mentions dans les commentaires
   createCommentMentionNotifications: async (commentId: string, tweetId: string, authorId: string, mentions: string[]) => {
     if (mentions.length === 0) return;
-
-    try {
-      // Récupérer les IDs des utilisateurs mentionnés
-      const { data: mentionedUsers, error: usersError } = await supabase
-        .from('Profile')
-        .select('id, nickname')
-        .in('nickname', mentions);
-
-      if (usersError) throw usersError;
-
-      if (mentionedUsers && mentionedUsers.length > 0) {
-        // Créer une notification pour chaque utilisateur mentionné
-        const notifications = mentionedUsers
-          .filter(user => user.id !== authorId) // Ne pas notifier l'auteur
-          .map(user => ({
-            user_id: user.id,
-            sender_id: authorId,
-            content_id: commentId,
-            content_type: 'comment',
-            type: 'mention',
-            message: `vous a mentionné dans un commentaire`
-          }));
-
-        if (notifications.length > 0) {
-          const { error: notifError } = await supabase
-            .from('Notifications')
-            .insert(notifications);
-
-          if (notifError) throw notifError;
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors de la création des notifications de mention:', error);
-      throw error;
-    }
+    return;
   },
 
   // Rechercher des utilisateurs pour l'autocomplétion
@@ -104,6 +39,17 @@ export const mentionService = {
         .limit(limit);
 
       if (error) throw error;
+      
+      // Nettoyer les nicknames pour éviter les @ doubles
+      if (data) {
+        data.forEach(user => {
+          if (user.nickname) {
+            // Supprimer tous les @ en début de nickname
+            user.nickname = user.nickname.replace(/^@+/, '');
+          }
+        });
+      }
+      
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
