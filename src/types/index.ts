@@ -53,7 +53,8 @@ export interface Profile {
   lastName: string | null;  // text
   nickname: string | null;  // text
   bio: string | null;       // text
-  profilePicture: string | null; // text (URL de l'image)
+  profilePicture?: string | null; // text (URL de l'image)
+  coverPicture?: string | null;   // text (URL de l'image de couverture)
   certified: boolean;       // boolean
   follower_count: number;   // integer
   following_count: number;  // integer
@@ -73,7 +74,6 @@ export interface ProfilePageData {
 
 export interface ProfileForm {
   location: any;
-  currentCoverPicture: any;
   website: string;
   lastName: string;
   firstName: string;
@@ -81,6 +81,8 @@ export interface ProfileForm {
   bio: string;
   profilePicture: File | null;
   currentProfilePicture?: string | null;
+  coverPicture?: File | null;
+  currentCoverPicture?: string | null;
   password?: string | null;
   confirmPassword?: string | null;
 }

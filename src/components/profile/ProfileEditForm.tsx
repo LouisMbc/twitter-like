@@ -23,6 +23,8 @@ export default function ProfileEditForm({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [birthDate, setBirthDate] = useState<Date>(new Date('2005-08-05'));
 
   // Initialiser les photos avec les images existantes
   useEffect(() => {
@@ -95,30 +97,11 @@ export default function ProfileEditForm({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    validateField(name, value);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validation du fichier
-    if (!file.type.startsWith('image/')) {
-      setErrors(prev => ({ ...prev, [type]: 'Le fichier doit être une image' }));
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) { // 5MB max
-      setErrors(prev => ({ ...prev, [type]: 'L\'image ne peut pas dépasser 5MB' }));
-      return;
-    }
-
-    // Supprimer l'erreur si elle existait
-    setErrors(prev => {
-      const newErrors = { ...prev };
-      delete newErrors[type];
-      return newErrors;
-    });
 
     if (type === 'profile') {
       setFormData(prev => ({ ...prev, profilePicture: file }));
@@ -141,23 +124,75 @@ export default function ProfileEditForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
-
-    if (!formData.nickname || formData.nickname.length < 3) {
-      setErrors(prev => ({ ...prev, nickname: 'Le pseudo est requis (minimum 3 caractères)' }));
-      return;
-    }
-
     await onSubmit(formData);
   };
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const currentDate = new Date(birthDate);
+    
+    if (name === 'day') {
+      currentDate.setDate(parseInt(value));
+    } else if (name === 'month') {
+      currentDate.setMonth(parseInt(value) - 1);
+    } else if (name === 'year') {
+      currentDate.setFullYear(parseInt(value));
+    }
+    
+    setBirthDate(currentDate);
+  };
+
+  const saveBirthDate = () => {
+    setFormData(prev => ({ ...prev, birthDate: birthDate.toISOString() }));
+    setShowDatePicker(false);
+  };
+
+  const formatBirthDate = (date: Date) => {
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const generateDays = () => {
+    const days = [];
+    for (let i = 1; i <= 31; i++) {
+      days.push(i);
+    }
+    return days;
+  };
+
+  const generateMonths = () => {
+    return [
+      { value: 1, name: 'Janvier' },
+      { value: 2, name: 'Février' },
+      { value: 3, name: 'Mars' },
+      { value: 4, name: 'Avril' },
+      { value: 5, name: 'Mai' },
+      { value: 6, name: 'Juin' },
+      { value: 7, name: 'Juillet' },
+      { value: 8, name: 'Août' },
+      { value: 9, name: 'Septembre' },
+      { value: 10, name: 'Octobre' },
+      { value: 11, name: 'Novembre' },
+      { value: 12, name: 'Décembre' },
+    ];
+  };
+
+  const generateYears = () => {
+    const years = [];
+    const currentYear = new Date().getFullYear();
+    for (let i = currentYear; i >= currentYear - 100; i--) {
+      years.push(i);
+    }
+    return years;
+  };
+
   return (
-    <div className="text-gray-900 dark:text-white transition-colors duration-300">
-      {/* Cover Photo Section */}
-      <div className="relative h-48 bg-gray-200 dark:bg-gray-800 mb-16 transition-colors duration-300 overflow-hidden">
+    <div className="bg-black text-white">
+      {/* Cover Photo Section - Style amélioré */}
+      <div className="relative h-48 bg-gray-700 overflow-visible">
         {coverPreviewUrl ? (
           <img
             src={coverPreviewUrl}
@@ -166,14 +201,24 @@ export default function ProfileEditForm({
             onError={() => setCoverPreviewUrl(null)}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-800"></div>
+          <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+            <div className="text-center">
+              <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
         )}
         
-        <div className="absolute inset-0 flex items-center justify-center">
-          <label className="cursor-pointer p-3 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-            </svg>
+        {/* Cover photo camera button - centered */}
+        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 flex items-center justify-center transition-all duration-200 group overflow-hidden">
+          <label className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-3 rounded-full transition-all duration-200">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
             <input 
               type="file" 
               className="hidden" 
@@ -182,207 +227,228 @@ export default function ProfileEditForm({
             />
           </label>
         </div>
-        
-        {errors.cover && (
-          <div className="absolute bottom-2 left-2 right-2 bg-red-900/80 text-red-200 px-3 py-1 rounded text-sm">
-            {errors.cover}
-          </div>
-        )}
-        
-        {/* Profile Picture */}
-        <div className="absolute -bottom-16 left-6">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-700 border-4 border-white dark:border-black transition-colors duration-300">
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Photo de profil"
-                className="w-full h-full object-cover"
-                onError={() => setPreviewUrl(null)}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-400 to-red-600">
-                <span className="text-4xl text-white font-bold">
-                  {(formData?.nickname || formData?.firstName || '?').charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-            <label className="absolute inset-0 cursor-pointer bg-black bg-opacity-0 hover:bg-opacity-50 rounded-full transition-all flex items-center justify-center group">
-              <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-              </svg>
-              <input 
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, 'profile')}
-                className="hidden"
-              />
-            </label>
-          </div>
-          {errors.profile && (
-            <div className="absolute top-full left-0 mt-2 bg-red-900/80 text-red-200 px-2 py-1 rounded text-xs whitespace-nowrap">
-              {errors.profile}
+      </div>
+      
+      {/* Profile Picture - Positionnée après la cover photo pour être entièrement visible */}
+      <div className="relative px-6 -mt-12 mb-4">
+        <div className="flex justify-start">
+          <div className="relative group">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-black shadow-xl bg-white">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Photo de profil"
+                  className="w-full h-full object-cover"
+                  onError={() => setPreviewUrl(null)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-white">
+                  <svg className="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
             </div>
-          )}
+            
+            {/* Camera overlay centered */}
+            <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 hover:bg-opacity-50 flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100">
+              <label className="cursor-pointer">
+                <div className="bg-black bg-opacity-70 text-white p-2 rounded-full">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <input 
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'profile')}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Info Fields */}
-        <div className="space-y-6">
-          <div>
-            <label htmlFor="nickname" className="sr-only">Pseudo</label>
+      {/* Form Content - Espacement ajusté */}
+      <div className="pb-8">
+        <form onSubmit={handleSubmit} className="px-6 space-y-6">
+          {/* Pseudo Field - Style comme dans l'image */}
+          <div className="space-y-1">
+            <label className="text-sm text-gray-400 font-medium">Pseudo</label>
             <input
               type="text"
-              id="nickname"
               name="nickname"
               value={formData?.nickname || ''}
               onChange={handleChange}
-              className={`w-full bg-transparent border-0 border-b-2 ${
-                errors.nickname ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
-              } py-3 px-0 text-gray-900 dark:text-white focus:outline-none focus:ring-0 focus:border-red-500 transition-colors duration-300 text-lg`}
-              placeholder="Votre pseudo"
+              className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors duration-300 text-lg"
+              placeholder="Votre_Pseudo"
               required
             />
-            {errors.nickname && (
-              <p className="mt-1 text-sm text-red-500">{errors.nickname}</p>
-            )}
           </div>
 
-          <div>
-            <label htmlFor="firstName" className="sr-only">Nom</label>
+          {/* Nom Field */}
+          <div className="space-y-1">
+            <label className="text-sm text-gray-400 font-medium">Nom</label>
             <input
               type="text"
-              id="firstName"
               name="firstName"
               value={formData?.firstName || ''}
               onChange={handleChange}
-              className={`w-full bg-transparent border-0 border-b-2 ${
-                errors.firstName ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
-              } py-3 px-0 text-gray-900 dark:text-white focus:outline-none focus:ring-0 focus:border-red-500 transition-colors duration-300 text-lg`}
-              placeholder="Votre nom"
+              className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors duration-300 text-lg"
+              placeholder="Votre_Nom"
             />
-            {errors.firstName && (
-              <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
-            )}
           </div>
 
-          <div>
-            <label htmlFor="lastName" className="sr-only">Prénom</label>
+          {/* Prénom Field */}
+          <div className="space-y-1">
+            <label className="text-sm text-gray-400 font-medium">Prénom</label>
             <input
               type="text"
-              id="lastName"
               name="lastName"
               value={formData?.lastName || ''}
               onChange={handleChange}
-              className={`w-full bg-transparent border-0 border-b-2 ${
-                errors.lastName ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
-              } py-3 px-0 text-gray-900 dark:text-white focus:outline-none focus:ring-0 focus:border-red-500 transition-colors duration-300 text-lg`}
-              placeholder="Votre prénom"
+              className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors duration-300 text-lg"
+              placeholder="Votre_Prénom"
             />
-            {errors.lastName && (
-              <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
-            )}
           </div>
 
-          <div>
-            <label htmlFor="bio" className="sr-only">Bio</label>
+          {/* Bio Field */}
+          <div className="space-y-1">
+            <label className="text-sm text-gray-400 font-medium">Bio</label>
             <textarea
-              id="bio"
               name="bio"
               rows={3}
               value={formData?.bio || ''}
               onChange={handleChange}
-              className={`w-full bg-transparent border-0 border-b-2 ${
-                errors.bio ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
-              } py-3 px-0 text-gray-900 dark:text-white focus:outline-none focus:ring-0 focus:border-red-500 transition-colors duration-300 text-lg resize-none`}
-              placeholder="Votre bio"
+              className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors duration-300 text-lg resize-none"
+              placeholder="Parlez-nous de vous..."
             />
-            <div className="flex justify-between items-center mt-1">
-              {errors.bio && (
-                <p className="text-sm text-red-500">{errors.bio}</p>
-              )}
-              <p className="text-sm text-gray-500 ml-auto">
+            <div className="flex justify-end">
+              <p className={`text-sm ${
+                (formData?.bio || '').length > 250 ? 'text-red-500' : 'text-gray-400'
+              }`}>
                 {(formData?.bio || '').length}/280
               </p>
             </div>
           </div>
 
-          <div>
-            <label htmlFor="website" className="sr-only">Site web</label>
-            <input
-              type="url"
-              id="website"
-              name="website"
-              value={formData?.website || ''}
-              onChange={handleChange}
-              className={`w-full bg-transparent border-0 border-b-2 ${
-                errors.website ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
-              } py-3 px-0 text-gray-900 dark:text-white focus:outline-none focus:ring-0 focus:border-red-500 transition-colors duration-300 text-lg`}
-              placeholder="https://votre-site.com"
-            />
-            {errors.website && (
-              <p className="mt-1 text-sm text-red-500">{errors.website}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Date de naissance */}
-        <div className="py-4">
-          <div className="flex items-center justify-between py-4 border-b-2 border-gray-300 dark:border-gray-700">
-            <div>
-              <p className="text-lg font-medium text-gray-900 dark:text-white">Date de naissance</p>
-              <p className="text-sm text-red-500">31 juillet 2004</p>
+          {/* Date de naissance - Style comme dans l'image avec modal */}
+          <div className="space-y-1">
+            <label className="text-sm text-gray-400 font-medium">Date de naissance</label>
+            <div className="flex items-center justify-between py-3 px-4 border border-gray-600 rounded-lg">
+              <span className="text-red-500 text-lg">{formatBirthDate(birthDate)}</span>
+              <button
+                type="button"
+                onClick={() => setShowDatePicker(true)}
+                className="text-red-500 hover:text-red-400 text-sm font-medium transition-colors"
+              >
+                Modifier
+              </button>
             </div>
-            <button
-              type="button"
-              className="text-red-500 hover:text-red-600 text-sm font-medium"
-            >
-              Modifier
-            </button>
-          </div>
-        </div>
-
-        {/* Options supplémentaires */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
-            <span className="text-lg font-medium text-gray-900 dark:text-white">Créer une biographie détaillée</span>
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
           </div>
 
-          <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
-            <span className="text-lg font-medium text-gray-900 dark:text-white">Passer en mode Professionnel</span>
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+          {/* Join date info - Style comme dans l'image */}
+          <div className="py-4 border-t border-gray-700">
+            <div className="flex items-center text-sm text-gray-400">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              A rejoint Flow le JJ/MM/AAAA
+            </div>
           </div>
-        </div>
-        
-        {error && (
-          <div className="bg-red-900/30 border-l-4 border-red-500 p-4">
-            <p className="text-red-400">{error}</p>
-          </div>
-        )}
+          
+          {error && (
+            <div className="bg-red-900/30 border border-red-800 rounded-lg p-4">
+              <p className="text-red-400">{error}</p>
+            </div>
+          )}
+        </form>
+      </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={loading}
-            className="px-6 py-2 bg-transparent border border-gray-300 dark:border-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300 disabled:opacity-50"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            disabled={loading || Object.keys(errors).length > 0}
-            className="px-6 py-2 bg-red-500 text-white rounded-full text-sm hover:bg-red-600 disabled:opacity-50 transition-colors duration-300"
-          >
-            {loading ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
+      {/* Modal de sélection de date */}
+      {showDatePicker && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-xl p-6 w-80 max-w-sm mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Modifier la date de naissance</h3>
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Sélecteur de jour */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Jour</label>
+                <select
+                  name="day"
+                  value={birthDate.getDate()}
+                  onChange={handleDateChange}
+                  className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                >
+                  {generateDays().map(day => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sélecteur de mois */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Mois</label>
+                <select
+                  name="month"
+                  value={birthDate.getMonth() + 1}
+                  onChange={handleDateChange}
+                  className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                >
+                  {generateMonths().map(month => (
+                    <option key={month.value} value={month.value}>{month.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sélecteur d'année */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Année</label>
+                <select
+                  name="year"
+                  value={birthDate.getFullYear()}
+                  onChange={handleDateChange}
+                  className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                >
+                  {generateYears().map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowDatePicker(false)}
+                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={saveBirthDate}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
         </div>
-      </form>
+      )}
     </div>
   );
 }

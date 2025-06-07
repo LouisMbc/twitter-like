@@ -217,13 +217,13 @@ export default function ProfileHeader({
               />
             </div>
             
-            {/* Bouton "Éditer le profil" */}
-            <div className="mb-6">
+            {/* Bouton "Éditer le profil" - Fixed positioning */}
+            <div className="flex items-end mb-4">
               {isCurrentUser(currentProfileId, profile.id) ? (
                 <button
                   onClick={handleEditProfile}
                   type="button"
-                  className="bg-transparent border border-gray-500 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+                  className="bg-transparent border-2 border-gray-500 hover:border-gray-400 text-white px-6 py-2 rounded-full font-medium hover:bg-gray-900/50 transition-all duration-200 backdrop-blur-sm"
                 >
                   Éditer le profil
                 </button>
@@ -232,14 +232,14 @@ export default function ProfileHeader({
                   {canMessage && (
                     <button
                       onClick={() => router.push(`/messages/${profile.id}`)}
-                      className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-full text-base font-medium border border-gray-700 transition-colors"
+                      className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2.5 rounded-full font-medium border border-gray-700 transition-colors duration-200"
                     >
                       Message
                     </button>
                   )}
                   <button
                     onClick={onFollowToggle}
-                    className={`px-6 py-3 rounded-full text-base font-medium transition-colors ${
+                    className={`px-6 py-2.5 rounded-full font-medium transition-colors duration-200 ${
                       isFollowing
                         ? "bg-gray-800 hover:bg-gray-700 text-white border border-gray-700"
                         : "bg-red-500 hover:bg-red-600 text-white border border-red-500"

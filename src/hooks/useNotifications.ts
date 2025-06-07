@@ -41,13 +41,13 @@ export const useNotifications = () => {
       // Nettoyer les nicknames pour éviter les @ doubles
       const cleanedData = (data || []).map(notification => ({
         ...notification,
-        sender: notification.sender ? {
-          ...notification.sender,
-          nickname: notification.sender.nickname?.replace(/^@+/, '') || ''
+        sender: notification.sender && notification.sender.length > 0 ? {
+          ...notification.sender[0],
+          nickname: notification.sender[0].nickname?.replace(/^@+/, '') || ''
         } : null
       }));
 
-      setNotifications(cleanedData as Notification[]);
+      setNotifications(cleanedData as unknown as Notification[]);
       
       // Mettre à jour le compteur de notifications non lues
       const unreadNotifications = cleanedData.filter(notif => !notif.is_read);
