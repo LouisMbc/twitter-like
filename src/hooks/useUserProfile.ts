@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile } from '@/types/profile';
@@ -10,6 +10,8 @@ export function useUserProfile(userId: string) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tweets, setTweets] = useState<any[]>([]);
   const [comments, setComments] = useState<any[]>([]);
+  const [mediaTweets, setMediaTweets] = useState<any[]>([]);
+  const [likedTweets, setLikedTweets] = useState<any[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -24,14 +26,12 @@ export function useUserProfile(userId: string) {
     try {
       setLoading(true);
       
-      // Get current session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push('/auth/login');
         return;
       }
 
-      // Récupérer le profil de l'utilisateur connecté
       const { data: currentUserProfile } = await supabase
         .from('Profile')
         .select('id')
@@ -42,13 +42,10 @@ export function useUserProfile(userId: string) {
         setCurrentProfileId(currentUserProfile.id);
       }
 
-      // Debug: Log de l'userId reçu
       console.log('Recherche du profil pour userId:', userId);
 
-      // Récupérer le profil cible - essayer d'abord par id, puis par user_id
       let profileData = null;
       
-      // Tentative 1: récupérer par id de profil
       const { data: profileById, error: errorById } = await supabase
         .from('Profile')
         .select('*')
@@ -59,7 +56,6 @@ export function useUserProfile(userId: string) {
         profileData = profileById;
         console.log('Profil trouvé par ID:', profileData);
       } else {
-        // Tentative 2: récupérer par user_id
         const { data: profileByUserId, error: errorByUserId } = await supabase
           .from('Profile')
           .select('*')
@@ -76,14 +72,9 @@ export function useUserProfile(userId: string) {
         }
       }
 
-      // Nettoyer le nickname s'il contient des @
-      if (profileData.nickname && profileData.nickname.startsWith('@')) {
-        profileData.nickname = profileData.nickname.substring(1);
-      }
-
+      // Conserver le nickname tel quel pour le stockage, mais l'afficher avec @
       setProfile(profileData);
 
-      // Récupérer les compteurs de followers/following et l'état de suivi
       const [followersResult, followingResult, isFollowingResult] = await Promise.all([
         supabase
           .from('Following')
@@ -105,7 +96,7 @@ export function useUserProfile(userId: string) {
       setFollowingCount(followingResult.count || 0);
       setIsFollowing(!!isFollowingResult.data);
 
-      // Charger les tweets de l'utilisateur
+      // Charger tous les tweets
       const { data: tweetsData, error: tweetsError } = await supabase
         .from('Tweets')
         .select(`
@@ -123,18 +114,54 @@ export function useUserProfile(userId: string) {
       if (tweetsError) {
         console.error('Erreur lors du chargement des tweets:', tweetsError);
       } else {
-        // Nettoyer les nicknames des auteurs
         const cleanedTweets = (tweetsData || []).map(tweet => ({
           ...tweet,
           author: tweet.author ? {
             ...tweet.author,
-            nickname: tweet.author.nickname?.replace(/^@+/, '') || ''
+            nickname: tweet.author.nickname || ''
           } : null
         }));
         setTweets(cleanedTweets);
+
+        // Filtrer les tweets avec médias
+        const tweetsWithMedia = cleanedTweets.filter(tweet => 
+          tweet.picture && tweet.picture.length > 0
+        );
+        setMediaTweets(tweetsWithMedia);
       }
 
-      // Charger les commentaires de l'utilisateur
+      // Charger les tweets likés
+      const { data: likedTweetsData, error: likedTweetsError } = await supabase
+        .from('Likes')
+        .select(`
+          tweet:tweet_id (
+            id,
+            content,
+            picture,
+            published_at,
+            view_count,
+            retweet_id,
+            author:Profile!author_id (id, nickname, profilePicture)
+          )
+        `)
+        .eq('profile_id', profileData.id)
+        .order('created_at', { ascending: false });
+
+      if (likedTweetsError) {
+        console.error('Erreur lors du chargement des tweets likés:', likedTweetsError);
+      } else {
+        const cleanedLikedTweets = (likedTweetsData || [])
+          .filter(like => like.tweet) // S'assurer que le tweet existe
+          .map(like => ({
+            ...like.tweet,
+            author: like.tweet.author ? {
+              ...like.tweet.author,
+              nickname: like.tweet.author.nickname || ''
+            } : null
+          }));
+        setLikedTweets(cleanedLikedTweets);
+      }
+
       const { data: commentsData, error: commentsError } = await supabase
         .from('Comments')
         .select(`
@@ -156,12 +183,11 @@ export function useUserProfile(userId: string) {
       if (commentsError) {
         console.error('Erreur lors du chargement des commentaires:', commentsError);
       } else {
-        // Nettoyer les nicknames des auteurs de commentaires
         const cleanedComments = (commentsData || []).map(comment => ({
           ...comment,
           author: comment.author ? {
             ...comment.author,
-            nickname: comment.author.nickname?.replace(/^@+/, '') || ''
+            nickname: comment.author.nickname || ''
           } : null
         }));
         setComments(cleanedComments);
@@ -215,6 +241,8 @@ export function useUserProfile(userId: string) {
     profile,
     tweets,
     comments,
+    mediaTweets,
+    likedTweets,
     followersCount,
     followingCount,
     isFollowing,

@@ -217,7 +217,7 @@ export default function ProfileHeader({
               />
             </div>
             
-            {/* Bouton "Éditer le profil" - Fixed positioning */}
+            {/* Bouton "Modifier le profil" - Fixed positioning */}
             <div className="flex items-end mb-4">
               {isCurrentUser(currentProfileId, profile.id) ? (
                 <button
@@ -225,7 +225,7 @@ export default function ProfileHeader({
                   type="button"
                   className="bg-transparent border-2 border-gray-500 hover:border-gray-400 text-white px-6 py-2 rounded-full font-medium hover:bg-gray-900/50 transition-all duration-200 backdrop-blur-sm"
                 >
-                  Éditer le profil
+                  Modifier le profil
                 </button>
               ) : (
                 <div className="flex space-x-3">

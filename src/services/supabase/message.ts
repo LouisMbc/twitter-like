@@ -1,29 +1,6 @@
 // src/services/supabase/message.ts
 import supabase from '@/lib/supabase';
 
-interface MessageUser {
-  id: string;
-  nickname: string;
-  profilePicture: string | null;
-}
-
-interface Message {
-  id: string;
-  sender_id: string;
-  recipient_id: string;
-  content: string;
-  created_at: string;
-  is_read: boolean;
-  sender?: MessageUser;
-  recipient?: MessageUser;
-}
-
-interface Conversation {
-  user: MessageUser;
-  lastMessage: Message;
-  unreadCount: number;
-}
-
 export const messageService = {
   // Récupérer les conversations de l'utilisateur
   getConversations: async (userId: string) => {
@@ -48,14 +25,6 @@ export const messageService = {
     // Regrouper les messages par conversation (par utilisateur)
     const conversations: Record<string, Conversation> = {};
       data?.forEach((message: any) => {
-      const sender = Array.isArray(message.sender) ? message.sender[0] : message.sender;
-      const recipient = Array.isArray(message.recipient) ? message.recipient[0] : message.recipient;
-      
-      const otherUserId = sender?.id === userId ? recipient?.id : sender?.id;
-      const otherUser = sender?.id === userId ? recipient : sender;
-      
-      // Éviter les conversations avec soi-même
-      if (!otherUserId || !otherUser || otherUserId === userId) return;
       
       if (!conversations[otherUserId]) {
         conversations[otherUserId] = {
@@ -83,6 +52,7 @@ export const messageService = {
 
     return { data: Object.values(conversations) };
   },
+  
   // Récupérer les messages d'une conversation spécifique
   getMessages: async (userId: string, otherUserId: string) => {
     // Éviter de récupérer des messages avec soi-même
@@ -105,6 +75,7 @@ export const messageService = {
 
     return { data, error };
   },
+  
   // Envoyer un nouveau message
   sendMessage: async (senderId: string, recipientId: string, content: string) => {
     // Empêcher d'envoyer des messages à soi-même
@@ -139,6 +110,7 @@ export const messageService = {
 
     return { data, error };
   },
+  
   // Vérifier si deux utilisateurs peuvent échanger des messages
   // (ils doivent se suivre mutuellement)
   canMessage: async (userId: string, otherUserId: string) => {
@@ -184,7 +156,7 @@ export const messageService = {
       .select('id', { count: 'exact', head: true })
       .eq('recipient_id', userId)
       .eq('is_read', false);
-    
-    return { count: count || 0, error };
+      
+    return { count, error };
   },
 };

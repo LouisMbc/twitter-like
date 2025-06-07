@@ -12,6 +12,21 @@ import Image from "next/image";
 import Header from "@/components/shared/Header";
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
+import supabase from "@/lib/supabase";
+
+interface Tweet {
+  id: string;
+  content: string;
+  picture?: string[];
+  published_at: string;
+  view_count: number;
+  retweet_id?: string;
+  author: {
+    id: string;
+    nickname: string;
+    profilePicture?: string;
+  } | null;
+}
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -19,16 +34,66 @@ export default function ProfilePage() {
     profile,
     tweets,
     comments,
-    activeTab,
-    setActiveTab,
+    loading,
     followersCount,
     followingCount,
-    loading,
-    currentProfileId,
-    loadMoreTweets,
+    loadProfile,
   } = useProfile();
 
-  useAuth();
+  const [mediaTweets, setMediaTweets] = useState<Tweet[]>([]);
+  const [likedTweets, setLikedTweets] = useState<Tweet[]>([]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  useEffect(() => {
+    if (tweets.length > 0) {
+      // Filtrer les tweets avec médias
+      const tweetsWithMedia = tweets.filter(
+        (tweet) => tweet.picture && tweet.picture.length > 0
+      );
+      setMediaTweets(tweetsWithMedia);
+    }
+
+    if (profile?.id) {
+      // Charger les tweets likés
+      const loadLikedTweets = async () => {
+        const { data: likedTweetsData, error } = await supabase
+          .from("Likes")
+          .select(`
+            tweet:tweet_id (
+              id,
+              content,
+              picture,
+              published_at,
+              view_count,
+              retweet_id,
+              author:Profile!author_id (id, nickname, profilePicture)
+            )
+          `)
+          .eq("profile_id", profile.id)
+          .order("created_at", { ascending: false });
+
+        if (!error && likedTweetsData) {
+          const cleanedLikedTweets = likedTweetsData
+            .filter((like) => like.tweet)
+            .map((like) => ({
+              ...like.tweet,
+              author: like.tweet.author
+                ? {
+                    ...like.tweet.author,
+                    nickname: like.tweet.author.nickname || "",
+                  }
+                : null,
+            }));
+          setLikedTweets(cleanedLikedTweets);
+        }
+      };
+
+      loadLikedTweets();
+    }
+  }, [tweets, profile?.id]);
 
   // State pour gérer le statut de suivi
   const [isFollowing, setIsFollowing] = useState(false);
@@ -151,7 +216,15 @@ export default function ProfilePage() {
           {/* Tabs and Content - Full Width */}
           <div className="w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-10 transition-colors duration-300">
             <div className="w-full">
-              <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+              <ProfileTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                tweets={tweets}
+                comments={comments}
+                mediaTweets={mediaTweets}
+                likedTweets={likedTweets}
+                loading={loading}
+              />
             </div>
           </div>
 
@@ -198,13 +271,17 @@ export default function ProfilePage() {
                             className="w-10 h-10 rounded-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.nextElementSibling?.classList.remove('hidden');
+                              target.style.display = "none";
+                              target.nextElementSibling?.classList.remove("hidden");
                             }}
                           />
                         ) : null}
-                        
-                        <div className={`w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center ${comment.author?.profilePicture ? 'hidden' : ''}`}>
+
+                        <div
+                          className={`w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center ${
+                            comment.author?.profilePicture ? "hidden" : ""
+                          }`}
+                        >
                           <span className="text-gray-900 dark:text-white font-medium text-sm">
                             {comment.author?.nickname?.charAt(0).toUpperCase() || "?"}
                           </span>
@@ -225,7 +302,9 @@ export default function ProfilePage() {
                                     locale: fr,
                                   }
                                 )
-                              ) : 'Date inconnue'}
+                              ) : (
+                                "Date inconnue"
+                              )}
                             </span>
                           </div>
 

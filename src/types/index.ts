@@ -2,91 +2,56 @@
 export * from './profile';
 
 // Add other types here if needed
+// Types pour les profils
+export interface Profile {
+  id: string;
+  user_id: string;
+  nickname: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  bio?: string | null;
+  profilePicture?: string | null;
+  created_at: string;
+  follower_count?: number;
+  following_count?: number;
+  certified?: boolean;
+  is_premium?: boolean;
+  premium_features?: any;
+}
+
+// Types pour les tweets
 export interface Tweet {
   id: string;
   content: string;
-  picture?: string[] | null;
+  picture?: string[];
   published_at: string;
   view_count: number;
+  retweet_id?: string;
+  author_id: string;
   author: {
     id: string;
     nickname: string;
-    profilePicture?: string | null;
-  };
-  author_id?: string; // Optionnel si vous avez déjà author
-  retweet_id?: string | null;
-  originalTweet?: Omit<Tweet, 'originalTweet'> | null; // Tweet original si c'est un retweet
+    profilePicture?: string;
+  } | null;
 }
 
+// Types pour les commentaires
 export interface Comment {
   id: string;
   content: string;
   created_at: string;
   view_count: number;
+  tweet_id?: string;
   parent_comment_id?: string;
+  author_id: string;
   author: {
     id: string;
     nickname: string;
-    profilePicture: string | null;
-  };
-  replies?: Comment[];
-  tweet_id: string;
+    profilePicture?: string;
+  } | null;
 }
 
-export interface Subscription {
-  id: string;
-  profile_id: string;
-  subscription_id: string;
-  status: string;
-  plan: string;
-  current_period_end: string;
-  cancel_at_period_end?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  customer_id?: string;
-}
-
-export interface Profile {
-  id: string;               // uuid
-  user_id: string;          // uuid lié à auth.users
-  firstName: string | null; // text
-  lastName: string | null;  // text
-  nickname: string | null;  // text
-  bio: string | null;       // text
-  profilePicture?: string | null; // text (URL de l'image)
-  coverPicture?: string | null;   // text (URL de l'image de couverture)
-  certified: boolean;       // boolean
-  follower_count: number;   // integer
-  following_count: number;  // integer
-  created_at: string;       // timestamp with time zone
-  is_premium: boolean;      // boolean
-  premium_features: any;    // jsonb
-}
-
-// Ajouter aux types existants
-export interface ProfilePageData {
-  profile: Profile;
-  tweets: Tweet[];
-  comments: Comment[];
-  followersCount: number;
-  followingCount: number;
-}
-
-export interface ProfileForm {
-  location: any;
-  website: string;
-  lastName: string;
-  firstName: string;
-  nickname: string;
-  bio: string;
-  profilePicture: File | null;
-  currentProfilePicture?: string | null;
-  coverPicture?: File | null;
-  currentCoverPicture?: string | null;
-  password?: string | null;
-  confirmPassword?: string | null;
-}
-
+// Types pour les hashtags
 export interface Hashtag {
   id: string;
   name: string;
@@ -94,26 +59,31 @@ export interface Hashtag {
   created_at: string;
 }
 
-export interface TweetHashtag {
-  id: string;
-  tweet_id: string;
-  hashtag_id: string;
-  created_at: string;
-  hashtag?: Hashtag;
-}
-
-export interface HashtagSubscription {
+// Types pour les abonnements
+export interface Subscription {
   id: string;
   profile_id: string;
-  hashtag_id: string;
+  subscription_id: string;
+  plan: string;
+  status: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
   created_at: string;
-  hashtag?: Hashtag;
 }
 
-export interface HashtagBlock {
-  id: string;
-  profile_id: string;
-  hashtag_id: string;
-  created_at: string;
-  hashtag?: Hashtag;
+// Types pour les formulaires
+export interface ProfileForm {
+  lastName: string;
+  firstName: string;
+  nickname: string;
+  bio: string;
+  website?: string;
+  location?: string;
+  profilePicture: File | null;
+  currentProfilePicture?: string;
+  coverPicture?: File | null;
+  currentCoverPicture?: string | null;
+  password: string;
+  confirmPassword: string;
+  birthDate?: string;
 }

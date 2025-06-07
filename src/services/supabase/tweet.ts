@@ -44,9 +44,9 @@ export const tweetService = {
       .from('Tweets')
       .insert([{
         author_id: userId,
-        content: originalTweet.content,  // Même contenu que l'original
-        picture: originalTweet.picture,  // Mêmes images que l'original
-        retweet_id: originalTweetId      // Référence au tweet original
+        content: originalTweet.content,
+        picture: originalTweet.picture,
+        retweet_id: originalTweetId
       }])
       .select();
     

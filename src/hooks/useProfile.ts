@@ -97,18 +97,13 @@ export const useProfile = () => {
         return;
       }
 
-      // Nettoyer le nickname s'il contient un @
-      if (profileData.nickname && profileData.nickname.startsWith('@')) {
-        profileData.nickname = profileData.nickname.substring(1);
-      }
-
+      // Conserver le nickname tel quel dans les données
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
-      setLoading(false); // Arrêter le loading principal ici
+      setLoading(false);
       
-      // Charger les tweets et commentaires en arrière-plan
       Promise.allSettled([
         loadMoreTweets(profileData.id, 0),
         loadAllComments(profileData.id)

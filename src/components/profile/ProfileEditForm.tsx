@@ -24,7 +24,13 @@ export default function ProfileEditForm({
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [birthDate, setBirthDate] = useState<Date>(new Date('2005-08-05'));
+  const [birthDate, setBirthDate] = useState<Date>(() => {
+    // Utiliser la date du formData si elle existe, sinon date par défaut
+    if (formData?.birthDate) {
+      return new Date(formData.birthDate);
+    }
+    return new Date('2005-08-05');
+  });
 
   // Initialiser les photos avec les images existantes
   useEffect(() => {
@@ -47,6 +53,13 @@ export default function ProfileEditForm({
       }
     };
   }, [previewUrl, coverPreviewUrl]);
+
+  // Synchroniser birthDate avec formData.birthDate quand formData change
+  useEffect(() => {
+    if (formData?.birthDate) {
+      setBirthDate(new Date(formData.birthDate));
+    }
+  }, [formData?.birthDate]);
 
   const validateField = (name: string, value: string) => {
     const newErrors = { ...errors };
@@ -144,6 +157,16 @@ export default function ProfileEditForm({
 
   const saveBirthDate = () => {
     setFormData(prev => ({ ...prev, birthDate: birthDate.toISOString() }));
+    setShowDatePicker(false);
+  };
+
+  const cancelDateChange = () => {
+    // Remettre la date à la valeur actuelle dans formData
+    if (formData?.birthDate) {
+      setBirthDate(new Date(formData.birthDate));
+    } else {
+      setBirthDate(new Date('2005-08-05'));
+    }
     setShowDatePicker(false);
   };
 
@@ -334,11 +357,13 @@ export default function ProfileEditForm({
             </div>
           </div>
 
-          {/* Date de naissance - Style comme dans l'image avec modal */}
+          {/* Date de naissance - Utiliser la date du formData */}
           <div className="space-y-1">
             <label className="text-sm text-gray-400 font-medium">Date de naissance</label>
             <div className="flex items-center justify-between py-3 px-4 border border-gray-600 rounded-lg">
-              <span className="text-red-500 text-lg">{formatBirthDate(birthDate)}</span>
+              <span className="text-red-500 text-lg">
+                {formatBirthDate(formData?.birthDate ? new Date(formData.birthDate) : new Date('2005-08-05'))}
+              </span>
               <button
                 type="button"
                 onClick={() => setShowDatePicker(true)}
@@ -374,7 +399,7 @@ export default function ProfileEditForm({
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Modifier la date de naissance</h3>
               <button
-                onClick={() => setShowDatePicker(false)}
+                onClick={cancelDateChange}
                 className="text-gray-400 hover:text-white"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -433,7 +458,7 @@ export default function ProfileEditForm({
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 type="button"
-                onClick={() => setShowDatePicker(false)}
+                onClick={cancelDateChange}
                 className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Annuler
