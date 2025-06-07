@@ -1,104 +1,121 @@
 "use client";
 
-import { useState, useRef, KeyboardEvent } from 'react';
-import { mentionService, Mention } from '@/services/supabase/mention';
+import React, { useState, useRef, useEffect } from 'react';
+import { mentionService } from '@/services/supabase/mention';
 
 interface MentionTextareaProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  disabled?: boolean;
+  rows?: number;
 }
 
-export default function MentionTextarea({
-  value,
-  onChange,
-  placeholder = "Quoi de neuf ?",
-  className = "",
-  disabled = false
+interface User {
+  id: string;
+  nickname: string;
+  profilePicture?: string;
+}
+
+export default function MentionTextarea({ 
+  value, 
+  onChange, 
+  placeholder, 
+  className,
+  rows = 4
 }: MentionTextareaProps) {
-  const [suggestions, setSuggestions] = useState<Mention[]>([]);
+  const [suggestions, setSuggestions] = useState<User[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [cursorPosition, setCursorPosition] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    onChange(newValue);
+  // Détecter les mentions en cours de frappe
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
 
-    // Détecter les mentions (@)
-    const cursorPosition = e.target.selectionStart;
-    const textUpToCursor = newValue.slice(0, cursorPosition);
-    const mentionMatch = textUpToCursor.match(/@(\w*)$/);
-
+    const text = value;
+    const cursorPos = textarea.selectionStart;
+    
+    // Chercher si on est en train de taper une mention
+    const textBeforeCursor = text.substring(0, cursorPos);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    
     if (mentionMatch) {
       const query = mentionMatch[1];
-      if (query.length >= 0) {
-        const response = await mentionService.searchUsers(query);
-        const users = Array.isArray(response) ? response : (response.data || []);
-        setSuggestions(users);
-        setShowSuggestions(true);
-        setSelectedSuggestionIndex(0);
+      setMentionQuery(query);
+      setCursorPosition(cursorPos);
+      
+      if (query.length >= 1) {
+        searchUsers(query);
+      } else {
+        setShowSuggestions(false);
       }
     } else {
       setShowSuggestions(false);
-      setSuggestions([]);
+    }
+  }, [value]);
+
+  const searchUsers = async (query: string) => {
+    try {
+      const { data, error } = await mentionService.searchUsers(query, 5);
+      if (!error && data) {
+        setSuggestions(data);
+        setShowSuggestions(data.length > 0);
+        setSelectedIndex(0);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la recherche d\'utilisateurs:', error);
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const insertMention = (user: User) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const text = value;
+    const mentionStart = text.lastIndexOf('@', cursorPosition - 1);
+    const beforeMention = text.substring(0, mentionStart);
+    const afterCursor = text.substring(cursorPosition);
+    
+    const newText = beforeMention + `@${user.nickname} ` + afterCursor;
+    onChange(newText);
+    
+    setShowSuggestions(false);
+    
+    // Repositionner le curseur
+    setTimeout(() => {
+      const newCursorPos = mentionStart + user.nickname.length + 2;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      textarea.focus();
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showSuggestions) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedSuggestionIndex((prev) => 
-          prev < suggestions.length - 1 ? prev + 1 : 0
-        );
+        setSelectedIndex(prev => Math.min(prev + 1, suggestions.length - 1));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedSuggestionIndex((prev) => 
-          prev > 0 ? prev - 1 : suggestions.length - 1
-        );
+        setSelectedIndex(prev => Math.max(prev - 1, 0));
         break;
       case 'Enter':
       case 'Tab':
         e.preventDefault();
-        selectSuggestion(suggestions[selectedSuggestionIndex]);
+        if (suggestions[selectedIndex]) {
+          insertMention(suggestions[selectedIndex]);
+        }
         break;
       case 'Escape':
         setShowSuggestions(false);
         break;
     }
-  };
-  const selectSuggestion = (suggestion: Mention) => {
-    if (!textareaRef.current) return;
-
-    const cursorPosition = textareaRef.current.selectionStart;
-    const textUpToCursor = value.slice(0, cursorPosition);
-    const textAfterCursor = value.slice(cursorPosition);
-    
-    const mentionMatch = textUpToCursor.match(/@(\w*)$/);
-    if (!mentionMatch) return;
-
-    const beforeMention = textUpToCursor.slice(0, mentionMatch.index);
-    // Le pseudo contient déjà le @, donc pas besoin d'en ajouter un autre
-    const newValue = beforeMention + `${suggestion.nickname} ` + textAfterCursor;
-    
-    onChange(newValue);
-    setShowSuggestions(false);
-    setSuggestions([]);
-
-    // Replacer le curseur après la mention
-    setTimeout(() => {
-      if (textareaRef.current) {
-        const newCursorPosition = beforeMention.length + suggestion.nickname.length + 2;
-        textareaRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
-        textareaRef.current.focus();
-      }
-    }, 0);
   };
 
   return (
@@ -106,40 +123,40 @@ export default function MentionTextarea({
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={handleInputChange}
+        onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        disabled={disabled}
-        className={`resize-none ${className}`}
-        rows={3}
+        className={className}
+        rows={rows}
       />
       
+      {/* Suggestions dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-          {suggestions.map((suggestion, index) => (
+        <div className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto min-w-64">
+          {suggestions.map((user, index) => (
             <div
-              key={suggestion.id}
-              className={`px-4 py-2 cursor-pointer flex items-center space-x-3 ${
-                index === selectedSuggestionIndex
-                  ? 'bg-gray-100 dark:bg-gray-700'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+              key={user.id}
+              className={`flex items-center p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                index === selectedIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
               }`}
-              onClick={() => selectSuggestion(suggestion)}
+              onClick={() => insertMention(user)}
             >
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600">
-                {suggestion.profilePicture ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 mr-3">
+                {user.profilePicture ? (
                   <img
-                    src={suggestion.profilePicture}
-                    alt={suggestion.nickname}
+                    src={user.profilePicture}
+                    alt={user.nickname}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white font-medium">
-                    {suggestion.nickname.charAt(0).toUpperCase()}
+                  <div className="w-full h-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-medium">
+                    {user.nickname.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
-              <span className="text-gray-900 dark:text-white">{suggestion.nickname}</span>
+              <span className="text-gray-900 dark:text-white font-medium">
+                @{user.nickname}
+              </span>
             </div>
           ))}
         </div>

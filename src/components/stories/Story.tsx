@@ -83,8 +83,10 @@ const Story = ({
     } else {
       // Fermer la vue des stories si c'était la dernière
       setCurrentStoryIndex(null);
+      // Fermer le modal automatiquement
+      if (onClose) onClose();
     }
-  }, [currentStoryIndex, filteredStories.length]);
+  }, [currentStoryIndex, filteredStories.length, onClose]);
 
   // Fonction pour passer à la story précédente
   const goToPrevStory = useCallback(() => {

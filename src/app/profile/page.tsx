@@ -122,43 +122,47 @@ export default function ProfilePage() {
       {/* Main content - fixed positioning to prevent layout shifts */}
       <div className="ml-64 flex-1 relative">
         <div className="w-full bg-white dark:bg-black min-h-screen transition-colors duration-300">
-          {/* Profile Section */}
-          <ProfileHeader
-            profile={{
-              id: profile.id,
-              user_id: profile.user_id,
-              firstName: profile.firstName || null,
-              lastName: profile.lastName || null,
-              nickname: profile.nickname || "Utilisateur",
-              bio: profile.bio || null,
-              profilePicture: profile.profilePicture || null,
-              created_at: profile.created_at,
-              follower_count: profile.follower_count,
-              following_count: profile.following_count,
-              certified: false,
-              is_premium: false,
-              premium_features: [],
-            }}
-            followersCount={followersCount}
-            followingCount={followingCount}
-            currentProfileId={currentProfileId}
-            isFollowing={isFollowing}
-            onFollowToggle={handleFollowToggle}
-          />
-
-          {/* Tabs and Content */}
-          <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-10 transition-colors duration-300">
-            <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* Profile Section - Full Width */}
+          <div className="w-full">
+            <ProfileHeader
+              profile={{
+                id: profile.id,
+                user_id: profile.user_id,
+                firstName: profile.firstName || null,
+                lastName: profile.lastName || null,
+                nickname: profile.nickname || "Utilisateur",
+                bio: profile.bio || null,
+                profilePicture: profile.profilePicture || null,
+                created_at: profile.created_at,
+                follower_count: profile.follower_count,
+                following_count: profile.following_count,
+                certified: false,
+                is_premium: false,
+                premium_features: [],
+              }}
+              followersCount={followersCount}
+              followingCount={followingCount}
+              currentProfileId={currentProfileId}
+              isFollowing={isFollowing}
+              onFollowToggle={handleFollowToggle}
+            />
           </div>
 
-          <div className="bg-white dark:bg-black min-h-screen transition-colors duration-300">
+          {/* Tabs and Content - Full Width */}
+          <div className="w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-10 transition-colors duration-300">
+            <div className="w-full">
+              <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            </div>
+          </div>
+
+          <div className="w-full bg-white dark:bg-black min-h-screen transition-colors duration-300">
             {activeTab === "tweets" ? (
-              <div>
+              <div className="w-full">
                 {tweets.length > 0 ? (
                   tweets.map((tweet, index) => (
                     <div
                       key={tweet.id}
-                      className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
+                      className="w-full border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
                     >
                       <TweetCard tweet={tweet} />
                       {index === tweets.length - 1 && (
@@ -167,7 +171,7 @@ export default function ProfilePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-16 px-8">
+                  <div className="w-full text-center py-16 px-8">
                     <div className="text-6xl mb-4">📝</div>
                     <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                       Aucun post publié
@@ -179,12 +183,12 @@ export default function ProfilePage() {
                 )}
               </div>
             ) : (
-              <div>
+              <div className="w-full">
                 {comments && comments.length > 0 ? (
                   comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="border-b border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
+                      className="w-full border-b border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
                     >
                       <div className="flex items-start space-x-3">
                         {comment.author?.profilePicture ? (
@@ -262,7 +266,7 @@ export default function ProfilePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-16 px-8">
+                  <div className="w-full text-center py-16 px-8">
                     <div className="text-6xl mb-4">💬</div>
                     <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                       Aucune réponse

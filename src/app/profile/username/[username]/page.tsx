@@ -17,7 +17,7 @@ export default function UsernameProfilePage() {
         const { data: profile } = await supabase
           .from('Profile')
           .select('id')
-          .eq('nickname', `@${username}`)
+          .eq('nickname', username)
           .single();
 
         if (profile) {

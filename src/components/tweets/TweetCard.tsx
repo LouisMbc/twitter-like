@@ -108,15 +108,15 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
           </span>
         );
       } else if (part.startsWith('#')) {
-        const hashtagName = part.slice(1);
+        const hashtag = part.slice(1);
         return (
           <span
             key={index}
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/hashtags/${hashtagName}`);
+              router.push(`/hashtags/${hashtag}`);
             }}
-            className="text-blue-500 hover:text-blue-700 cursor-pointer font-medium"
+            className="text-red-500 hover:text-red-700 cursor-pointer font-medium"
           >
             {part}
           </span>
