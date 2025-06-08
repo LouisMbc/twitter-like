@@ -195,8 +195,8 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
           {tweet.picture && tweet.picture.length > 0 && (
             <div className="mb-4 grid grid-cols-2 gap-2">
               {tweet.picture.map((pic, index) => {
-                // Déterminer si c'est une vidéo en vérifiant l'extension de l'URL
-                const isVideo = /\.(mp4|webm|ogg)$/i.test(pic);
+                // Améliorer la détection des vidéos
+                const isVideo = /\.(mp4|webm|ogg|mov|avi)(\?.*)?$/i.test(pic) || pic.includes('video');
                 
                 return isVideo ? (
                   <div key={index} className="relative aspect-video">
@@ -204,8 +204,17 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                       src={pic}
                       controls
                       playsInline
-                      className="rounded-lg max-h-96 w-auto"
-                      onError={(e) => console.error("Erreur de chargement vidéo:", e)}
+                      preload="metadata"
+                      className="rounded-lg max-h-96 w-full object-cover"
+                      onError={(e) => {
+                        console.error("Erreur de chargement vidéo:", e);
+                        // Fallback: essayer d'afficher comme image
+                        const target = e.target as HTMLVideoElement;
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `<div class="bg-gray-800 rounded-lg flex items-center justify-center h-full text-gray-400">Vidéo non disponible</div>`;
+                        }
+                      }}
                     />
                   </div>
                 ) : (
@@ -214,6 +223,11 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                       src={pic}
                       alt="Tweet image"
                       className="rounded-lg max-h-96 w-auto object-cover"
+                      onError={(e) => {
+                        console.error("Erreur de chargement image:", e);
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder-image.png"; // Optionnel: image de fallback
+                      }}
                     />
                   </div>
                 );
@@ -259,11 +273,26 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                 
                 {originalTweet.picture && originalTweet.picture.length > 0 && (
                   <div className="mt-2">
-                    <img
-                      src={originalTweet.picture[0]}
-                      alt="Original tweet image"
-                      className="rounded-md max-h-64 w-auto"
-                    />
+                    {(() => {
+                      const pic = originalTweet.picture[0];
+                      const isVideo = /\.(mp4|webm|ogg|mov|avi)(\?.*)?$/i.test(pic) || pic.includes('video');
+                      
+                      return isVideo ? (
+                        <video
+                          src={pic}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="rounded-md max-h-64 w-auto"
+                        />
+                      ) : (
+                        <img
+                          src={pic}
+                          alt="Original tweet image"
+                          className="rounded-md max-h-64 w-auto"
+                        />
+                      );
+                    })()}
                   </div>
                 )}
               </div>

@@ -87,3 +87,21 @@ export interface ProfileForm {
   confirmPassword: string;
   birthDate?: string;
 }
+
+// Types pour les notifications
+export interface Notification {
+  id: string;
+  user_id: string;
+  sender_id: string;
+  content_id?: string;
+  content_type: 'tweet' | 'story' | 'follow' | 'like' | 'retweet' | 'message' | 'mention';
+  type: 'like' | 'retweet' | 'follow' | 'mention' | 'comment';
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  sender?: {
+    id: string;
+    nickname: string;
+    profilePicture?: string;
+  };
+}

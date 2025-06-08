@@ -67,25 +67,42 @@ export default function RetweetPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 4) {
-      setError('Maximum 4 images autorisées');
+      setError('Maximum 4 médias autorisés');
       return;
     }
-    setImages(files);
+
+    // Validation des types de fichiers
+    const validFiles = files.filter(file => {
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|ogg|mov|avi)$/i.test(file.name);
+      return isImage || isVideo;
+    });
+
+    if (validFiles.length !== files.length) {
+      setError('Seules les images et vidéos sont autorisées');
+      return;
+    }
+
+    setImages(validFiles);
+    setError('');
     
-    const previews = files.map(file => URL.createObjectURL(file));
+    const previews = validFiles.map(file => URL.createObjectURL(file));
     setPreview(previews);
   };
 
   const uploadImages = async (tweetId: string) => {
     if (images.length === 0) return [];
     
-    const uploadPromises = images.map(async (image) => {
-      const fileExt = image.name.split('.').pop();
+    const uploadPromises = images.map(async (file) => {
+      const fileExt = file.name.split('.').pop();
       const fileName = `${tweetId}/${Math.random()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('tweets')
-        .upload(fileName, image);
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          contentType: file.type || 'application/octet-stream'
+        });
 
       if (uploadError) throw uploadError;
 
@@ -205,11 +222,20 @@ export default function RetweetPage() {
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {preview.map((url, index) => (
                     <div key={index} className="relative rounded-xl overflow-hidden aspect-square bg-gray-800">
-                      <img
-                        src={url}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      {images[index].type.startsWith('video/') || /\.(mp4|webm|ogg|mov|avi)$/i.test(images[index].name) ? (
+                        <video
+                          src={url}
+                          controls
+                          preload="metadata"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                       <button
                         type="button"
                         onClick={() => {
@@ -231,7 +257,7 @@ export default function RetweetPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*,.mp4,.webm,.ogg,.mov,.avi"
                   multiple
                   max={4}
                   onChange={handleImageChange}

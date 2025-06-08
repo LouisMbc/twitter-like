@@ -33,7 +33,7 @@ export const tweetService = {
     // D'abord, récupérer les informations du tweet original
     const { data: originalTweet, error: fetchError } = await supabase
       .from('Tweets')
-      .select('content, picture')
+      .select('content, picture, author_id')
       .eq('id', originalTweetId)
       .single();
     
@@ -49,6 +49,15 @@ export const tweetService = {
         retweet_id: originalTweetId
       }])
       .select();
+
+    // Créer une notification de retweet si ce n'est pas son propre tweet
+    if (!error && data && originalTweet.author_id !== userId) {
+      await notificationService.createRetweetNotification(
+        originalTweetId,
+        originalTweet.author_id,
+        userId
+      );
+    }
     
     return { data, error };
   },
@@ -61,12 +70,7 @@ export const tweetService = {
       .eq('author_id', userId)
       .eq('retweet_id', tweetId);
     
-    if (error) return { hasRetweeted: false, error };
-    
-    return { 
-      hasRetweeted: data && data.length > 0, 
-      error: null 
-    };
+    return { hasRetweeted: !!data && data.length > 0, error };
   },
   
   // Supprimer un retweet

@@ -69,16 +69,24 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       setError('Maximum 4 médias autorisés');
       return;
     }
-    setMedia(files);
+
+    // Validation des types de fichiers
+    const validFiles = files.filter(file => {
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|ogg|mov|avi)$/i.test(file.name);
+      return isImage || isVideo;
+    });
+
+    if (validFiles.length !== files.length) {
+      setError('Seules les images et vidéos sont autorisées');
+      return;
+    }
+
+    setMedia(validFiles);
+    setError(''); // Clear error
 
     // Créer les previews
-    const previews = files.map(file => {
-      // Si c'est une vidéo, on créé un élément vidéo pour la prévisualisation
-      if (file.type.startsWith('video/')) {
-        const videoUrl = URL.createObjectURL(file);
-        return videoUrl;
-      }
-      // Sinon on traite comme une image
+    const previews = validFiles.map(file => {
       return URL.createObjectURL(file);
     });
     setPreview(previews);
@@ -89,19 +97,17 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     const uploadPromises = media.map(async (file) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${tweetId}/${Math.random()}.${fileExt}`;
-      console.log('[TweetComposer] Tentative de téléversement du fichier:', fileName, 'vers le bucket: tweets');
+      console.log('[TweetComposer] Tentative de téléversement du fichier:', fileName, 'Type:', file.type);
       
       const { error: uploadError } = await supabase.storage
         .from('tweets')
         .upload(fileName, file, {
           cacheControl: "3600",
-          contentType: file.type  // Ajouter cette ligne importante
+          contentType: file.type || 'application/octet-stream'
         });
 
       if (uploadError) {
         console.error('[TweetComposer] Erreur de téléversement Supabase Storage:', uploadError);
-        // Il est important de ne pas continuer si le téléversement échoue
-        // et de peut-être retourner null ou une indication d'erreur.
         return null; 
       }
       console.log('[TweetComposer] Fichier téléversé avec succès:', fileName);
@@ -295,11 +301,12 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
           <div className="mt-2 grid grid-cols-2 gap-2">
             {preview.map((url, index) => (
               <div key={index} className="relative aspect-square">
-                {media[index].type.startsWith('video/') ? (
+                {media[index].type.startsWith('video/') || /\.(mp4|webm|ogg|mov|avi)$/i.test(media[index].name) ? (
                   <video
                     src={url}
                     className="w-full h-full object-cover rounded"
                     controls
+                    preload="metadata"
                   />
                 ) : (
                   <img
@@ -328,7 +335,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*"
+              accept="image/*,video/*,.mp4,.webm,.ogg,.mov,.avi"
               multiple
               max={4}
               onChange={handleMediaChange}

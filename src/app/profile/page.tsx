@@ -13,20 +13,7 @@ import Header from "@/components/shared/Header";
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
 import supabase from "@/lib/supabase";
-
-interface Tweet {
-  id: string;
-  content: string;
-  picture?: string[];
-  published_at: string;
-  view_count: number;
-  retweet_id?: string;
-  author: {
-    id: string;
-    nickname: string;
-    profilePicture?: string;
-  } | null;
-}
+import { Tweet } from "@/types";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -37,15 +24,20 @@ export default function ProfilePage() {
     loading,
     followersCount,
     followingCount,
-    loadProfile,
+    loadProfileData,
+    currentProfileId,
+    activeTab,
+    setActiveTab,
   } = useProfile();
 
   const [mediaTweets, setMediaTweets] = useState<Tweet[]>([]);
   const [likedTweets, setLikedTweets] = useState<Tweet[]>([]);
 
   useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+    if (currentProfileId) {
+      loadProfileData(currentProfileId);
+    }
+  }, [currentProfileId, loadProfileData]);
 
   useEffect(() => {
     if (tweets.length > 0) {
@@ -69,6 +61,7 @@ export default function ProfilePage() {
               published_at,
               view_count,
               retweet_id,
+              author_id,
               author:Profile!author_id (id, nickname, profilePicture)
             )
           `)
@@ -76,17 +69,28 @@ export default function ProfilePage() {
           .order("created_at", { ascending: false });
 
         if (!error && likedTweetsData) {
-          const cleanedLikedTweets = likedTweetsData
+          const cleanedLikedTweets: Tweet[] = likedTweetsData
             .filter((like) => like.tweet)
-            .map((like) => ({
-              ...like.tweet,
-              author: like.tweet.author
-                ? {
-                    ...like.tweet.author,
-                    nickname: like.tweet.author.nickname || "",
-                  }
-                : null,
-            }));
+            .map((like) => {
+              const tweet = Array.isArray(like.tweet) ? like.tweet[0] : like.tweet;
+              const author = Array.isArray(tweet.author) ? tweet.author[0] : tweet.author;
+              return {
+                id: tweet.id,
+                content: tweet.content,
+                picture: tweet.picture,
+                published_at: tweet.published_at,
+                view_count: tweet.view_count,
+                retweet_id: tweet.retweet_id,
+                author_id: tweet.author_id,
+                author: author
+                  ? {
+                      id: author.id,
+                      nickname: author.nickname || "",
+                      profilePicture: author.profilePicture,
+                    }
+                  : null,
+              };
+            });
           setLikedTweets(cleanedLikedTweets);
         }
       };
@@ -103,6 +107,12 @@ export default function ProfilePage() {
 
   // Référence uniquement pour les tweets
   const tweetsObserver = useRef<IntersectionObserver | null>(null);
+
+  // Fonction pour charger plus de tweets (placeholder)
+  const loadMoreTweets = useCallback(async (profileId: string, page: number) => {
+    // Logique pour charger plus de tweets si nécessaire
+    console.log('Loading more tweets for profile:', profileId, 'page:', page);
+  }, []);
 
   // Callback uniquement pour les tweets
   const lastTweetElementRef = useCallback(
@@ -217,8 +227,6 @@ export default function ProfilePage() {
           <div className="w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-10 transition-colors duration-300">
             <div className="w-full">
               <ProfileTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
                 tweets={tweets}
                 comments={comments}
                 mediaTweets={mediaTweets}

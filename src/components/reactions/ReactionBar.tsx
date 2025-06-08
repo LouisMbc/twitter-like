@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import supabase from '@/lib/supabase';
+import { notificationService } from '@/services/supabase/notification';
 
 interface ReactionBarProps {
   tweetId?: string;
@@ -110,7 +111,7 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
   };
 
   const handleReaction = async (e: React.MouseEvent, type: string) => {
-    e.stopPropagation(); // Arrête la propagation de l'événement
+    e.stopPropagation();
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -163,6 +164,24 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
             ...(tweetId ? { tweet_id: tweetId } : { comment_id: commentId }),
             reaction_type: type
           }]);
+
+        // Créer une notification pour le like uniquement (réaction la plus courante)
+        if (type === 'like' && tweetId) {
+          // Récupérer l'auteur du tweet pour la notification
+          const { data: tweetData } = await supabase
+            .from('Tweets')
+            .select('author_id')
+            .eq('id', tweetId)
+            .single();
+
+          if (tweetData && tweetData.author_id !== profileData.id) {
+            await notificationService.createLikeNotification(
+              tweetId,
+              tweetData.author_id,
+              profileData.id
+            );
+          }
+        }
       }
 
       await loadReactions();

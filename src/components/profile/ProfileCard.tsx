@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import supabase from '@/lib/supabase';
+import { notificationService } from '@/services/supabase/notification';
 
 interface ProfileCardProps {
   profile: {
@@ -135,6 +136,9 @@ export default function ProfileCard({
         // Mettre à jour le compteur local
         setLocalFollowingCount(prev => prev + 1);
         onFollowingChange(1); // Incrémenter le compteur dans le parent
+        
+        // Créer une notification de suivi
+        await notificationService.createFollowNotification(profile.id, profileData.id);
         
         // Force refresh du compteur dans la base de données (au cas où le trigger n'aurait pas fonctionné)
         await supabase
