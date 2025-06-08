@@ -92,6 +92,37 @@ export const useNotifications = () => {
     }
   }, [profile]);
 
+  // Liker un post depuis une notification
+  const likePostFromNotification = useCallback(async (tweetId: string) => {
+    if (!profile) return false;
+
+    try {
+      const { data, error } = await notificationService.likePostFromNotification(profile.id, tweetId);
+      if (error) throw new Error(error);
+      return true;
+    } catch (err) {
+      console.error('Erreur lors du like:', err);
+      return false;
+    }
+  }, [profile]);
+
+  // Bloquer les notifications d'un utilisateur
+  const blockNotificationsFromUser = useCallback(async (senderId: string) => {
+    if (!profile) return false;
+
+    try {
+      const { error } = await notificationService.blockNotificationsFromUser(profile.id, senderId);
+      if (error) throw new Error(error);
+      
+      // Supprimer localement toutes les notifications de cet utilisateur
+      setNotifications(prev => prev.filter(notif => notif.sender?.id !== senderId));
+      
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }, [profile]);
+
   // Écouter les nouvelles notifications en temps réel
   useEffect(() => {
     if (!profile) return;
@@ -127,6 +158,8 @@ export const useNotifications = () => {
     error,
     markAsRead,
     markAllAsRead,
+    likePostFromNotification,
+    blockNotificationsFromUser,
     refreshNotifications: fetchNotifications
   };
 };

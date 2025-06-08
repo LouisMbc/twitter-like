@@ -95,7 +95,7 @@ export interface Notification {
   sender_id: string;
   content_id?: string;
   content_type: 'tweet' | 'story' | 'follow' | 'like' | 'retweet' | 'message' | 'mention';
-  type: 'like' | 'retweet' | 'follow' | 'mention' | 'comment';
+  type: 'like' | 'retweet' | 'follow' | 'mention' | 'comment' | 'new_tweet';
   message: string;
   is_read: boolean;
   created_at: string;
@@ -104,4 +104,12 @@ export interface Notification {
     nickname: string;
     profilePicture?: string;
   };
+}
+
+// Types pour les actions de notifications
+export interface NotificationAction {
+  id: string;
+  label: string;
+  icon: string;
+  action: 'like' | 'block';
 }

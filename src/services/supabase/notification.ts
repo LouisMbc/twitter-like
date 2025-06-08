@@ -196,18 +196,74 @@ export const notificationService = {
     }
   },
 
-  // Supprimer les notifications de test
-  removeTestNotifications: async () => {
+  // Liker un post depuis une notification
+  likePostFromNotification: async (userId: string, tweetId: string) => {
     try {
-      const { error } = await supabase
+      // Vérifier si le tweet existe
+      const { data: tweet, error: tweetError } = await supabase
+        .from('Tweets')
+        .select('id, author_id')
+        .eq('id', tweetId)
+        .single();
+
+      if (tweetError || !tweet) {
+        throw new Error('Tweet non trouvé');
+      }
+
+      // Vérifier si l'utilisateur a déjà liké
+      const { data: existingLike } = await supabase
+        .from('Likes')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('tweet_id', tweetId)
+        .single();
+
+      if (existingLike) {
+        return { data: null, error: 'Tweet déjà liké' };
+      }
+
+      // Ajouter le like
+      const { data, error } = await supabase
+        .from('Likes')
+        .insert([{
+          user_id: userId,
+          tweet_id: tweetId
+        }])
+        .select();
+
+      return { data, error };
+    } catch (error) {
+      console.error('Erreur lors du like:', error);
+      return { data: null, error };
+    }
+  },
+
+  // Bloquer les notifications d'un utilisateur
+  blockNotificationsFromUser: async (userId: string, senderId: string) => {
+    try {
+      // Créer ou mettre à jour une entrée de blocage
+      const { data, error } = await supabase
+        .from('NotificationBlocks')
+        .upsert([{
+          user_id: userId,
+          blocked_user_id: senderId,
+          created_at: new Date().toISOString()
+        }])
+        .select();
+
+      if (error) throw error;
+
+      // Supprimer toutes les notifications existantes de cet utilisateur
+      await supabase
         .from('Notifications')
         .delete()
-        .or('message.ilike.%Test notification%,message.ilike.%notification de test%,message.ilike.%Test%');
+        .eq('user_id', userId)
+        .eq('sender_id', senderId);
 
-      return { error };
+      return { data, error: null };
     } catch (error) {
-      console.error('Erreur lors de la suppression des notifications de test:', error);
-      return { error };
+      console.error('Erreur lors du blocage des notifications:', error);
+      return { data: null, error };
     }
   },
 
