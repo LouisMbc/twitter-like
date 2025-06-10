@@ -1,7 +1,8 @@
 {
   "name": "twitter-like",
   "version": "0.1.0",
-  "private": true,  "scripts": {
+  "private": true,
+  "scripts": {
     "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start",
@@ -14,6 +15,7 @@
     "@supabase/supabase-js": "^2.49.10",
     "@vitalets/google-translate-api": "^9.2.1",
     "date-fns": "^4.1.0",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.511.0",
     "micro": "^10.0.1",
     "next": "^15.3.3",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/lodash": "^4.17.17",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

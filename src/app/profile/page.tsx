@@ -41,9 +41,11 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (tweets.length > 0) {
-      // Filtrer les tweets avec médias
+      // Filtrer les tweets avec médias - EXCLURE les retweets
       const tweetsWithMedia = tweets.filter(
-        (tweet) => tweet.picture && tweet.picture.length > 0
+        (tweet) => tweet.picture && 
+                   tweet.picture.length > 0 && 
+                   !tweet.retweet_id  // Exclure les retweets
       );
       setMediaTweets(tweetsWithMedia);
     }

@@ -16,13 +16,18 @@ interface Message {
 
 interface Contact {
   id: string;
-  // Add other user properties as needed
+  nickname: string;
+  profilePicture?: string;
 }
 
 interface Conversation {
-  // Add conversation properties
   id: string;
-  // Add other conversation properties as needed
+  nickname: string;
+  profilePicture?: string;
+  user?: Contact;
+  lastMessage?: any;
+  unreadCount: number;
+  last_message_at?: string;
 }
 
 export const useMessages = () => {
@@ -43,7 +48,8 @@ export const useMessages = () => {
       const { data, error } = await messageService.getConversations(profile.id);
       if (error) throw error;
       
-      setConversations((data || []) as unknown as Conversation[]);
+      console.log('Conversations récupérées:', data);
+      setConversations((data || []) as Conversation[]);
     } catch (err) {
       console.error('Erreur lors du chargement des conversations:', err);
       setError('Impossible de charger vos conversations');
@@ -127,6 +133,22 @@ export const useMessages = () => {
     }
   }, [profile]);
 
+  // Rechercher les utilisateurs avec qui on peut échanger des messages
+  const searchMessagableUsers = useCallback(async (query: string = '') => {
+    if (!profile) return [];
+    
+    try {
+      const { data, error } = await messageService.searchMessagableUsers(profile.id, query);
+      if (error) throw error;
+      
+      return data || [];
+    } catch (err) {
+      console.error('Erreur lors de la recherche d\'utilisateurs:', err);
+      setError('Impossible de rechercher les utilisateurs');
+      return [];
+    }
+  }, [profile]);
+
   // Écouter les nouveaux messages en temps réel
   useEffect(() => {
     if (!profile) return;
@@ -169,6 +191,7 @@ export const useMessages = () => {
     error, 
     fetchMessages, 
     sendMessage, 
-    checkCanMessage 
+    checkCanMessage,
+    searchMessagableUsers
   };
 };

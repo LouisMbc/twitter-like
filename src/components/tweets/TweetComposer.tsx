@@ -189,21 +189,21 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
           }
         }
       } catch (hashtagError) {
-        console.error('❌ Erreur avec les hashtags:', hashtagError);
+        console.error('❌ Erreur avec les hashtags :', hashtagError);
       }
 
       // NOUVEAU : Gérer les mentions
       try {
         const mentions = mentionService.extractMentions(content);
-        console.log('👤 Mentions détectées:', mentions);
+        console.log('👤 Mentions détectées :', mentions);
         
         if (mentions.length > 0) {
           console.log('📧 Création des notifications de mention...');
           await mentionService.createMentionNotifications(tweet.id, profile.id, mentions);
-          console.log('✅ Notifications de mention créées');
+          console.log('✅ Notifications de mention créées avec succès');
         }
       } catch (mentionError) {
-        console.error('❌ Erreur avec les mentions:', mentionError);
+        console.error('❌ Erreur avec les mentions :', mentionError);
       }
 
       let finalMediaUrls: string[] = [];

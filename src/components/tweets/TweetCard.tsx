@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import { ArrowPathIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
+import { MessageCircle } from 'lucide-react';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import RetweetButton from './RetweetButton';
+import CommentList from '@/components/comments/CommentList';
+import CommentForm from '@/components/comments/CommentForm';
 import { Tweet } from '@/types';
 import { tweetService } from '@/services/supabase/tweet';
 import supabase from '@/lib/supabase';
@@ -24,6 +27,9 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
   const router = useRouter();
   const [originalTweet, setOriginalTweet] = useState<Tweet | null>(null);
   const [commentCount, setCommentCount] = useState(0);
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [localComments, setLocalComments] = useState<any[]>([]);
 
   // Récupérer le tweet original si c'est un retweet
   useEffect(() => {
@@ -137,6 +143,13 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
     router.push(`/tweets/${tweet.id}#comments`);
   };
 
+  // Fonction pour gérer l'ajout de commentaires avec mise à jour immédiate
+  const handleCommentAdded = useCallback((newComment: any) => {
+    // Ajouter le commentaire à l'état local IMMÉDIATEMENT
+    setLocalComments(prev => [...prev, newComment]);
+    setCommentCount(prev => prev + 1);
+  }, []);
+
   if (!tweet) {
     console.error('Tweet manquant');
     return <div>Tweet non disponible</div>;
@@ -236,7 +249,7 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
           )}
 
           {/* Affichage du tweet original s'il s'agit d'un retweet */}
-          {tweet.retweet_id && originalTweet && (
+          {tweet.retweet_id && originalTweet && originalTweet.author && (
             <div className="mt-2 mb-3 border border-gray-700 rounded-lg p-3">
               <div className="mb-2 text-sm text-gray-500 flex items-center">
                 <ArrowPathIcon className="h-4 w-4 mr-1" />
@@ -311,7 +324,10 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
               </div>
               
               <button 
-                onClick={handleCommentClick}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowComments(!showComments);
+                }}
                 className="flex items-center text-gray-500 hover:text-blue-500"
               >
                 <ChatBubbleOvalLeftIcon className="h-5 w-5 mr-1" />
@@ -329,6 +345,24 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
               <ReactionBar tweetId={tweet.id} />
             </div>
           </div>
+
+          {/* Section des commentaires */}
+          {showComments && (
+            <div className="border-t border-gray-200 dark:border-gray-800 mt-4">
+              {/* UN SEUL formulaire principal pour ajouter un commentaire */}
+              <div className="p-4 border-b border-gray-700">
+                <CommentForm
+                  tweetId={tweet.id}
+                  onCommentAdded={handleCommentAdded}
+                />
+              </div>
+              {/* Liste des commentaires existants - SANS le formulaire interne */}
+              <CommentList 
+                tweetId={tweet.id} 
+                onCommentAdded={handleCommentAdded}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

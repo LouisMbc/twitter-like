@@ -7,9 +7,11 @@ import ConversationList from '@/components/messages/ConversationList';
 import { MagnifyingGlassIcon, PencilSquareIcon, Cog6ToothIcon, InboxIcon, ArrowLeftIcon, InformationCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
-import { useState, useRef, useEffect, FormEvent } from 'react';
+import { useState, useRef, useEffect, FormEvent, useCallback } from 'react';
 import { profileService } from '@/services/supabase/profile';
 import supabase from '@/lib/supabase';
+import { messageService } from '@/services/supabase/message';
+import { debounce } from 'lodash';
 
 interface ContactType {
   id: string;
@@ -49,73 +51,60 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fonction pour charger les abonnements
+  // Fonction pour charger les utilisateurs
   const loadFollowings = async () => {
-    if (!profile?.id) {
-      return;
-    }
+    if (!profile) return;
     
     setLoadingFollowings(true);
-    
     try {
-      const { data: followsData, error: followsError } = await supabase
-        .from('follows')
-        .select('*')
-        .eq('follower_id', profile.id);
+      // Utiliser la nouvelle fonction pour récupérer tous les utilisateurs
+      const { data: allUsers, error } = await messageService.searchMessagableUsers(profile.id, searchQuery);
       
-      if (followsError) {
-        console.error('Erreur lors du chargement des abonnements:', followsError);
+      if (error) {
+        console.error('Erreur lors du chargement des utilisateurs:', error);
         return;
       }
       
-      if (followsData && followsData.length > 0) {
-        const followingIds = followsData.map(follow => follow.following_id);
-        
-        let profilesData = null;
-        let profilesError = null;
-        
-        const { data: profileData, error: profileError } = await supabase
-          .from('Profile')
-          .select('*')
-          .in('id', followingIds);
-          
-        if (profileError) {
-          const { data: profilesDataLower, error: profilesErrorLower } = await supabase
-            .from('profiles')
-            .select('*')
-            .in('id', followingIds);
-            
-          profilesData = profilesDataLower;
-          profilesError = profilesErrorLower;
-        } else {
-          profilesData = profileData;
-          profilesError = profileError;
-        }
-        
-        if (profilesError) {
-          console.error('Erreur lors du chargement des profils:', profilesError);
-          return;
-        }
-        
-        if (profilesData) {
-          const followingsWithProfiles = profilesData.map(profile => ({
-            id: profile.id,
-            nickname: profile.nickname || profile.name || profile.username || 'Utilisateur',
-            profilePicture: profile.profilePicture || profile.profile_picture || profile.avatar_url
-          }));
-          
-          setFollowings(followingsWithProfiles);
-        }
-      } else {
-        setFollowings([]);
-      }
-    } catch (error) {
-      console.error('Erreur générale:', error);
-      setFollowings([]);
+      setFollowings(allUsers || []);
+    } catch (err) {
+      console.error('Erreur lors du chargement des utilisateurs:', err);
     } finally {
       setLoadingFollowings(false);
     }
   };
+
+  // Fonction de recherche avec debounce
+  const handleSearch = useCallback(
+    debounce(async (query: string) => {
+      if (!profile) return;
+      
+      setLoadingFollowings(true);
+      try {
+        const { data: searchedUsers, error } = await messageService.searchMessagableUsers(profile.id, query);
+        
+        if (error) {
+          console.error('Erreur lors de la recherche:', error);
+          return;
+        }
+        
+        setFollowings(searchedUsers || []);
+      } catch (err) {
+        console.error('Erreur lors de la recherche:', err);
+      } finally {
+        setLoadingFollowings(false);
+      }
+    }, 300),
+    [profile]
+  );
+
+  // Effet pour la recherche
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery);
+    } else {
+      loadFollowings();
+    }
+  }, [searchQuery, handleSearch]);
 
   // Ouvrir le modal et charger les abonnements
   const handleNewMessage = () => {
@@ -123,112 +112,79 @@ export default function MessagesPage() {
     loadFollowings();
   };
 
-  // Sélectionner un abonné pour démarrer une conversation
+  // Sélectionner un utilisateur pour démarrer une conversation
   const handleSelectFollowing = async (userId: string) => {
     setShowNewMessageModal(false);
     setSearchQuery('');
-    await handleSelectConversation(userId);
+    
+    // Trouver l'utilisateur dans la liste des followings (qui contient maintenant tous les utilisateurs)
+    const selectedUser = followings.find(user => user.id === userId);
+    
+    if (selectedUser) {
+      // Utiliser directement les données de l'utilisateur sélectionné
+      await handleSelectConversation(userId, selectedUser);
+    } else {
+      console.error('Utilisateur non trouvé dans la liste');
+    }
   };
 
-  // Filtrer les abonnements selon la recherche
-  const filteredFollowings = followings.filter(following =>
-    following.nickname.toLowerCase().includes(searchQuery.toLowerCase())
-  );  // Fonction pour sélectionner une conversation
-  const handleSelectConversation = async (userId: string) => {
+  // Fonction pour sélectionner une conversation
+  const handleSelectConversation = async (userId: string, userData?: ContactType) => {
     console.log('Sélection de la conversation:', userId);
     setSelectedUserId(userId);
     setCheckingPermissions(true);
     
     try {
-      // Récupérer les informations du contact depuis les conversations existantes d'abord
-      const existingConversation = conversations.find((conv: any) => 
-        conv.id === userId || conv.user?.id === userId
-      );
-      
-      if (existingConversation) {
-        console.log('Contact trouvé dans les conversations existantes:', existingConversation);
+      let contact: ContactType;
+
+      // Si nous avons les données de l'utilisateur, les utiliser directement
+      if (userData) {
+        contact = userData;
+        console.log('Utilisation des données utilisateur fournies:', contact);
+      } else {
+        // Récupérer les informations du contact depuis les conversations existantes d'abord
+        const existingConversation = conversations.find((conv: any) => 
+          conv.id === userId || conv.user?.id === userId
+        );
         
-        // Utiliser les données de la conversation existante
-        const contact = {
-          id: existingConversation.id || existingConversation.user?.id || userId,
-          nickname: existingConversation.nickname || existingConversation.user?.nickname || 'Utilisateur',
-          profilePicture: existingConversation.profilePicture || existingConversation.user?.profilePicture
-        };
-        
-        console.log('Contact formaté:', contact);
-        
-        // Vérifier les permissions et charger les messages
-        const canMessage = await checkCanMessage(userId);
-        setCanMessageUser(canMessage);
-        
-        // Charger les messages via useMessages
-        fetchMessages(contact);
-        
-        return;
+        if (existingConversation) {
+          console.log('Contact trouvé dans les conversations existantes:', existingConversation);
+          
+          contact = {
+            id: existingConversation.id || existingConversation.user?.id || userId,
+            nickname: existingConversation.nickname || existingConversation.user?.nickname || 'Utilisateur',
+            profilePicture: existingConversation.profilePicture || existingConversation.user?.profilePicture
+          };
+        } else {
+          // Si pas trouvé dans les conversations, chercher dans la base de données
+          console.log('Contact non trouvé dans les conversations, recherche dans la DB...');
+          
+          const { data: profileData, error: profileError } = await supabase
+            .from('Profile')
+            .select('id, nickname, profilePicture')
+            .eq('id', userId)
+            .single();
+            
+          if (profileData && !profileError) {
+            contact = {
+              id: profileData.id,
+              nickname: profileData.nickname || 'Utilisateur',
+              profilePicture: profileData.profilePicture
+            };
+            console.log('Contact trouvé dans Profile:', contact);
+          } else {
+            console.error('Impossible de trouver le contact:', profileError);
+            return;
+          }
+        }
       }
       
-      // Si pas trouvé dans les conversations, chercher dans la base de données
-      console.log('Contact non trouvé dans les conversations, recherche dans la DB...');
+      // Vérifier les permissions et charger les messages
+      const canMessage = await checkCanMessage(userId);
+      setCanMessageUser(canMessage);
       
-      // Essayer d'abord avec la table 'Profile' (avec majuscule)
-      const { data: profileData, error: profileError } = await supabase
-        .from('Profile')
-        .select('id, nickname, profilePicture, profile_picture, avatar_url')
-        .eq('id', userId)
-        .single();
-        
-      if (profileData && !profileError) {
-        // Succès avec Profile
-        const contact = {
-          id: profileData.id,
-          nickname: profileData.nickname || 'Utilisateur',
-          profilePicture: profileData.profilePicture || profileData.profile_picture || profileData.avatar_url
-        };
-        
-        console.log('Contact trouvé dans Profile:', contact);
-        
-        // Vérifier les permissions et charger les messages
-        const canMessage = await checkCanMessage(userId);
-        setCanMessageUser(canMessage);
-        
-        // Charger les messages via useMessages
-        fetchMessages(contact);
-        
-        return;
-      }
-      
-      // Si échec avec Profile, essayer avec profiles
-      console.log('Tentative avec table profiles (minuscule)...');
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, nickname, profilePicture, profile_picture, avatar_url')
-        .eq('id', userId)
-        .single();
-        
-      if (profilesData && !profilesError) {
-        // Succès avec profiles
-        const contact = {
-          id: profilesData.id,
-          nickname: profilesData.nickname || 'Utilisateur',
-          profilePicture: profilesData.profilePicture || profilesData.profile_picture || profilesData.avatar_url
-        };
-        
-        console.log('Contact trouvé dans profiles:', contact);
-        
-        // Vérifier les permissions et charger les messages
-        const canMessage = await checkCanMessage(userId);
-        setCanMessageUser(canMessage);
-        
-        // Charger les messages via useMessages
-        fetchMessages(contact);
-        
-        return;
-      }
-      
-      // Si aucune des deux tables ne fonctionne
-      console.error('Impossible de trouver le contact dans Profile ou profiles');
-      console.error('Erreur Profile:', profileError);
-      console.error('Erreur profiles:', profilesError);
+      // Charger les messages via useMessages
+      fetchMessages(contact);
       
     } catch (error) {
       console.error('Erreur lors de la sélection de conversation:', error);
@@ -580,7 +536,7 @@ export default function MessagesPage() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Rechercher un abonnement"
+                  placeholder="Rechercher un utilisateur"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-800/60 border border-gray-600/50 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all text-sm lg:text-base"
@@ -588,13 +544,13 @@ export default function MessagesPage() {
               </div>
             </div>
 
-            {/* Liste des abonnements */}
+            {/* Liste des utilisateurs */}
             <div className="flex-1 overflow-y-auto">
               {loadingFollowings ? (
                 <div className="flex items-center justify-center p-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
                 </div>
-              ) : filteredFollowings.length === 0 ? (
+              ) : followings.length === 0 ? (
                 <div className="text-center p-6 lg:p-8">
                   <div className="mb-4">
                     <svg className="w-10 lg:w-12 h-10 lg:h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -602,12 +558,12 @@ export default function MessagesPage() {
                     </svg>
                   </div>
                   <p className="text-gray-400 text-sm lg:text-base">
-                    {searchQuery ? 'Aucun abonnement trouvé' : 'Vous ne suivez personne encore'}
+                    {searchQuery ? 'Aucun utilisateur trouvé' : 'Recherchez un utilisateur pour commencer une conversation'}
                   </p>
                 </div>
               ) : (
                 <div className="p-2">
-                  {filteredFollowings.map((following) => (
+                  {followings.map((following) => (
                     <button
                       key={following.id}
                       onClick={() => handleSelectFollowing(following.id)}

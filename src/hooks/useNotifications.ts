@@ -98,7 +98,7 @@ export const useNotifications = () => {
 
     try {
       const { data, error } = await notificationService.likePostFromNotification(profile.id, tweetId);
-      if (error) throw new Error(error);
+      if (error) throw new Error(String(error));
       return true;
     } catch (err) {
       console.error('Erreur lors du like:', err);
@@ -112,10 +112,10 @@ export const useNotifications = () => {
 
     try {
       const { error } = await notificationService.blockNotificationsFromUser(profile.id, senderId);
-      if (error) throw new Error(error);
+      if (error) throw new Error(String(error));
       
       // Supprimer localement toutes les notifications de cet utilisateur
-      setNotifications(prev => prev.filter(notif => notif.sender?.id !== senderId));
+      setNotifications(prev => prev.filter(notif => notif.sender?.[0]?.id !== senderId));
       
       return true;
     } catch (err) {

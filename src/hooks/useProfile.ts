@@ -11,6 +11,7 @@ export const useProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tweets, setTweets] = useState<any[]>([]);
   const [comments, setComments] = useState<any[]>([]);
+  const [mediaTweets, setMediaTweets] = useState<any[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
@@ -151,8 +152,26 @@ export const useProfile = () => {
       
       if (page === 0) {
         setTweets(formattedTweets);
+        
+        // Filtrer les médias - EXCLURE les retweets
+        const tweetsWithMedia = formattedTweets.filter(tweet => 
+          tweet.picture && 
+          tweet.picture.length > 0 && 
+          !tweet.retweet_id
+        );
+        setMediaTweets(tweetsWithMedia);
       } else {
         setTweets(prev => [...prev, ...formattedTweets]);
+        
+        // Mettre à jour les médias en excluant les retweets
+        setMediaTweets((prev: any) => {
+          const newMediaTweets = formattedTweets.filter(tweet => 
+            tweet.picture && 
+            tweet.picture.length > 0 && 
+            !tweet.retweet_id
+          );
+          return [...prev, ...newMediaTweets];
+        });
       }
       
       // Déterminer s'il y a plus de tweets à charger
@@ -278,6 +297,7 @@ export const useProfile = () => {
     profile,
     tweets,
     comments,
+    mediaTweets, // Maintenant ne contient que les médias des posts originaux
     followersCount,
     followingCount,
     loading,
@@ -290,5 +310,6 @@ export const useProfile = () => {
     setActiveTab
   };
 };
-
 export default useProfile;
+
+

@@ -26,7 +26,7 @@ export default function CancelPage() {
           <div className="space-y-4">
             <button
               onClick={() => router.push('/premium')}
-              className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow focus:outline-none transition-colors duration-300"
+              className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow focus:outline-none transition-colors duration-300"
             >
               Réessayer
             </button>

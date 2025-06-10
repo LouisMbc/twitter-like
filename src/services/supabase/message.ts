@@ -23,18 +23,35 @@ export const messageService = {
     if (error) return { error };
 
     // Regrouper les messages par conversation (par utilisateur)
-    const conversations: Record<string, Conversation> = {};
-      data?.forEach((message: any) => {
+    const conversations: Record<string, any> = {};
+    
+    data?.forEach((message: any) => {
+      // Déterminer qui est l'autre utilisateur dans la conversation
+      const otherUserId = message.sender_id === userId ? message.recipient_id : message.sender_id;
+      const otherUser = message.sender_id === userId ? message.recipient : message.sender;
+      
+      // Exclure les conversations avec soi-même
+      if (otherUserId === userId) {
+        return; // Ignorer les messages avec soi-même
+      }
+      
+      // Déterminer qui est l'expéditeur et le destinataire
+      const sender = message.sender;
+      const recipient = message.recipient;
       
       if (!conversations[otherUserId]) {
         conversations[otherUserId] = {
+          id: otherUserId,
+          nickname: otherUser?.nickname || 'Utilisateur',
+          profilePicture: otherUser?.profilePicture,
           user: otherUser,
           lastMessage: {
             ...message,
             sender,
             recipient
           },
-          unreadCount: sender?.id !== userId && !message.is_read ? 1 : 0
+          unreadCount: sender?.id !== userId && !message.is_read ? 1 : 0,
+          last_message_at: message.created_at
         };
       } else if (new Date(message.created_at) > new Date(conversations[otherUserId].lastMessage.created_at)) {
         // Mettre à jour le dernier message s'il est plus récent
@@ -43,7 +60,14 @@ export const messageService = {
           sender,
           recipient
         };
+        conversations[otherUserId].last_message_at = message.created_at;
+        
         // Incrémenter le compteur de non lus si nécessaire
+        if (sender?.id !== userId && !message.is_read) {
+          conversations[otherUserId].unreadCount++;
+        }
+      } else {
+        // Même si ce n'est pas le dernier message, compter les non lus
         if (sender?.id !== userId && !message.is_read) {
           conversations[otherUserId].unreadCount++;
         }
@@ -112,39 +136,16 @@ export const messageService = {
   },
   
   // Vérifier si deux utilisateurs peuvent échanger des messages
-  // (ils doivent se suivre mutuellement)
+  // Maintenant permet à tous les utilisateurs de s'envoyer des messages
   canMessage: async (userId: string, otherUserId: string) => {
     // Empêcher de se parler à soi-même
     if (userId === otherUserId) {
       return { canMessage: false, error: null };
     }
 
-    // Vérifier si l'utilisateur suit l'autre
-    const { data: follows, error: followsError } = await supabase
-      .from('Following')
-      .select('id')
-      .eq('follower_id', userId)
-      .eq('following_id', otherUserId)
-      .single();
-
-    if (followsError && followsError.code !== 'PGRST116') {
-      return { canMessage: false, error: followsError };
-    }
-
-    // Vérifier si l'autre utilisateur suit l'utilisateur
-    const { data: isFollowed, error: isFollowedError } = await supabase
-      .from('Following')
-      .select('id')
-      .eq('follower_id', otherUserId)
-      .eq('following_id', userId)
-      .single();
-
-    if (isFollowedError && isFollowedError.code !== 'PGRST116') {
-      return { canMessage: false, error: isFollowedError };
-    }
-
-    const canMessage = !!follows && !!isFollowed;
-    return { canMessage, error: null };
+    // Pour l'instant, autoriser tous les utilisateurs à communiquer
+    // Vous pouvez ajouter des restrictions plus tard si nécessaire
+    return { canMessage: true, error: null };
   },
 
   // Ajouter cette méthode au messageService
@@ -158,5 +159,31 @@ export const messageService = {
       .eq('is_read', false);
       
     return { count, error };
+  },
+
+  // Rechercher les utilisateurs avec qui on peut échanger des messages
+  searchMessagableUsers: async (userId: string, searchQuery: string = '') => {
+    try {
+      // Rechercher parmi tous les utilisateurs, pas seulement les abonnements mutuels
+      let query = supabase
+        .from('Profile')
+        .select('id, nickname, profilePicture')
+        .neq('id', userId); // Exclure soi-même
+
+      // Filtrer par la recherche si fournie
+      if (searchQuery.trim()) {
+        const queryText = searchQuery.toLowerCase();
+        query = query.ilike('nickname', `%${queryText}%`);
+      }
+
+      const { data: users, error } = await query.limit(50);
+
+      if (error) throw error;
+
+      return { data: users || [], error: null };
+    } catch (error) {
+      console.error('Erreur lors de la recherche d\'utilisateurs:', error);
+      return { data: [], error };
+    }
   },
 };

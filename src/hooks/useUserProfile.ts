@@ -114,18 +114,23 @@ export function useUserProfile(userId: string) {
       if (tweetsError) {
         console.error('Erreur lors du chargement des tweets:', tweetsError);
       } else {
-        const cleanedTweets = (tweetsData || []).map(tweet => ({
-          ...tweet,
-          author: tweet.author ? {
-            ...tweet.author,
-            nickname: tweet.author.nickname || ''
-          } : null
-        }));
+        const cleanedTweets = (tweetsData || []).map(tweet => {
+          const authorData = tweet.author as any;
+          return {
+            ...tweet,
+            author: authorData ? {
+              ...Array.isArray(authorData) ? authorData[0] : authorData,
+              nickname: (Array.isArray(authorData) ? authorData[0]?.nickname : authorData?.nickname) || ''
+            } : null
+          };
+        });
         setTweets(cleanedTweets);
 
-        // Filtrer les tweets avec médias
+        // Filtrer les tweets avec médias - EXCLURE les retweets
         const tweetsWithMedia = cleanedTweets.filter(tweet => 
-          tweet.picture && tweet.picture.length > 0
+          tweet.picture && 
+          tweet.picture.length > 0 && 
+          !tweet.retweet_id  // Exclure les retweets
         );
         setMediaTweets(tweetsWithMedia);
       }
@@ -152,13 +157,16 @@ export function useUserProfile(userId: string) {
       } else {
         const cleanedLikedTweets = (likedTweetsData || [])
           .filter(like => like.tweet) // S'assurer que le tweet existe
-          .map(like => ({
-            ...like.tweet,
-            author: like.tweet.author ? {
-              ...like.tweet.author,
-              nickname: like.tweet.author.nickname || ''
-            } : null
-          }));
+          .map(like => {
+            const tweet = like.tweet as any; // Type assertion pour éviter les erreurs TypeScript
+            return {
+              ...tweet,
+              author: tweet.author ? {
+                ...Array.isArray(tweet.author) ? tweet.author[0] : tweet.author,
+                nickname: (Array.isArray(tweet.author) ? tweet.author[0]?.nickname : tweet.author?.nickname) || ''
+              } : null
+            };
+          });
         setLikedTweets(cleanedLikedTweets);
       }
 
@@ -183,13 +191,16 @@ export function useUserProfile(userId: string) {
       if (commentsError) {
         console.error('Erreur lors du chargement des commentaires:', commentsError);
       } else {
-        const cleanedComments = (commentsData || []).map(comment => ({
-          ...comment,
-          author: comment.author ? {
-            ...comment.author,
-            nickname: comment.author.nickname || ''
-          } : null
-        }));
+        const cleanedComments = (commentsData || []).map(comment => {
+          const author = comment.author as any;
+          return {
+            ...comment,
+            author: author ? {
+              ...Array.isArray(author) ? author[0] : author,
+              nickname: (Array.isArray(author) ? author[0]?.nickname : author?.nickname) || ''
+            } : null
+          };
+        });
         setComments(cleanedComments);
       }
 

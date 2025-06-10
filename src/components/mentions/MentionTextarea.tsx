@@ -68,7 +68,7 @@ export default function MentionTextarea({
         setSelectedIndex(0);
       }
     } catch (error) {
-      console.error('Erreur lors de la recherche d\'utilisateurs:', error);
+      console.error('Erreur lors de la recherche d\'utilisateurs :', error);
     }
   };
 
@@ -132,16 +132,18 @@ export default function MentionTextarea({
       
       {/* Suggestions dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto min-w-64">
+        <div className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto min-w-64 mt-1">
           {suggestions.map((user, index) => (
             <div
               key={user.id}
-              className={`flex items-center p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                index === selectedIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
+              className={`flex items-center p-3 cursor-pointer transition-colors ${
+                index === selectedIndex 
+                  ? 'bg-blue-50 dark:bg-blue-900/30' 
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               onClick={() => insertMention(user)}
             >
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 mr-3">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 mr-3 flex-shrink-0">
                 {user.profilePicture ? (
                   <img
                     src={user.profilePicture}
@@ -149,7 +151,7 @@ export default function MentionTextarea({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-medium">
+                  <div className="w-full h-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-medium text-sm">
                     {user.nickname.charAt(0).toUpperCase()}
                   </div>
                 )}

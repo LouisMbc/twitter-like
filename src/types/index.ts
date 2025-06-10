@@ -113,3 +113,18 @@ export interface NotificationAction {
   icon: string;
   action: 'like' | 'block';
 }
+
+// Types pour les commentaires avec callbacks
+export interface CommentFormProps {
+  tweetId: string;
+  parentCommentId?: string;
+  onCommentAdded: (comment: any) => void;
+  onCancel?: () => void;
+}
+
+export interface CommentListProps {
+  tweetId?: string;
+  comments?: Comment[];
+  parentCommentId?: string;
+  onCommentAdded?: (comment: any) => void;
+}

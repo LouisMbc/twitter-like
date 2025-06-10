@@ -54,7 +54,7 @@ export const useProfileEdit = () => {
           console.error('Erreur lors de la récupération de l\'abonnement:', subscriptionError);
         } else if (subscription && subscription.status === 'active' && !profile.is_premium) {
           // Mettre à jour le statut premium si nécessaire
-          await profileService.updatePremiumStatus(sessionResult.session.user.id, true);
+          await profileService.updateProfile(sessionResult.session.user.id, { is_premium: true });
           profile.is_premium = true;
         }
       } catch (err) {
@@ -87,7 +87,7 @@ export const useProfileEdit = () => {
     }
   }
   const validateForm = (data: ProfileForm) => {
-    const errors: string[] = [];
+    let errors: string[] = [];
     
     // Nettoyer et valider le pseudo
     const cleanNickname = data.nickname.replace(/^@+/, '').trim();
@@ -161,14 +161,14 @@ export const useProfileEdit = () => {
       await profileService.updateProfile(sessionResult.session.user.id, {
         lastName: formData.lastName.trim(),
         firstName: formData.firstName.trim(),
-        nickname: formData.nickname.replace(/^@+/, '').trim(), // Nettoyer le nickname
+        nickname: formData.nickname.replace(/^@+/, '').trim(),
         bio: formData.bio.trim(),
         profilePicture: profilePictureUrl,
       });
 
       router.push('/profile');
     } catch (err) {
-      console.error('Erreur lors de la mise à jour du profil:', err);
+      console.error('Erreur lors de la mise à jour du profil :', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la mise à jour');
     } finally {
       setLoading(false);

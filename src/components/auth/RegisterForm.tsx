@@ -57,7 +57,7 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-red-500 text-white py-3 px-4 rounded-full hover:bg-red-600 disabled:opacity-50 font-bold"
+              className="w-full bg-red-500 text-white py-3 px-4 rounded-full hover:bg-red-600 disabled:opacity-50 font-bold transition-colors duration-200"
             >
               {loading ? 'Envoi en cours...' : 'Envoyer le lien magique'}
             </button>
@@ -65,7 +65,7 @@ export default function RegisterForm() {
 
           <div className="mt-8 text-center text-gray-400">
             Déjà un compte?
-            <Link href="/auth/login" className="text-red-500 hover:underline ml-1">
+            <Link href="/auth/login" className="text-red-500 hover:text-red-400 hover:underline ml-1 transition-colors duration-200">
               Se connecter
             </Link>
           </div>
@@ -80,7 +80,7 @@ export default function RegisterForm() {
           </p>
           <button 
             onClick={() => setSubmitted(false)} 
-            className="text-red-500 hover:text-red-400 mt-4"
+            className="text-red-500 hover:text-red-400 mt-4 transition-colors duration-200"
           >
             Utiliser une autre adresse email
           </button>

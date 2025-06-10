@@ -35,7 +35,7 @@ export default function PremiumPage() {
       <Header />
       <div className="ml-64 flex-1 p-4">
         <div className="max-w-4xl mx-auto space-y-8">
-          <h1 className="text-3xl font-bold">Twitter-like Premium</h1>
+          <h1 className="text-3xl font-bold">Flow Premium</h1>
           
           {error && (
             <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 px-4 py-3 rounded">
@@ -46,7 +46,7 @@ export default function PremiumPage() {
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-8 text-white">
               <h2 className="text-2xl font-bold mb-2">Débloquez toutes les fonctionnalités premium</h2>
-              <p className="opacity-90">Profitez d'une expérience sans limite sur Twitter-like</p>
+              <p className="opacity-90">Profitez d'une expérience sans limite sur Flow</p>
             </div>
             
             <div className="p-6 space-y-6">
@@ -119,7 +119,7 @@ export default function PremiumPage() {
                             setIsProcessing(false);
                           }}
                           disabled={isProcessing}
-                          className="w-full py-2 px-4 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
+                          className="w-full py-2 px-4 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-colors duration-200"
                         >
                           {isProcessing ? 'Traitement en cours...' : 'Réactiver l\'abonnement'}
                         </button>
@@ -132,7 +132,7 @@ export default function PremiumPage() {
                           setIsProcessing(false);
                         }}
                         disabled={isProcessing}
-                        className="w-full py-2 px-4 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
+                        className="w-full py-2 px-4 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-colors duration-200"
                       >
                         {isProcessing ? 'Traitement en cours...' : 'Annuler l\'abonnement'}
                       </button>
@@ -173,7 +173,7 @@ export default function PremiumPage() {
                   
                   <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 mt-6">
                     <div className="flex justify-between mb-2">
-                      <span className="font-medium">Twitter-like Premium</span>
+                      <span className="font-medium">Flow Premium</span>
                       <span className="font-bold">9,99€/mois</span>
                     </div>
                     <p className="text-sm text-gray-400">Annulation possible à tout moment</p>
@@ -185,7 +185,7 @@ export default function PremiumPage() {
                       await subscribeToPermium();
                     }}
                     disabled={isProcessing || !profile}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg shadow-md hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
+                    className="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg shadow-md hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-all duration-200"
                   >
                     {isProcessing ? 'Redirection vers le paiement...' : 'S\'abonner maintenant'}
                   </button>

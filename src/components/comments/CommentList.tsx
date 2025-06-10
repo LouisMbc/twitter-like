@@ -37,12 +37,13 @@ interface Comment {
 }
 
 interface CommentListProps {
-  tweetId?: string;  // Make tweetId optional
-  comments?: Comment[]; // Add the ability to pass comments directly
+  tweetId?: string;
+  comments?: Comment[];
   parentCommentId?: string;
+  onCommentAdded?: (comment: any) => void;
 }
 
-const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialComments, parentCommentId }) => {
+const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialComments, parentCommentId, onCommentAdded }) => {
   const [comments, setComments] = useState<Comment[]>(initialComments || []);
   const [loading, setLoading] = useState(!initialComments && !!tweetId);
   const [error, setError] = useState<string | null>(null);
@@ -161,6 +162,27 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
     });
   };
 
+  // Fonction pour ajouter un nouveau commentaire à l'état local
+  const handleCommentAdded = useCallback((newComment: any) => {
+    const formattedComment: Comment = {
+      id: newComment.id,
+      content: newComment.content,
+      created_at: newComment.created_at,
+      view_count: newComment.view_count || 0,
+      parent_comment_id: newComment.parent_comment_id || undefined,
+      tweet_id: newComment.tweet_id,
+      author: Array.isArray(newComment.author) ? newComment.author[0] : newComment.author
+    };
+
+    // Ajouter le nouveau commentaire à l'état local IMMÉDIATEMENT
+    setComments(prevComments => [...prevComments, formattedComment]);
+    
+    // Appeler le callback parent si fourni
+    if (onCommentAdded) {
+      onCommentAdded(newComment);
+    }
+  }, [onCommentAdded]);
+
   if (loading) {
     return <div className="py-8 text-center text-gray-500">Chargement des commentaires...</div>;
   }
@@ -239,6 +261,9 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
       <h3 className="text-lg font-semibold p-4 border-b border-gray-700 text-white">
         Commentaires ({comments.length})
       </h3>
+      
+      {/* SUPPRIMER complètement le formulaire principal - il est maintenant géré par TweetCard */}
+      
       {renderComments()}
     </div>
   );

@@ -43,18 +43,20 @@ export default function ConversationList({ onSelectConversation, selectedUserId 
   return (
     <div className="divide-y divide-gray-800">
       {conversations.map((conversation: any) => {
-        // Vérifications de sécurité pour éviter les erreurs
-        const conversationId = conversation.id || conversation.user?.id;
-        const nickname = conversation.nickname || conversation.user?.nickname || 'Utilisateur';
-        const profilePicture = conversation.profilePicture || conversation.user?.profilePicture;
-        const unreadCount = conversation.unread_count || conversation.unreadCount || 0;
-        const lastMessageAt = conversation.last_message_at || conversation.lastMessage?.created_at;
-        const lastMessage = conversation.last_message || conversation.lastMessage?.content || 'Aucun message';
+        // Utiliser les propriétés directes de la conversation
+        const conversationId = conversation.id;
+        const nickname = conversation.nickname || 'Utilisateur';
+        const profilePicture = conversation.profilePicture;
+        const unreadCount = conversation.unreadCount || 0;
+        const lastMessageAt = conversation.last_message_at;
+        const lastMessage = conversation.lastMessage?.content || 'Aucun message';
 
         if (!conversationId) {
           console.warn('Conversation sans ID:', conversation);
           return null;
-        }        return (
+        }
+
+        return (
           <div 
             key={conversationId}
             onClick={() => onSelectConversation(conversationId)}
@@ -98,7 +100,8 @@ export default function ConversationList({ onSelectConversation, selectedUserId 
                 </span>
               </div>
               <p className={`text-sm truncate ${unreadCount > 0 ? 'text-gray-300 font-medium' : 'text-gray-500'}`}>
-                {lastMessage}              </p>
+                {lastMessage}
+              </p>
             </div>
           </div>
         );
