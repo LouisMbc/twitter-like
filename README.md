@@ -100,7 +100,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=votre_cle_publique_stripe
 STRIPE_PREMIUM_PRICE_ID=votre_price_id_premium
 
 # App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:4000
 ```
 
 4. **Configuration Supabase**
@@ -115,7 +115,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```bash
 npm run dev
 ```
-Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
+Ouvrez [http://localhost:4000](http://localhost:4000) dans votre navigateur.
 
 ### Build de production
 ```bash
