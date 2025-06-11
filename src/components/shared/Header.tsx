@@ -271,73 +271,80 @@ export default function Header() {
             </Link>
           ))}
         </nav>
-      </div>
-
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-black/90 backdrop-blur-sm border-b border-gray-800 flex items-center justify-between px-4 z-50">
+      </div>      {/* Mobile Header - Responsive top bar */}
+      <div className="xl:hidden fixed top-0 left-0 right-0 h-14 sm:h-16 bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-4 z-50 transition-colors duration-300">
         <Link href="/dashboard" className="flex items-center space-x-2">
           <Image
             src="/logo_Flow.png"
             alt="Flow Logo"
-            width={32}
-            height={32}
-            className="rounded-lg"
+            width={28}
+            height={28}
+            className="sm:w-8 sm:h-8 rounded-lg"
           />
-          <h1 className="text-lg font-bold text-white">Flow</h1>
+          <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Flow</h1>
         </Link>
 
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Theme toggle for mobile */}
+          <ThemeToggle />
+          
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
-            {isMobileMenuOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            )}
-          </svg>
-        </button>
-      </div>
-
-      {/* Mobile Menu Overlay */}
+            <svg
+              className="w-5 h-5 sm:w-6 sm:h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {isMobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
+      </div>      {/* Mobile Menu Overlay - Responsive */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          className="xl:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          <div className="fixed top-16 left-0 right-0 bg-black border-b border-gray-800 py-4">
-            <nav className="px-4 space-y-2">
+          <div className="fixed top-14 sm:top-16 left-0 right-0 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 py-3 sm:py-4 transition-colors duration-300">
+            {/* Search bar in mobile menu */}
+            <div className="px-3 sm:px-4 mb-3 sm:mb-4">
+              <SearchBar placeholder="Rechercher..." />
+            </div>
+            
+            <nav className="px-3 sm:px-4 space-y-1 sm:space-y-2">
               {menuItems.map((item) => (
                 <Link
                   key={item.path}
                   href={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-colors relative ${
+                  className={`flex items-center space-x-3 sm:space-x-4 px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-colors relative text-sm sm:text-base ${
                     pathname === item.path
-                      ? "bg-red-600 text-white"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                      ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                   }`}
                 >
-                  <item.icon className="w-6 h-6" />
+                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   <span className="font-medium">{item.label}</span>
                   {item.badge && item.badge > 0 && (
-                    <span className="notification-badge">
+                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-medium">
                       {item.badge > 99 ? "99+" : item.badge}
                     </span>
                   )}
@@ -346,37 +353,33 @@ export default function Header() {
             </nav>
           </div>
         </div>
-      )}
-
-      {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-sm border-t border-gray-800 px-4 py-2 z-50">
-        <div className="flex justify-around">
+      )}      {/* Mobile Bottom Navigation - Responsive */}
+      <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800 px-2 sm:px-4 py-1 sm:py-2 z-50 transition-colors duration-300">
+        <div className="flex justify-around max-w-md mx-auto">
           {menuItems.slice(0, 5).map((item) => (
             <Link
               key={item.path}
               href={item.path}
-              className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-colors relative ${
+              className={`flex flex-col items-center space-y-0.5 sm:space-y-1 px-2 sm:px-3 py-1 sm:py-2 rounded-lg transition-colors relative ${
                 pathname === item.path
                   ? "text-red-500"
-                  : "text-gray-400 hover:text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="text-xs">{item.label}</span>
+              <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-xs hidden sm:block">{item.label}</span>
               {item.badge && item.badge > 0 && (
-                <span className="absolute -top-1 -right-1 notification-badge text-xs min-w-[16px] h-4">
+                <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 bg-red-500 text-white text-xs rounded-full min-w-[14px] h-[14px] sm:min-w-[16px] sm:h-4 flex items-center justify-center font-medium">
                   {item.badge > 9 ? "9+" : item.badge}
                 </span>
               )}
             </Link>
           ))}
         </div>
-      </div>
-
-      {/* Header content for all screen sizes */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 z-50 flex flex-col transition-colors duration-300">
+      </div>{/* Desktop Sidebar - Hidden on mobile and tablet */}
+      <div className="hidden xl:flex fixed top-0 left-0 h-full w-64 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 z-50 flex-col transition-colors duration-300">
         {/* Header avec logo, barre de recherche et bouton thème */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800 space-y-4">
+        <div className="p-3 lg:p-4 border-b border-gray-200 dark:border-gray-800 space-y-3 lg:space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Image
@@ -402,56 +405,54 @@ export default function Header() {
         </div>
 
         {/* Navigation items */}
-        <nav className="flex-1 p-4 space-y-2">
-          <nav className="space-y-1 px-3">
+        <nav className="flex-1 p-3 lg:p-4 space-y-2">
+          <nav className="space-y-1 px-2 lg:px-3">
             {menuItems.map((item) => {
               const isActive = pathname === item.path;
               return (
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 group relative ${
+                  className={`flex items-center space-x-2 lg:space-x-3 px-2 lg:px-3 py-2 lg:py-3 rounded-lg transition-all duration-200 group relative text-sm lg:text-base ${
                     isActive
                       ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                   }`}
                 >
                   <div className="relative">
-                    <item.icon className="w-6 h-6" />
-                    {item.badge !== undefined && item.badge > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-medium">
+                    <item.icon className="w-5 h-5 lg:w-6 lg:h-6" />                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-4 lg:min-w-[18px] lg:h-[18px] flex items-center justify-center font-medium">
                         {item.badge > 99 ? "99+" : item.badge}
                       </span>
                     )}
                   </div>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium truncate">{item.label}</span>
                 </Link>
               );
             })}
-          </nav>
-          {/* Bouton Ajouter un post */}
+          </nav>          {/* Bouton Ajouter un post - Responsive */}
           <button
             onClick={() => router.push("/tweets")}
-            className="mt-6 w-full bg-red-600 text-white py-3 px-4 rounded-full font-medium hover:bg-red-700 transition-colors duration-200"
+            className="mt-4 lg:mt-6 w-full bg-red-600 text-white py-2 lg:py-3 px-3 lg:px-4 rounded-full font-medium hover:bg-red-700 transition-colors duration-200 text-sm lg:text-base"
           >
             <div className="flex items-center justify-center">
-              <Plus className="mr-2" size={16} />
-              <span>Ajouter un post</span>
+              <Plus className="mr-1 lg:mr-2" size={14} />
+              <span className="hidden sm:inline">Ajouter un post</span>
+              <span className="sm:hidden">Post</span>
             </div>
-          </button>{" "}
-          {/* User profile section */}
+          </button>{" "}          {/* User profile section - Responsive */}
           {profile && (
-            <div className="mt-6 relative">
+            <div className="mt-4 lg:mt-6 relative">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowProfileMenu(!showProfileMenu);
                 }}
-                className="w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-xl transition-all duration-200 flex items-center justify-between group"
+                className="w-full p-2 lg:p-3 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-xl transition-all duration-200 flex items-center justify-between group"
               >
-                <div className="flex items-center">
+                <div className="flex items-center min-w-0">
                   {profile.profilePicture || profile.avatar_url ? (
-                    <div className="w-10 h-10 rounded-full mr-3 overflow-hidden">
+                    <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full mr-2 lg:mr-3 overflow-hidden flex-shrink-0">
                       <Image
                         src={profile.profilePicture || profile.avatar_url}
                         alt={`${profile.nickname || profile.username}'s avatar`}
@@ -461,26 +462,25 @@ export default function Header() {
                       />
                     </div>
                   ) : (
-                    <div className="w-10 h-10 bg-gray-500 rounded-full mr-3 flex items-center justify-center text-white">
-                      <span className="text-sm font-medium">
+                    <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gray-500 rounded-full mr-2 lg:mr-3 flex items-center justify-center text-white flex-shrink-0">
+                      <span className="text-xs lg:text-sm font-medium">
                         {(profile.nickname || profile.username || "U")
                           .substring(0, 2)
                           .toUpperCase()}
                       </span>
                     </div>
-                  )}{" "}
-                  <div className="flex flex-col items-start">
-                    <span className="font-bold text-black dark:text-white text-left">
+                  )}
+                  <div className="flex flex-col items-start min-w-0 flex-1">
+                    <span className="font-bold text-black dark:text-white text-left text-sm lg:text-base truncate w-full">
                       {profile.nickname || profile.username || "Votre pseudo"}
                     </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 text-left">
+                    <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 text-left truncate w-full">
                       @{(profile.nickname || profile.username || "votre_pseudo").toLowerCase()}
                     </span>
                   </div>
                 </div>
-                <MoreHorizontal className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
-              </button>
-              {/* Profile dropdown menu */}{" "}
+                <MoreHorizontal className="w-4 h-4 lg:w-5 lg:h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" />
+              </button>              {/* Profile dropdown menu - Responsive */}
               {showProfileMenu && (
                 <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-black rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
                   {/* Logout button */}
@@ -489,10 +489,10 @@ export default function Header() {
                       handleSignOut();
                       setShowProfileMenu(false);
                     }}
-                    className="w-full flex items-center px-4 py-3 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-200 text-left"
+                    className="w-full flex items-center px-3 lg:px-4 py-2 lg:py-3 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-200 text-left text-sm lg:text-base"
                   >
-                    <LogOut className="mr-3" size={18} />
-                    <span className="font-medium">
+                    <LogOut className="mr-2 lg:mr-3" size={16} />
+                    <span className="font-medium truncate">
                       Se déconnecter de{" "}
                       {profile.nickname || profile.username || "votre compte"}
                     </span>
