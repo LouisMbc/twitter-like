@@ -8,6 +8,7 @@ import supabase from '@/lib/supabase';
 import { hashtagService } from '@/services/supabase/hashtag';
 import { useAuth } from '@/hooks/useAuth';
 import { Profile, Hashtag } from '@/types';
+import LogoLoader from "@/components/loader/loader";
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -244,8 +245,7 @@ export default function ExplorePage() {
                 
                 {hashtagsLoading ? (
                   <div className="text-center py-4">
-                    <div className="w-6 h-6 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    <p className="text-gray-700 dark:text-gray-400 text-sm">Chargement des tendances...</p>
+                    <LogoLoader size="small" />
                   </div>
                 ) : popularHashtags.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -283,8 +283,7 @@ export default function ExplorePage() {
               {/* ...existing search results with responsive styling... */}
               {isSearching ? (
                 <div className="text-center py-8">
-                  <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-700 dark:text-gray-400">Recherche en cours...</p>
+                  <LogoLoader size="small" />
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-3">
@@ -389,8 +388,7 @@ export default function ExplorePage() {
 
               {hashtagsLoading ? (
                 <div className="text-center py-12">
-                  <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-700 dark:text-gray-400">Chargement des tendances...</p>
+                  <LogoLoader size="small" />
                 </div>
               ) : popularHashtags.length > 0 ? (
                 <div className="divide-y divide-gray-300 dark:divide-gray-800 border border-gray-300 dark:border-gray-800 rounded-lg overflow-hidden">

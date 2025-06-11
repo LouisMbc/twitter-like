@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import StoryMedia from './StoryMedia';
 import StoryActions from './StoryActions';
 import supabase from '@/lib/supabase-browser';
+import LogoLoader from '@/components/loader/loader';
 
 const STORY_DURATION = 60; // Durée en secondes (1 minute)
 
@@ -169,7 +170,7 @@ const Story = ({
     return null;
   }
 
-  if (loading) return <p>Chargement...</p>;
+  if (loading) return <LogoLoader size="small" />;
   
   return (
     <>
@@ -325,9 +326,7 @@ const Story = ({
             <div className="w-full h-full max-h-[80vh] rounded-3xl overflow-hidden bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-teal-900/20 backdrop-blur-sm shadow-2xl border border-gray-700/30 relative">
               <Suspense fallback={
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-teal-900">
-                  <div className="relative">
-                    <div className="w-12 h-12 border-4 border-gray-600 border-t-white rounded-full animate-spin"></div>
-                  </div>
+                  <LogoLoader size="small" />
                 </div>
               }>
                 {filteredStories[currentStoryIndex || 0] && (

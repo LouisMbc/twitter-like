@@ -12,32 +12,16 @@ import { profileService } from '@/services/supabase/profile';
 import supabase from '@/lib/supabase';
 import { messageService } from '@/services/supabase/message';
 import { debounce } from 'lodash';
+import LogoLoader from "@/components/loader/loader";
 
-interface ContactType {
+type ContactType = {
   id: string;
   nickname: string;
   profilePicture?: string;
-}
-
-interface MessageType {
-  id: string;
-  sender_id: string;
-  content: string;
-  created_at: string;
-}
+};
 
 export default function MessagesPage() {
-  const { profile, loading } = useProfile();  const { conversations, currentMessages, currentContact, loading: messagesLoading, sendingMessage, error, fetchMessages, sendMessage, checkCanMessage } = useMessages() as {
-    conversations: any[];
-    currentMessages: MessageType[];
-    currentContact: ContactType | null;
-    loading: boolean;
-    sendingMessage: boolean;
-    error: string | null;
-    fetchMessages: (contact: any) => void;
-    sendMessage: (userId: string, content: string) => Promise<boolean>;
-    checkCanMessage: (userId: string) => Promise<boolean>;
-  };
+  const { profile, loading } = useProfile();  const { conversations, currentMessages, currentContact, loading: messagesLoading, sendingMessage, error, fetchMessages, sendMessage, checkCanMessage } = useMessages();
   const router = useRouter();
   
   // États pour la conversation active
@@ -218,15 +202,15 @@ export default function MessagesPage() {
     }
   }, [currentMessages]);
 
+  // Fonction pour aller au profil de l'utilisateur
+  const handleGoToProfile = () => {
+    if (currentContact) {
+      router.push(`/profile/${currentContact.id}`);
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mx-auto"></div>
-          <div className="mt-4">Chargement...</div>
-        </div>
-      </div>
-    );
+    return <LogoLoader />;
   }
 
   if (!profile) {
@@ -322,7 +306,11 @@ export default function MessagesPage() {
                     </div>
                   </div>
                 </div>
-                <button className="p-2 hover:bg-gray-800/50 rounded-full transition-colors">
+                <button 
+                  onClick={handleGoToProfile}
+                  className="p-2 hover:bg-gray-800/50 rounded-full transition-colors"
+                  title="Voir le profil"
+                >
                   <InformationCircleIcon className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
@@ -331,10 +319,7 @@ export default function MessagesPage() {
               <div className="flex-1 overflow-y-auto p-2 lg:p-4">
                 {checkingPermissions || messagesLoading ? (
                   <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500 mx-auto"></div>
-                      <div className="mt-4">Chargement de la conversation...</div>
-                    </div>
+                    <LogoLoader size="small" />
                   </div>
                 ) : !canMessageUser ? (
                   <div className="text-center p-4 lg:p-8">
@@ -469,7 +454,7 @@ export default function MessagesPage() {
                       disabled={sendingMessage || !message.trim()}
                     >
                       {sendingMessage ? (
-                        <div className="w-4 lg:w-5 h-4 lg:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <LogoLoader size="small" />
                       ) : (
                         <PaperAirplaneIcon className="w-4 lg:w-5 h-4 lg:h-5" />
                       )}
@@ -548,7 +533,7 @@ export default function MessagesPage() {
             <div className="flex-1 overflow-y-auto">
               {loadingFollowings ? (
                 <div className="flex items-center justify-center p-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
+                  <LogoLoader size="small" />
                 </div>
               ) : followings.length === 0 ? (
                 <div className="text-center p-6 lg:p-8">

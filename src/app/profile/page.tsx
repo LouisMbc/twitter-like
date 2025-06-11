@@ -14,6 +14,7 @@ import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
 import supabase from "@/lib/supabase";
 import { Tweet } from "@/types";
+import LogoLoader from "@/components/loader/loader";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -147,13 +148,7 @@ export default function ProfilePage() {
   }, [loading, isInitialLoad]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="w-8 h-8 border-4 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
-        </div>
-      </div>
-    );
+    return <LogoLoader />;
   }
 
   if (!profile) {
@@ -228,13 +223,9 @@ export default function ProfilePage() {
           {/* Tabs and Content - Full Width */}
           <div className="w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-10 transition-colors duration-300">
             <div className="w-full">
-              <ProfileTabs
-                tweets={tweets}
-                comments={comments}
-                mediaTweets={mediaTweets}
-                likedTweets={likedTweets}
-                loading={loading}
-              />
+              <ProfileTabs activeTab={"tweets"} onTabChange={function (tab: "tweets" | "comments"): void {
+                throw new Error("Function not implemented.");
+              } } />
             </div>
           </div>
 

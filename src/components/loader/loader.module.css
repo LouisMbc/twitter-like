@@ -8,137 +8,150 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #111;
+  background: linear-gradient(135deg, #000000 0%, #111111 100%);
   z-index: 9999;
+  overflow: hidden;
+}
+
+.backgroundEffects {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.redGlow {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 384px;
+  height: 384px;
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 50%;
+  filter: blur(3rem);
+}
+
+.blueGlow {
+  position: absolute;
+  bottom: 25%;
+  right: 25%;
+  width: 384px;
+  height: 384px;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 50%;
+  filter: blur(3rem);
+}
+
+.logoSection {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: groupHover 3s ease-in-out infinite;
+}
+
+.logoGradientEffect {
+  position: absolute;
+  inset: -1rem;
+  background: linear-gradient(to right, rgba(239, 68, 68, 0.2), rgba(59, 130, 246, 0.2));
+  border-radius: 50%;
+  filter: blur(1rem);
+  opacity: 0;
+  animation: gradientPulse 3s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.authLogo {
+  object-fit: contain;
+  position: relative;
+  z-index: 10;
+  filter: drop-shadow(0px 16px 16px rgba(0, 0, 0, 0.25));
+  transform: scale(1);
+  transition: transform 0.3s ease;
+  animation: logoFloat 3s ease-in-out infinite;
 }
 
 .progressCircle {
   position: absolute;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: conic-gradient(#ff3333 0%, transparent 0%);
-  animation: pulse 2s infinite alternate;
-  box-shadow: 0 0 20px rgba(255, 51, 51, 0.6);
-  transition: background 0.3s ease;
+  inset: -20px;
+  pointer-events: none;
 }
 
-.progressCircleBg {
-  position: absolute;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+.progressSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
 }
 
-.halo {
-  position: absolute;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 51, 51, 0.2) 0%, transparent 70%);
-  animation: haloEffect 3s infinite alternate;
+.progressBackground {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 2;
 }
 
-.reverseRotation {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  animation: reverseRotate 10s linear infinite reverse;
-}
-
-.logoWrapper {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.logo {
-  filter: drop-shadow(0 0 8px rgba(255, 51, 51, 0.8));
-  animation: pulse 2s infinite alternate;
-  object-fit: contain;
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
+.progressBar {
+  fill: none;
+  stroke: #ef4444;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.3s ease;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
 }
 
 .loadingText {
   color: white;
-  margin-top: 40px;
-  font-size: 16px;
-  letter-spacing: 2px;
+  margin-top: 3rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  animation: fadeInOut 1.5s infinite alternate;
-  font-family: 'Arial', sans-serif;
+  animation: textFade 2s ease-in-out infinite alternate;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: center;
 }
 
-.futuristicLines {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  pointer-events: none;
+@keyframes groupHover {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
-.line {
-  position: absolute;
-  background-color: rgba(255, 51, 51, 0.4);
-  transform-origin: center;
+@keyframes gradientPulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
-.horizontalLine {
-  width: 100%;
-  height: 1px;
-  top: 50%;
-  animation: expandHorizontal 2s infinite alternate;
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }
 
-.verticalLine {
-  width: 1px;
-  height: 100%;
-  left: 50%;
-  animation: expandVertical 2s infinite alternate;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; transform: scale(0.98); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes haloEffect {
-  0% { opacity: 0.2; transform: scale(0.9); }
-  100% { opacity: 0.6; transform: scale(1.1); }
-}
-
-@keyframes reverseRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(-360deg); }
-}
-
-@keyframes rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0.5; }
+@keyframes textFade {
+  0% { opacity: 0.6; }
   100% { opacity: 1; }
 }
 
-@keyframes expandHorizontal {
-  0% { transform: scaleX(0.3); opacity: 0.2; }
-  100% { transform: scaleX(1); opacity: 0.5; }
-}
-
-@keyframes expandVertical {
-  0% { transform: scaleY(0.3); opacity: 0.2; }
-  100% { transform: scaleY(1); opacity: 0.5; }
+/* Responsive pour petites tailles */
+@media (max-width: 640px) {
+  .authLogo {
+    width: 200px !important;
+    height: 200px !important;
+  }
+  
+  .loadingText {
+    font-size: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .redGlow,
+  .blueGlow {
+    width: 256px;
+    height: 256px;
+  }
 }

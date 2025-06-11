@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import useFeed from '@/hooks/useFeed';
 import TweetComposer from '@/components/tweets/TweetComposer';
 import TweetList from '@/components/tweets/TweetList';
-import SimpleSpinner from '@/components/loader/SimpleSpinner';
+import LogoLoader from "@/components/loader/loader";
 import supabase from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { FaSearch } from 'react-icons/fa';
@@ -86,13 +86,7 @@ export default function DashboardPage() {
   };
 
   if (!authChecked) {
-    return (
-      <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-gray-100">
-        <div className="flex items-center justify-center w-full">
-          <div className="w-8 h-8 border-4 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
-        </div>
-      </div>
-    );
+    return <LogoLoader />;
   }
 
   return (
@@ -149,8 +143,8 @@ export default function DashboardPage() {
                 <TweetComposer onSuccess={handleTweetSuccess} />
                 {isRefreshing && (
                   <div className="mt-2 flex items-center justify-center">
-                    <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin mr-2"></div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Actualisation du feed...</span>
+                    <LogoLoader size="small" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">Actualisation du feed...</span>
                   </div>
                 )}
               </div>
@@ -206,13 +200,17 @@ export default function DashboardPage() {
                 {/* Indicateur de chargement pour infinite scroll */}
                 {loading && tweets.length > 0 && (
                   <div className="flex justify-center p-8">
-                    <div className="relative">
-                      <div className="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
-                      <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-red-400 rounded-full animate-spin animate-reverse"></div>
-                    </div>
+                    <LogoLoader size="small" />
                   </div>
                 )}
                 
+                {isRefreshing && (
+                  <div className="mt-2 flex items-center justify-center">
+                    <LogoLoader size="small" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">Actualisation du feed...</span>
+                  </div>
+                )}
+
                 {/* Élément observé pour déclencher le chargement */}
                 {hasMore && !loading && tweets.length > 0 && (
                   <div ref={loadMoreRef} className="h-10" />

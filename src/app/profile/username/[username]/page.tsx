@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import supabase from '@/lib/supabase';
+import LogoLoader from '@/components/loader/loader';
 
 export default function UsernameProfilePage() {
   const params = useParams();
@@ -30,6 +31,8 @@ export default function UsernameProfilePage() {
       } catch (error) {
         console.error('Erreur lors de la recherche du profil:', error);
         router.push('/404');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -39,7 +42,7 @@ export default function UsernameProfilePage() {
   }, [username, router]);
 
   if (loading) {
-    return <div className="flex justify-center p-8">Recherche du profil...</div>;
+    return <LogoLoader />;
   }
 
   return null;

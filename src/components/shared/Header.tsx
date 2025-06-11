@@ -21,6 +21,7 @@ import SearchBar from "@/components/searchBar/SearchBar";
 import { messageService } from "@/services/supabase/message";
 import { notificationService } from "@/services/supabase/notification";
 import { ThemeToggle } from "./ThemeToggle";
+import LogoLoader from "@/components/loader/loader";
 
 export function Navbar() {
   return (
@@ -108,7 +109,7 @@ export default function Header() {
     const fetchUnreadMessageCount = async () => {
       try {
         const { count } = await messageService.getUnreadCount(profileId);
-        setUnreadMessageCount(count);
+        setUnreadMessageCount(count || 0);
       } catch (error) {
         console.error(
           "Erreur lors de la récupération des messages non lus:",
@@ -161,7 +162,7 @@ export default function Header() {
     const fetchUnreadNotificationCount = async () => {
       try {
         const { count } = await notificationService.getUnreadCount(profileId);
-        setUnreadNotificationCount(count);
+        setUnreadNotificationCount(count || 0);
       } catch (error) {
         console.error(
           "Erreur lors de la récupération des notifications non lues:",
@@ -473,7 +474,7 @@ export default function Header() {
                       {profile.nickname || profile.username || "Votre pseudo"}
                     </span>
                     <span className="text-sm text-gray-500 dark:text-gray-400 text-left">
-                      {profile.nickname || profile.username || "Votre pseudo"}
+                      @{(profile.nickname || profile.username || "votre_pseudo").toLowerCase()}
                     </span>
                   </div>
                 </div>

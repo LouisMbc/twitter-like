@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import supabase from '@/lib/supabase-browser';
+import LogoLoader from '@/components/loader/loader';
 
 interface StoryMediaProps {
   storyId: string;
@@ -54,7 +55,7 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
   if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+        <LogoLoader size="small" />
       </div>
     );
   }
