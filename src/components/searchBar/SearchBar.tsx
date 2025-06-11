@@ -114,45 +114,42 @@ export default function SearchBar({
   return (
     <div className="relative w-full" ref={searchRef}>
       <div className="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input
+        </svg>        <input
           type="text"
           placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
           autoFocus={autoFocus}
-          className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-gray-800 text-white placeholder-gray-400"
+          className="w-full pl-10 pr-4 py-2 bg-gray-200/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-300/50 dark:border-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-red-500/70 focus:ring-2 focus:ring-red-500/20 transition-all duration-300"
         />
       </div>
 
       {showInlineResults && showResults && (
-        <>
-          {isLoading && (
-            <div className="absolute w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50 p-4 text-center">
+        <>          {isLoading && (
+            <div className="absolute w-full mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 p-4 text-center">
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-gray-300">Recherche en cours...</span>
+                <span className="text-gray-700 dark:text-gray-300">Recherche en cours...</span>
               </div>
             </div>
           )}
 
           {!isLoading && searchQuery.length >= 2 && (
-            <div className="absolute w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50 max-h-96 overflow-y-auto">
+            <div className="absolute w-full mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto">
               {(searchResults.length > 0 || hashtagResults.length > 0) ? (
                 <>
-                  {/* Résultats hashtags */}
-                  {hashtagResults.length > 0 && (
+                  {/* Résultats hashtags */}                  {hashtagResults.length > 0 && (
                     <div>
-                      <div className="p-3 border-b border-gray-700">
-                        <p className="text-sm font-medium text-gray-300">HASHTAGS</p>
+                      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">HASHTAGS</p>
                       </div>
                       {hashtagResults.map((hashtag) => (
                         <div
                           key={hashtag.id}
-                          className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700"
+                          className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-200 dark:border-gray-700"
                           onClick={() => handleHashtagClick(hashtag.name)}
                         >
                           <div className="flex items-center space-x-3">
@@ -160,8 +157,8 @@ export default function SearchBar({
                               <span className="text-red-600 dark:text-red-400 font-bold text-xl">#</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-red-400 truncate">#{hashtag.name}</p>
-                              <p className="text-sm text-gray-400">
+                              <p className="font-medium text-red-600 dark:text-red-400 truncate">#{hashtag.name}</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {hashtag.usage_count} publication{hashtag.usage_count > 1 ? 's' : ''}
                               </p>
                             </div>
@@ -171,12 +168,11 @@ export default function SearchBar({
                     </div>
                   )}
 
-                  {/* Résultats utilisateurs */}
-                  {searchResults.length > 0 && (
+                  {/* Résultats utilisateurs */}                  {searchResults.length > 0 && (
                     <div>
-                      {hashtagResults.length > 0 && <div className="border-t border-gray-700"></div>}
-                      <div className="p-3 border-b border-gray-700">
-                        <p className="text-sm font-medium text-gray-300">
+                      {hashtagResults.length > 0 && <div className="border-t border-gray-200 dark:border-gray-700"></div>}
+                      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
                           UTILISATEURS ({searchResults.length})
                         </p>
                       </div>
@@ -184,11 +180,11 @@ export default function SearchBar({
                       {searchResults.map((result) => (
                         <div
                           key={result.id}
-                          className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700 last:border-b-0"
+                          className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-200 dark:border-gray-700 last:border-b-0"
                           onClick={() => handleUserClick(result.id!)}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-600 flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 flex-shrink-0">
                               {result.profilePicture ? (
                                 <img
                                   src={result.profilePicture}
@@ -197,31 +193,30 @@ export default function SearchBar({
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-white font-medium">
+                                  <span className="text-gray-700 dark:text-white font-medium">
                                     {result.nickname?.charAt(0).toUpperCase() || '?'}
                                   </span>
                                 </div>
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-white truncate">
+                              <p className="font-medium text-gray-900 dark:text-white truncate">
                                 {result.nickname}
                               </p>
                               {(result.firstName || result.lastName) && (
-                                <p className="text-sm text-gray-400 truncate">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                                   {result.firstName || ''} {result.lastName || ''}
                                 </p>
                               )}
-                              <p className="text-xs text-gray-500">Profil utilisateur</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-500">Profil utilisateur</p>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
-                  
-                  <div 
-                    className="p-3 text-center text-red-400 hover:bg-gray-700 cursor-pointer border-t border-gray-700"
+                    <div 
+                    className="p-3 text-center text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-t border-gray-200 dark:border-gray-700"
                     onClick={handleViewAllResults}
                   >
                     <span className="text-sm font-medium">
@@ -231,7 +226,7 @@ export default function SearchBar({
                 </>
               ) : (
                 <div className="p-4 text-center">
-                  <p className="text-gray-400">Aucun résultat trouvé pour "{searchQuery}"</p>
+                  <p className="text-gray-600 dark:text-gray-400">Aucun résultat trouvé pour "{searchQuery}"</p>
                   <p className="text-sm text-gray-500 mt-1">
                     Essayez avec un autre terme de recherche
                   </p>

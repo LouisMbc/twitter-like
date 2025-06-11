@@ -2,6 +2,13 @@ import type { Configuration as WebpackConfig } from 'webpack';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ['@supabase/supabase-js'],
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+      bodySizeLimit: '2mb'
+    }
+  },
   webpack: (config: WebpackConfig, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
@@ -17,10 +24,35 @@ const nextConfig: NextConfig = {
       path: false,
     };
 
+    // Optimisation pour la production
+    if (!dev) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+            supabase: {
+              test: /[\\/]node_modules[\\/]@supabase[\\/]/,
+              name: 'supabase',
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    }
+
     return config;
   },
   images: {
     domains: ['ekpximtmuwwxdkhrepna.supabase.co'],
+    formats: ['image/webp', 'image/avif'],
   },
   headers: async () => {
     return [
@@ -38,6 +70,10 @@ const nextConfig: NextConfig = {
           {
             key: 'Cross-Origin-Resource-Policy',
             value: 'cross-origin' 
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
           }
         ]
       }
@@ -46,17 +82,6 @@ const nextConfig: NextConfig = {
   // Ignorer les erreurs pendant le build
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  // Configuration pour les actions serveur uniquement
-  experimental: {
-    // Retrait de serverComponents car c'est maintenant la valeur par défaut
-    serverActions: {
-      allowedOrigins: ['localhost:3000'],
-      bodySizeLimit: '2mb'
-    }
   },
 };
 

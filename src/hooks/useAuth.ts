@@ -1,13 +1,18 @@
 // src/hooks/useAuth.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import supabase from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const sessionChecked = useRef(false);
 
   useEffect(() => {
+    // Éviter les appels redondants
+    if (sessionChecked.current) return;
+    sessionChecked.current = true;
+
     // Fonction pour récupérer la session actuelle
     const getSession = async () => {
       try {

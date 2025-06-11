@@ -85,10 +85,8 @@ export const hashtagService = {
       .limit(limit);
 
     return { data, error };
-  },
-
-  // Récupérer les tweets d'un hashtag
-  getTweetsByHashtag: async (hashtagName: string, page = 0, limit = 10) => {
+  },  // Récupérer les tweets d'un hashtag
+  getTweetsByHashtag: async (hashtagName: string, page = 0, limit = 20) => {
     const { data, error } = await supabase
       .from('tweet_hashtags') 
       .select(`
@@ -110,7 +108,7 @@ export const hashtagService = {
         hashtags!inner (name)
       `)
       .eq('hashtags.name', hashtagName.toLowerCase())
-      .order('created_at', { ascending: false })
+      .order('Tweets(published_at)', { ascending: false })
       .range(page * limit, (page + 1) * limit - 1);
 
     return { data, error };
@@ -220,5 +218,111 @@ export const hashtagService = {
       .order('created_at', { ascending: false });
 
     return { data, error };
-  }
+  },
+  // Catégoriser un hashtag selon son contenu
+  categorizeHashtag: (hashtagName: string): string => {
+    const sports = ['football', 'sport', 'match', 'victoire', 'equipe', 'joueur', 'champion', 'coupe', 'ligue', 'basket', 'tennis', 'rugby'];
+    const actualites = ['info', 'news', 'actualite', 'urgent', 'breaking', 'politique', 'economie', 'france', 'monde', 'gouvernement'];
+    const divertissement = ['cinema', 'film', 'serie', 'musique', 'concert', 'festival', 'artiste', 'celebrity', 'tv', 'show', 'gaming', 'jeux'];
+    
+    const name = hashtagName.toLowerCase();
+    
+    if (sports.some(keyword => name.includes(keyword))) return 'Sport';
+    if (actualites.some(keyword => name.includes(keyword))) return 'Actualités';
+    if (divertissement.some(keyword => name.includes(keyword))) return 'Divertissement';
+    
+    return 'Tendances';
+  },
+
+  // Récupérer les hashtags tendances par catégorie
+  getTrendingHashtagsByCategory: async (category = 'Tendances', limit = 10) => {
+    const { data, error } = await supabase
+      .from('tweet_hashtags')
+      .select(`
+        hashtag_id,
+        hashtags!inner (
+          id,
+          name,
+          usage_count
+        ),
+        Tweets!inner (
+          view_count,
+          published_at
+        )
+      `)
+      .order('Tweets(view_count)', { ascending: false });
+
+    if (error) {
+      console.error('Erreur lors de la récupération des tendances:', error);
+      return { data: [], error };
+    }
+
+    // Calculer les vues totales par hashtag
+    const hashtagStats = new Map();
+    
+    data?.forEach(item => {
+      const hashtagId = item.hashtag_id;
+      const hashtagName = item.hashtags[0].name;
+      const usageCount = item.hashtags[0].usage_count;
+      const viewCount = item.Tweets[0].view_count || 0;
+      const publishedAt = new Date(item.Tweets[0].published_at);
+      
+      // Calculer le facteur de récence (plus récent = score plus élevé)
+      const now = new Date();
+      const hoursAgo = (now.getTime() - publishedAt.getTime()) / (1000 * 60 * 60);
+      const recencyFactor = Math.max(0.1, 1 - (hoursAgo / 168)); // Décroît sur 7 jours
+
+      if (hashtagStats.has(hashtagId)) {
+        const existing = hashtagStats.get(hashtagId);
+        existing.totalViews += viewCount;
+        existing.tweetCount += 1;
+        existing.recencyScore += recencyFactor;
+      } else {
+        hashtagStats.set(hashtagId, {
+          id: hashtagId,
+          name: hashtagName,
+          usage_count: usageCount,
+          totalViews: viewCount,
+          tweetCount: 1,
+          averageViews: viewCount,
+          recencyScore: recencyFactor,
+          category: hashtagService.categorizeHashtag(hashtagName)
+        });
+      }
+    });
+
+    // Filtrer par catégorie et calculer le score final
+    const trendingHashtags = Array.from(hashtagStats.values())
+      .filter(hashtag => category === 'Pour vous' || hashtag.category === category)
+      .map(hashtag => ({
+        ...hashtag,
+        averageViews: hashtag.totalViews / hashtag.tweetCount,
+        // Score amélioré avec récence, vues et engagement
+        trendScore: (hashtag.totalViews * 0.5) + 
+                   (hashtag.usage_count * 0.3) + 
+                   (hashtag.recencyScore * 0.2)
+      }))
+      .sort((a, b) => b.trendScore - a.trendScore)
+      .slice(0, limit);
+
+    return { data: trendingHashtags, error: null };
+  },
+
+  // Récupérer les hashtags tendances basés sur les vues totales des tweets
+  getTrendingHashtags: async (limit = 10) => {
+    return hashtagService.getTrendingHashtagsByCategory('Tendances', limit);
+  },
+
+  // Récupérer toutes les catégories de tendances
+  getAllTrendingCategories: async (limit = 10) => {
+    const categories = ['Pour vous', 'Tendances', 'Actualités', 'Sport', 'Divertissement'];
+    const results: { [key: string]: any[] } = {};
+
+    for (const category of categories) {
+      const { data } = await hashtagService.getTrendingHashtagsByCategory(category, limit);
+      results[category] = data || [];
+    }
+
+    return results;
+  },
 };

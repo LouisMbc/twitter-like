@@ -1,11 +1,12 @@
 import { Tweet } from '@/types';
 import TweetCard from './TweetCard';
+import { memo } from 'react';
 
 interface TweetListProps {
   tweets: Tweet[];
 }
 
-export default function TweetList({ tweets }: TweetListProps) {
+function TweetList({ tweets }: TweetListProps) {
   if (!tweets || tweets.length === 0) {
     return (
       <div className="text-center py-16">
@@ -48,3 +49,5 @@ export default function TweetList({ tweets }: TweetListProps) {
     </div>
   );
 }
+
+export default memo(TweetList);
