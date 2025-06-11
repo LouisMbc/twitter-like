@@ -131,12 +131,11 @@ export default function ProfileHeader({
     setCurrentStoryIndex(0);
   };
 
-  return (
-    <>
-      <div className="bg-black w-full">
+  return (    <>
+      <div className="bg-background w-full">
         {/* Photo de couverture */}
-        <div className="h-48 bg-gradient-to-br from-gray-700 via-gray-600 to-gray-800 w-full relative">
-          <div className="absolute inset-0 bg-black/20"></div>
+        <div className="h-48 bg-gradient-to-br from-muted via-secondary to-accent w-full relative">
+          <div className="absolute inset-0 bg-background/20"></div>
         </div>
         
         <div className="px-6 pb-6 w-full">
@@ -147,11 +146,10 @@ export default function ProfileHeader({
               <div 
                 className="relative group cursor-pointer"
                 onClick={hasStories ? handleStoryClick : undefined}
-              >
-                {hasStories ? (
+              >                {hasStories ? (
                   // Avec stories - bordure rouge
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-r from-red-500 to-pink-500 p-1">
-                    <div className="w-full h-full bg-black rounded-full p-1 flex items-center justify-center">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-r from-primary to-pink-500 p-1">
+                    <div className="w-full h-full bg-background rounded-full p-1 flex items-center justify-center">
                       {profile.profilePicture ? (
                         <img
                           src={profile.profilePicture}
@@ -159,8 +157,8 @@ export default function ProfileHeader({
                           className="w-full h-full object-cover rounded-full"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-600 rounded-full flex items-center justify-center">
-                          <span className="text-2xl font-bold text-white">
+                        <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
+                          <span className="text-2xl font-bold text-foreground">
                             {profile.firstName?.charAt(0) || profile.nickname?.charAt(0) || '?'}
                           </span>
                         </div>
@@ -169,7 +167,7 @@ export default function ProfileHeader({
                   </div>
                 ) : (
                   // Sans stories - photo normale
-                  <div className="w-32 h-32 rounded-full bg-black border-4 border-black">
+                  <div className="w-32 h-32 rounded-full bg-background border-4 border-background">
                     {profile.profilePicture ? (
                       <img
                         src={profile.profilePicture}
@@ -177,8 +175,8 @@ export default function ProfileHeader({
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-600 rounded-full flex items-center justify-center">
-                        <span className="text-2xl font-bold text-white">
+                      <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
+                        <span className="text-2xl font-bold text-foreground">
                           {profile.firstName?.charAt(0) || profile.nickname?.charAt(0) || '?'}
                         </span>
                       </div>
@@ -195,7 +193,7 @@ export default function ProfileHeader({
                   disabled={isUploading}
                   type="button"
                 >
-                  <div className="bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors duration-300 border-2 border-black">
+                  <div className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center transition-colors duration-300 border-2 border-background">
                     {isUploading ? (
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
@@ -216,33 +214,32 @@ export default function ProfileHeader({
                 onChange={handleFileChange}
               />
             </div>
-            
-            {/* Bouton "Modifier le profil" - Fixed positioning */}
+              {/* Bouton "Modifier le profil" - Fixed positioning */}
             <div className="flex items-end mb-4">
               {isCurrentUser(currentProfileId, profile.id) ? (
                 <button
                   onClick={handleEditProfile}
                   type="button"
-                  className="bg-transparent border-2 border-gray-500 hover:border-gray-400 text-white px-6 py-2 rounded-full font-medium hover:bg-gray-900/50 transition-all duration-200 backdrop-blur-sm"
+                  className="bg-transparent border-2 border-border hover:border-muted-foreground text-foreground px-6 py-2 rounded-full font-medium hover:bg-muted transition-all duration-200 backdrop-blur-sm"
                 >
                   Modifier le profil
                 </button>
               ) : (
-                <div className="flex space-x-3">
+                <div className="flex flex-wrap gap-2 md:gap-3">
                   {canMessage && (
                     <button
                       onClick={() => router.push(`/messages/${profile.id}`)}
-                      className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2.5 rounded-full font-medium border border-gray-700 transition-colors duration-200"
+                      className="bg-secondary hover:bg-muted text-secondary-foreground px-4 md:px-6 py-2.5 rounded-full font-medium border border-border transition-colors duration-200 text-sm md:text-base whitespace-nowrap"
                     >
                       Message
                     </button>
                   )}
                   <button
                     onClick={onFollowToggle}
-                    className={`px-6 py-2.5 rounded-full font-medium transition-colors duration-200 ${
+                    className={`px-4 md:px-6 py-2.5 rounded-full font-medium transition-colors duration-200 text-sm md:text-base whitespace-nowrap ${
                       isFollowing
-                        ? "bg-gray-800 hover:bg-gray-700 text-white border border-gray-700"
-                        : "bg-red-500 hover:bg-red-600 text-white border border-red-500"
+                        ? "bg-secondary hover:bg-muted text-secondary-foreground border border-border"
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground border border-primary"
                     }`}
                   >
                     {isFollowing ? 'Ne plus suivre' : 'Suivre'}
@@ -253,28 +250,30 @@ export default function ProfileHeader({
           </div>
           
           {/* Informations du profil */}
-          <div className="w-full space-y-3">
-            {/* Nom et pseudo */}
+          <div className="w-full space-y-3">            {/* Nom et pseudo */}
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold text-white">{profile.nickname || "Utilisateur"}</h1>
+                <h1 className="text-xl font-bold text-foreground">
+                  {profile.firstName && profile.lastName 
+                    ? `${profile.firstName} ${profile.lastName}` 
+                    : profile.nickname || "Utilisateur"}
+                </h1>
                 {hasStories && (
                   <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-red-400">Stories actives</span>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <span className="text-xs text-primary">Stories actives</span>
                   </div>
                 )}
               </div>
-              <p className="text-gray-400 text-sm">@{profile.nickname?.toLowerCase() || "utilisateur"}</p>
+              <p className="text-muted-foreground text-sm">@{profile.nickname?.toLowerCase() || "utilisateur"}</p>
             </div>
-            
-            {/* Bio */}
+              {/* Bio */}
             {profile.bio && (
-              <p className="text-white text-sm leading-relaxed">{profile.bio}</p>
+              <p className="text-foreground text-sm leading-relaxed">{profile.bio}</p>
             )}
             
             {/* Date d'inscription */}
-            <div className="flex items-center text-gray-400 text-sm">
+            <div className="flex items-center text-muted-foreground text-sm">
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
               </svg>
@@ -282,18 +281,16 @@ export default function ProfileHeader({
                 month: "long",
                 year: "numeric",
               })}
-            </div>
-
-            {/* Statistiques */}
+            </div>            {/* Statistiques */}
             <div className="flex space-x-4 pt-2">
               <Link href="#following" className="hover:underline transition-colors">
-                <span className="font-bold text-white">{followingCount}</span>
-                <span className="text-gray-400 ml-1">abonnements</span>
+                <span className="font-bold text-foreground">{followingCount}</span>
+                <span className="text-muted-foreground ml-1">abonnements</span>
               </Link>
               
               <Link href="#followers" className="hover:underline transition-colors">
-                <span className="font-bold text-white">{followersCount}</span>
-                <span className="text-gray-400 ml-1">abonnés</span>
+                <span className="font-bold text-foreground">{followersCount}</span>
+                <span className="text-muted-foreground ml-1">abonnés</span>
               </Link>
 
               {/* Stories - toujours visible pour l'utilisateur actuel */}
@@ -302,8 +299,8 @@ export default function ProfileHeader({
                   className="cursor-pointer hover:underline transition-colors" 
                   onClick={hasStories ? handleStoryClick : undefined}
                 >
-                  <span className="font-bold text-white">{userStories.length || 1}</span>
-                  <span className="text-gray-400 ml-1">stories</span>
+                  <span className="font-bold text-foreground">{userStories.length || 1}</span>
+                  <span className="text-muted-foreground ml-1">stories</span>
                 </div>
               )}
             </div>

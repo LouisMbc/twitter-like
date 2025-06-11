@@ -26,16 +26,13 @@ function ThemeToggleContent() {
         className="relative flex items-center w-[60px] h-fit bg-[#0c0f14] rounded-[30px] p-1 cursor-pointer overflow-hidden transition-all duration-500 select-none has-[:checked]:bg-[#cecece] shadow-lg hover:shadow-xl transform hover:scale-105" 
         htmlFor="theme-switch"
         title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
-      >
-        <input 
+      >        <input 
           id="theme-switch" 
           type="checkbox" 
-          checked={theme === 'light'}
+          checked={theme === 'dark'}
           onChange={toggleTheme}
           className="appearance-none relative w-[25px] h-[25px] rounded-full bg-[#21262e] border border-[#21262e] transition-all duration-500 shadow-[1px_1px_20px_3px_#21262e] hover:ml-[3px] checked:left-[calc(100%-24px)] checked:bg-white checked:border-white checked:shadow-[1px_1px_30px_12px_white] checked:hover:ml-[-3px]" 
-        />
-        
-        {/* Moon SVG */}
+        />        {/* Moon SVG */}
         <svg 
           viewBox="0 0 384 512" 
           xmlns="http://www.w3.org/2000/svg" 
@@ -45,7 +42,7 @@ function ThemeToggleContent() {
         </svg>
         
         {/* Sun */}
-        <div className={`absolute left-[calc(100%-21.5px)] top-[15px] -translate-y-1/2 w-3 h-3 rounded-full flex items-center justify-center scale-75 transition-all duration-300 ${theme === 'light' ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute left-[calc(100%-21.5px)] top-[15px] -translate-y-1/2 w-3 h-3 rounded-full flex items-center justify-center scale-75 transition-all duration-300 ${theme === 'dark' ? 'opacity-0' : 'opacity-100'}`}>
           <span className="relative block w-[3px] h-[3px] rounded-full bg-white z-[1] shadow-[11px_0px_0px_#0c0f14,10.3px_0px_0px_#0c0f14,-11px_0px_0px_#0c0f14,-10.3px_0px_0px_#0c0f14,0px_-11px_0px_#0c0f14,0px_-10.3px_0px_#0c0f14,0px_11px_0px_#0c0f14,0px_10.3px_0px_#0c0f14,8px_8px_0px_#0c0f14,7.3px_7.3px_0px_#0c0f14,8px_-8px_0px_#0c0f14,7.3px_-7.3px_0px_#0c0f14,-8px_-8px_0px_#0c0f14,-7.3px_-7.3px_0px_#0c0f14,-8px_8px_0px_#0c0f14,-7.3px_7.3px_0px_#0c0f14] before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-[10px] before:h-[10px] before:rounded-full before:bg-white before:border-2 before:border-[#0c0f14]" />
         </div>
       </label>

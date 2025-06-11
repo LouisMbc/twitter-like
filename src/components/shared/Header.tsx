@@ -231,48 +231,10 @@ export default function Header() {
     { icon: User, label: "Profil", path: "/profile" },
     { icon: Sparkles, label: "Premium", path: "/premium" },
   ];
-
   return (
     <>
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:flex fixed top-0 left-0 h-full w-64 bg-black border-r border-gray-800 flex-col z-50">
-        {/* ...existing sidebar content... */}
-        <div className="p-6">
-          <Link href="/dashboard" className="flex items-center space-x-3">
-            <Image
-              src="/logo_Flow.png"
-              alt="Flow Logo"
-              width={40}
-              height={40}
-              className="rounded-lg"
-            />
-            <h1 className="text-xl font-bold text-white">Flow</h1>
-          </Link>
-        </div>
-
-        <nav className="flex-1 px-4 space-y-2">
-          {menuItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-colors relative ${
-                pathname === item.path
-                  ? "bg-red-600 text-white"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
-              }`}
-            >
-              <item.icon className="w-6 h-6" />
-              <span className="font-medium">{item.label}</span>
-              {item.badge && item.badge > 0 && (
-                <span className="notification-badge">
-                  {item.badge > 99 ? "99+" : item.badge}
-                </span>
-              )}
-            </Link>
-          ))}
-        </nav>
-      </div>      {/* Mobile Header - Responsive top bar */}
-      <div className="xl:hidden fixed top-0 left-0 right-0 h-14 sm:h-16 bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-4 z-50 transition-colors duration-300">
+      {/* Mobile Header - Responsive top bar */}
+      <div className="xl:hidden fixed top-0 left-0 right-0 h-14 sm:h-16 bg-background/90 backdrop-blur-sm border-b border-border flex items-center justify-between px-3 sm:px-4 z-50 transition-all duration-300">
         <Link href="/dashboard" className="flex items-center space-x-2">
           <Image
             src="/logo_Flow.png"
@@ -281,7 +243,7 @@ export default function Header() {
             height={28}
             className="sm:w-8 sm:h-8 rounded-lg"
           />
-          <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Flow</h1>
+          <h1 className="text-base sm:text-lg font-bold text-foreground">Flow</h1>
         </Link>
 
         <div className="flex items-center space-x-2 sm:space-x-3">
@@ -291,7 +253,7 @@ export default function Header() {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
           >
             <svg
               className="w-5 h-5 sm:w-6 sm:h-6"
@@ -317,13 +279,12 @@ export default function Header() {
             </svg>
           </button>
         </div>
-      </div>      {/* Mobile Menu Overlay - Responsive */}
-      {isMobileMenuOpen && (
+      </div>      {/* Mobile Menu Overlay - Responsive */}      {isMobileMenuOpen && (
         <div
           className="xl:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          <div className="fixed top-14 sm:top-16 left-0 right-0 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 py-3 sm:py-4 transition-colors duration-300">
+          <div className="fixed top-14 sm:top-16 left-0 right-0 bg-background border-b border-border py-3 sm:py-4 transition-all duration-300">
             {/* Search bar in mobile menu */}
             <div className="px-3 sm:px-4 mb-3 sm:mb-4">
               <SearchBar placeholder="Rechercher..." />
@@ -337,14 +298,14 @@ export default function Header() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center space-x-3 sm:space-x-4 px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-colors relative text-sm sm:text-base ${
                     pathname === item.path
-                      ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   <span className="font-medium">{item.label}</span>
                   {item.badge && item.badge > 0 && (
-                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-medium">
+                    <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-medium">
                       {item.badge > 99 ? "99+" : item.badge}
                     </span>
                   )}
@@ -354,16 +315,15 @@ export default function Header() {
           </div>
         </div>
       )}      {/* Mobile Bottom Navigation - Responsive */}
-      <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800 px-2 sm:px-4 py-1 sm:py-2 z-50 transition-colors duration-300">
+      <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-sm border-t border-border px-2 sm:px-4 py-1 sm:py-2 z-50 transition-all duration-300">
         <div className="flex justify-around max-w-md mx-auto">
           {menuItems.slice(0, 5).map((item) => (
             <Link
               key={item.path}
-              href={item.path}
-              className={`flex flex-col items-center space-y-0.5 sm:space-y-1 px-2 sm:px-3 py-1 sm:py-2 rounded-lg transition-colors relative ${
+              href={item.path}              className={`flex flex-col items-center space-y-0.5 sm:space-y-1 px-2 sm:px-3 py-1 sm:py-2 rounded-lg transition-colors relative ${
                 pathname === item.path
-                  ? "text-red-500"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -489,13 +449,10 @@ export default function Header() {
                       handleSignOut();
                       setShowProfileMenu(false);
                     }}
-                    className="w-full flex items-center px-3 lg:px-4 py-2 lg:py-3 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-200 text-left text-sm lg:text-base"
+                    className="w-full flex items-center px-3 lg:px-4 py-3 lg:py-4 text-black dark:text-white hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200 text-left text-sm lg:text-base group"
                   >
-                    <LogOut className="mr-2 lg:mr-3" size={16} />
-                    <span className="font-medium truncate">
-                      Se déconnecter de{" "}
-                      {profile.nickname || profile.username || "votre compte"}
-                    </span>
+                    <LogOut className="mr-2 lg:mr-3 flex-shrink-0 group-hover:text-red-600 dark:group-hover:text-red-400" size={16} />
+                    <span className="font-medium">Se déconnecter</span>
                   </button>
                 </div>
               )}

@@ -50,14 +50,13 @@ export default function UserProfilePage() {
     return <LogoLoader />;
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
+  if (!profile) {    return (
+      <div className="min-h-screen flex bg-background text-foreground transition-all duration-300">
         <Header />
         <div className="ml-64 flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Profil non trouvé</h2>
-            <p className="text-gray-400">Ce profil n'existe pas ou a été supprimé.</p>
+            <p className="text-muted-foreground">Ce profil n'existe pas ou a été supprimé.</p>
           </div>
         </div>
       </div>
@@ -65,13 +64,12 @@ export default function UserProfilePage() {
   }
 
   const isCurrentUser = currentProfileId === profile.id;
-
   return (
-    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
+    <div className="min-h-screen flex bg-background text-foreground transition-all duration-300">
       <Header />
       
       <div className="ml-64 flex-1 relative">
-        <div className="w-full bg-white dark:bg-black min-h-screen transition-colors duration-300">
+        <div className="w-full bg-background min-h-screen transition-all duration-300">
           <ProfileHeader 
             profile={{
               id: profile.id,

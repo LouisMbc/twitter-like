@@ -125,7 +125,7 @@ export default function ConversationPage() {
   }
   
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-50 relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden transition-all duration-300">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-100/30 dark:from-gray-950/30 via-transparent to-gray-100/30 dark:to-gray-950/30"></div>
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/4 dark:bg-gray-900/4 rounded-full blur-3xl"></div>
@@ -133,11 +133,10 @@ export default function ConversationPage() {
       
       <div className="flex flex-col h-screen relative z-10">
         {/* Conversation header */}
-        <div className="bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 p-4 flex items-center justify-between transition-colors duration-300">
-          <div className="flex items-center">
-            <button 
+        <div className="bg-background/80 backdrop-blur-sm border-b border-border p-4 flex items-center justify-between transition-all duration-300">
+          <div className="flex items-center">            <button 
               onClick={() => router.push('/messages')}
-              className="mr-4 text-gray-400 hover:bg-gray-800 p-2 rounded-full transition-colors"
+              className="mr-4 text-muted-foreground hover:bg-muted p-2 rounded-full transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </button>
@@ -155,24 +154,22 @@ export default function ConversationPage() {
                       {currentContact.nickname.charAt(0).toUpperCase()}
                     </div>
                   )}
-                </div>
-                <div>
-                  <h2 className="font-semibold text-white">{currentContact.nickname}</h2>
-                  <p className="text-xs text-gray-400">En ligne</p>
+                </div>                <div>
+                  <h2 className="font-semibold text-foreground">{currentContact.nickname}</h2>
+                  <p className="text-xs text-muted-foreground">En ligne</p>
                 </div>
               </div>
-            )}          </div>
-          <button 
+            )}          </div>          <button 
             onClick={() => router.push(`/profile/${userId}`)}
-            className="p-2 hover:bg-gray-800/50 rounded-full transition-colors"
+            className="p-2 hover:bg-muted rounded-full transition-colors"
             title="Voir le profil"
           >
-            <InformationCircleIcon className="w-5 h-5 text-gray-400" />
+            <InformationCircleIcon className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4 bg-white/40 dark:bg-gray-950/40 transition-colors duration-300">
+        <div className="flex-1 overflow-y-auto p-4 bg-background/40 transition-all duration-300">
           {!canMessageUser ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-md px-8">
@@ -283,7 +280,7 @@ export default function ConversationPage() {
 
         {/* Message input */}
         {canMessageUser && (
-          <div className="border-t border-gray-200/50 dark:border-gray-800/50 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm transition-colors duration-300">
+          <div className="border-t border-border p-4 bg-background/80 backdrop-blur-sm transition-all duration-300">
             <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
               <div className="flex-1">
                 <textarea

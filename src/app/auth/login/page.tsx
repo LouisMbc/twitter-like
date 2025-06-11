@@ -23,13 +23,12 @@ export default function LoginPage() {
     checkAuth();
   }, [router]);
 
-
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen flex flex-col justify-between bg-white dark:bg-black text-gray-900 dark:text-white relative overflow-hidden transition-colors duration-300">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-black to-gray-900/20"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/20 dark:from-gray-900/20 via-transparent to-gray-100/20 dark:to-gray-900/20"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 dark:bg-red-500/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 dark:bg-blue-500/5 rounded-full blur-3xl"></div>
       
       <div className="relative z-10">
         <div className="w-full py-16">

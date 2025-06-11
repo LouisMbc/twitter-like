@@ -9,39 +9,37 @@ import Footer from "@/components/shared/Footer";
 export default function RegisterPage() {
   const router = useRouter();
 
-  return (
-    <div className="min-h-screen flex flex-col justify-between bg-white dark:bg-black text-gray-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+  return (    <div className="min-h-screen flex flex-col justify-between bg-background text-foreground relative overflow-hidden transition-all duration-300">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/20 dark:from-gray-900/20 via-transparent to-gray-100/20 dark:to-gray-900/20"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-muted/20 via-transparent to-muted/20"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl"></div>
       
       <div className="relative z-10 flex flex-col min-h-screen">
         <div className="w-full py-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-center bg-gradient-to-r from-gray-900 dark:from-white via-gray-700 dark:via-gray-200 to-gray-600 dark:to-gray-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold text-center bg-gradient-to-r from-foreground via-muted-foreground to-muted-foreground bg-clip-text text-transparent">
             Créer un compte
           </h1>
-          <p className="text-center text-gray-600 dark:text-gray-400 mt-4 text-lg">
+          <p className="text-center text-muted-foreground mt-4 text-lg">
             Rejoignez Flow en quelques clics
           </p>
         </div>
-        
-        {/* Contenu principal centré */}
+          {/* Contenu principal centré */}
         <div className="flex-1 flex items-center justify-center px-8 -mt-16">
           <div className="w-full max-w-md">
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-2xl px-8 py-10 w-full border border-gray-200/50 dark:border-gray-700/50 relative overflow-hidden transition-colors duration-300">
+            <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl px-8 py-10 w-full border border-border relative overflow-hidden transition-all duration-300">
               {/* Subtle glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-blue-500/5 rounded-2xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/3 rounded-2xl"></div>
               
               <div className="relative z-10">
                 <div className="flex items-center mb-8 w-full">
                   <button
                     onClick={() => router.back()}
-                    className="p-3 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 mr-4 text-gray-900 dark:text-white transition-all duration-200 hover:scale-110 group"
+                    className="p-3 rounded-full hover:bg-muted mr-4 text-foreground transition-all duration-200 hover:scale-110 group"
                   >
                     <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-200" />
                   </button>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">Créer un compte</div>
+                  <div className="text-2xl font-bold text-foreground">Créer un compte</div>
                 </div>
 
                 <RegisterForm />

@@ -10,26 +10,39 @@
   --card: #ffffff;
   --card-foreground: #0f172a;
   --border: #e2e8f0;
+  --input: #f1f5f9;
   --primary: #ef4444;
+  --primary-foreground: #ffffff;
   --secondary: #f8fafc;
+  --secondary-foreground: #0f172a;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
   --accent: #f1f5f9;
   --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --ring: #ef4444;
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #111111;
-  --card-foreground: #ffffff;
-  --border: #374151;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #0a0a0a;
+  --card-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
   --primary: #ef4444;
-  --secondary: #1f2937;
-  --muted: #111827;
-  --muted-foreground: #9ca3af;
-  --accent: #1f2937;
-  --accent-foreground: #f9fafb;
+  --primary-foreground: #fafafa;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fafafa;
+  --ring: #ef4444;
 }
 
 @layer base {
@@ -40,6 +53,7 @@
   html {
     background-color: var(--background);
     color: var(--foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   body {
@@ -49,7 +63,7 @@
   }
 }
 
-/* Classes utilitaires pour les thèmes */
+/* Classes utilitaires pour les thèmes améliorées */
 .bg-background {
   background-color: var(--background);
 }
@@ -72,6 +86,18 @@
 
 .text-muted-foreground {
   color: var(--muted-foreground);
+}
+
+.bg-secondary {
+  background-color: var(--secondary);
+}
+
+.text-secondary-foreground {
+  color: var(--secondary-foreground);
+}
+
+.border-border {
+  border-color: var(--border);
 }
 
 /* Active tab styling */

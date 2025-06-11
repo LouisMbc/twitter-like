@@ -163,15 +163,14 @@ export default function ExplorePage() {
   const handleHashtagClick = (hashtagName: string) => {
     router.push(`/hashtags/${hashtagName}`);
   };
-
   return (
-    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
+    <div className="min-h-screen flex bg-background text-foreground transition-all duration-300">
       <Header />
 
       {/* Main content area - Responsive margins */}
       <div className="lg:ml-64 flex-1 pt-16 lg:pt-0 pb-20 lg:pb-0">
         {/* Search bar - Responsive padding */}
-        <div className="sticky top-16 lg:top-0 bg-white/80 dark:bg-black/80 z-10 p-4 border-b border-gray-300 dark:border-gray-800 backdrop-blur-sm transition-colors duration-300">
+        <div className="sticky top-16 lg:top-0 bg-background/80 z-10 p-4 border-b border-border backdrop-blur-sm transition-all duration-300">
           <div className="max-w-2xl">
             <SearchBar 
               onSearch={handleSearch}
@@ -182,23 +181,23 @@ export default function ExplorePage() {
         </div>
 
         {/* Navigation tabs - Scrollable on mobile */}
-        <div className="border-b border-gray-300 dark:border-gray-800 overflow-x-auto">
+        <div className="border-b border-border overflow-x-auto">
           <div className="flex justify-between min-w-max lg:min-w-0">
             <button 
-              className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'pour-vous' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+              className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'pour-vous' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
               onClick={() => setActiveTab('pour-vous')}
             >
               Pour vous
             </button>
             {hasSearched && (
               <button 
-                className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'utilisateurs' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'utilisateurs' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setActiveTab('utilisateurs')}
               >
                 Utilisateurs ({searchResults.length})
               </button>
             )}
-            <button 
+            <button
               className={`px-3 lg:px-4 py-3 text-sm font-medium whitespace-nowrap ${activeTab === 'tendances' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('tendances')}
             >
