@@ -46,11 +46,13 @@ export default function UserProfilePage() {
     };
   }, []);
 
+  // Afficher le loader pendant le chargement - condition stricte
   if (loading) {
     return <LogoLoader />;
   }
 
-  if (!profile) {    return (
+  if (!profile) {
+    return (
       <div className="min-h-screen flex bg-background text-foreground transition-all duration-300">
         <Header />
         <div className="ml-64 flex-1 flex items-center justify-center">

@@ -23,9 +23,10 @@ export default function ProfilePage() {
     tweets,
     comments,
     loading,
+    isInitialized,
     followersCount,
     followingCount,
-    loadProfileData,
+    loadProfile,
     currentProfileId,
     activeTab,
     setActiveTab,
@@ -35,10 +36,8 @@ export default function ProfilePage() {
   const [likedTweets, setLikedTweets] = useState<Tweet[]>([]);
 
   useEffect(() => {
-    if (currentProfileId) {
-      loadProfileData(currentProfileId);
-    }
-  }, [currentProfileId, loadProfileData]);
+    loadProfile();
+  }, [loadProfile]);
 
   useEffect(() => {
     if (tweets.length > 0) {
@@ -106,9 +105,6 @@ export default function ProfilePage() {
   // State pour gérer le statut de suivi
   const [isFollowing, setIsFollowing] = useState(false);
 
-  // State pour gérer le chargement initial
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
   // Référence uniquement pour les tweets
   const tweetsObserver = useRef<IntersectionObserver | null>(null);
 
@@ -141,14 +137,8 @@ export default function ProfilePage() {
     // Logique pour suivre/ne plus suivre un utilisateur
   };
 
-  // Effet pour gérer le chargement initial
-  useEffect(() => {
-    if (!loading && isInitialLoad) {
-      setIsInitialLoad(false);
-    }
-  }, [loading, isInitialLoad]);
-
-  if (loading) {
+  // Afficher le loader tant que le chargement n'est pas terminé OU que ce n'est pas initialisé
+  if (loading || !isInitialized) {
     return <LogoLoader />;
   }
 

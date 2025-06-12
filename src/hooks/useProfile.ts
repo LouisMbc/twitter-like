@@ -17,6 +17,7 @@ export const useProfile = () => {
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // États pour pagination
   const [tweetPage, setTweetPage] = useState(0);
@@ -31,6 +32,7 @@ export const useProfile = () => {
   const loadProfileData = async (userId: string) => {
     try {
       setLoading(true);
+      setIsInitialized(false);
       
       // Optimisation: Chargement du profil en priorité, autres données en arrière-plan
       const { data: profileData, error } = await profileService.getUserProfile(userId);
@@ -41,6 +43,8 @@ export const useProfile = () => {
       
       if (!profileData) {
         console.error('Profil non trouvé');
+        setLoading(false);
+        setIsInitialized(true);
         return;
       }
       
@@ -49,28 +53,34 @@ export const useProfile = () => {
       setCurrentProfileId(profileData.id);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
-      setLoading(false); // Arrêter le loading principal ici
-
+      
       // Charger les tweets et commentaires en arrière-plan
-      Promise.allSettled([
+      await Promise.allSettled([
         loadMoreTweets(profileData.id, 0),
         loadAllComments(profileData.id)
-      ]).catch(err => console.error('Erreur chargement arrière-plan:', err));
+      ]);
+
+      setLoading(false);
+      setIsInitialized(true);
 
     } catch (error) {
       console.error('Erreur lors du chargement du profil:', error);
       setLoading(false);
+      setIsInitialized(true);
     }
   };
 
   const loadProfile = useCallback(async () => {
     setLoading(true);
+    setIsInitialized(false);
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         setProfile(null);
         setLoading(false);
+        setIsInitialized(true);
         return;
       }
 
@@ -95,6 +105,7 @@ export const useProfile = () => {
       if (!profileData) {
         setProfile(null);
         setLoading(false);
+        setIsInitialized(true);
         return;
       }
 
@@ -103,12 +114,15 @@ export const useProfile = () => {
       setCurrentProfileId(profileData.id);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
-      setLoading(false);
       
-      Promise.allSettled([
+      // Charger les données en arrière-plan
+      await Promise.allSettled([
         loadMoreTweets(profileData.id, 0),
         loadAllComments(profileData.id)
-      ]).catch(err => console.error('Erreur chargement arrière-plan:', err));
+      ]);
+      
+      setLoading(false);
+      setIsInitialized(true);
       
     } catch (error) {
       const errorDetails = error instanceof Error 
@@ -121,6 +135,7 @@ export const useProfile = () => {
         console.warn('Possible problème d\'authentification');
       }
       setLoading(false);
+      setIsInitialized(true);
     }
   }, []);
 
@@ -137,46 +152,16 @@ export const useProfile = () => {
         .eq('author_id', profileId)
         .order('published_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
-      
+
       if (tweetsError) throw tweetsError;
-      
-      const formattedTweets = (tweetsData || []).map(tweet => ({
-        id: tweet.id,
-        content: tweet.content,
-        picture: tweet.picture,
-        published_at: tweet.published_at,
-        view_count: tweet.view_count,
-        retweet_id: tweet.retweet_id,
-        author: Array.isArray(tweet.author) ? tweet.author[0] : tweet.author
-      }));
-      
+
       if (page === 0) {
-        setTweets(formattedTweets);
-        
-        // Filtrer les médias - EXCLURE les retweets
-        const tweetsWithMedia = formattedTweets.filter(tweet => 
-          tweet.picture && 
-          tweet.picture.length > 0 && 
-          !tweet.retweet_id
-        );
-        setMediaTweets(tweetsWithMedia);
+        setTweets(tweetsData || []);
       } else {
-        setTweets(prev => [...prev, ...formattedTweets]);
-        
-        // Mettre à jour les médias en excluant les retweets
-        setMediaTweets((prev: any) => {
-          const newMediaTweets = formattedTweets.filter(tweet => 
-            tweet.picture && 
-            tweet.picture.length > 0 && 
-            !tweet.retweet_id
-          );
-          return [...prev, ...newMediaTweets];
-        });
+        setTweets(prev => [...prev, ...(tweetsData || [])]);
       }
-      
-      // Déterminer s'il y a plus de tweets à charger
-      setHasTweetsMore(formattedTweets.length === ITEMS_PER_PAGE);
-      setTweetPage(page);
+
+      setHasTweetsMore((tweetsData || []).length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error('Erreur lors du chargement des tweets:', error);
     } finally {
@@ -184,70 +169,28 @@ export const useProfile = () => {
     }
   };
 
-  // Fonction pour charger tous les commentaires (sans pagination)
+  // Fonction pour charger tous les commentaires
   const loadAllComments = async (profileId: string) => {
     try {
-      setLoading(true);
-      console.log('🔍 Chargement des commentaires pour le profil:', profileId);
-      
-      // Vérifier d'abord si l'utilisateur a des commentaires
-      const { count, error: countError } = await supabase
-        .from('Comments')
-        .select('*', { count: 'exact', head: true })
-        .eq('author_id', profileId);
-
-      console.log('📊 Nombre de commentaires trouvés:', count);
-      
-      if (countError) {
-        console.error('❌ Erreur de comptage des commentaires:', countError);
-      }
-      
-      // Problème clé: author_id dans Comments pourrait être user_id et non profile_id
-      // Essayons de récupérer le user_id associé au profile
-      const { data: profileData } = await supabase
-        .from('Profile')
-        .select('user_id')
-        .eq('id', profileId)
-        .single();
-        
-      console.log('👤 User ID associé au profil:', profileData?.user_id);
-      
-      // Essayer avec user_id au lieu de profile_id
+      setCommentsLoading(true);
       const { data: commentsData, error: commentsError } = await supabase
         .from('Comments')
         .select(`
-          id, content, created_at, view_count, parent_comment_id, tweet_id, 
-          author:author_id (id, nickname, profilePicture)
+          id, content, created_at, view_count, tweet_id,
+          author:Profile!author_id (id, nickname, profilePicture)
         `)
-        .eq('author_id', profileData?.user_id) // Utiliser user_id au lieu de profile_id
+        .eq('author_id', profileId)
         .order('created_at', { ascending: false });
-      
-      if (commentsError) {
-        console.error('❌ Erreur SQL lors du chargement des commentaires:', commentsError);
-        throw commentsError;
-      }
-      
-      console.log(`✅ ${commentsData?.length || 0} commentaires récupérés:`, commentsData);
-      
-      const formattedComments = (commentsData || []).map(comment => ({
-        id: comment.id,
-        content: comment.content,
-        created_at: comment.created_at,
-        view_count: comment.view_count || 0,
-        tweet_id: comment.tweet_id,
-        author: Array.isArray(comment.author) ? comment.author[0] : comment.author,
-        parent_comment_id: comment.parent_comment_id || undefined
-      }));
-      
-      console.log('🔄 Commentaires formatés:', formattedComments.length);
-      setComments(formattedComments);
+
+      if (commentsError) throw commentsError;
+      setComments(commentsData || []);
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des commentaires:', error);
+      console.error('Erreur lors du chargement des commentaires:', error);
     } finally {
-      setLoading(false);
+      setCommentsLoading(false);
     }
   };
-  
+
   // Fonction pour charger plus de commentaires avec pagination
   const loadMoreComments = async (profileId: string, page: number) => {
     try {
@@ -297,17 +240,19 @@ export const useProfile = () => {
     profile,
     tweets,
     comments,
-    mediaTweets, // Maintenant ne contient que les médias des posts originaux
+    mediaTweets,
     followersCount,
     followingCount,
+    activeTab,
+    setActiveTab,
     loading,
+    isInitialized,
     currentProfileId,
+    loadProfile,
     loadProfileData,
     loadMoreTweets,
     loadAllComments,
-    loadMoreComments,
-    activeTab,
-    setActiveTab
+    loadMoreComments
   };
 };
 export default useProfile;
