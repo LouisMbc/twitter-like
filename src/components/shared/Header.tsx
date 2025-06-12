@@ -111,9 +111,7 @@ export default function Header() {
         const { count } = await messageService.getUnreadCount(profileId);
         setUnreadMessageCount(count || 0);
       } catch (error) {
-          "Erreur lors de la récupération des messages non lus:",
-          error
-        );
+        // Log supprimé pour la production
       }
     };
 
@@ -163,9 +161,7 @@ export default function Header() {
         const { count } = await notificationService.getUnreadCount(profileId);
         setUnreadNotificationCount(count || 0);
       } catch (error) {
-          "Erreur lors de la récupération des notifications non lues:",
-          error
-        );
+        // Log supprimé pour la production
       }
     };
 
@@ -229,6 +225,7 @@ export default function Header() {
     { icon: User, label: "Profil", path: "/profile" },
     { icon: Sparkles, label: "Premium", path: "/premium" },
   ];
+
   return (
     <>
       {/* Mobile Header - Responsive top bar */}
@@ -277,7 +274,10 @@ export default function Header() {
             </svg>
           </button>
         </div>
-      </div>      {/* Mobile Menu Overlay - Responsive */}      {isMobileMenuOpen && (
+      </div>
+
+      {/* Mobile Menu Overlay - Responsive */}
+      {isMobileMenuOpen && (
         <div
           className="xl:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={() => setIsMobileMenuOpen(false)}
@@ -312,13 +312,16 @@ export default function Header() {
             </nav>
           </div>
         </div>
-      )}      {/* Mobile Bottom Navigation - Responsive */}
+      )}
+
+      {/* Mobile Bottom Navigation - Responsive */}
       <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-sm border-t border-border px-2 sm:px-4 py-1 sm:py-2 z-50 transition-all duration-300">
         <div className="flex justify-around max-w-md mx-auto">
           {menuItems.slice(0, 5).map((item) => (
             <Link
               key={item.path}
-              href={item.path}              className={`flex flex-col items-center space-y-0.5 sm:space-y-1 px-2 sm:px-3 py-1 sm:py-2 rounded-lg transition-colors relative ${
+              href={item.path}
+              className={`flex flex-col items-center space-y-0.5 sm:space-y-1 px-2 sm:px-3 py-1 sm:py-2 rounded-lg transition-colors relative ${
                 pathname === item.path
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -334,7 +337,9 @@ export default function Header() {
             </Link>
           ))}
         </div>
-      </div>{/* Desktop Sidebar - Hidden on mobile and tablet */}
+      </div>
+
+      {/* Desktop Sidebar - Hidden on mobile and tablet */}
       <div className="hidden xl:flex fixed top-0 left-0 h-full w-64 bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 z-50 flex-col transition-colors duration-300">
         {/* Header avec logo, barre de recherche et bouton thème */}
         <div className="p-3 lg:p-4 border-b border-gray-200 dark:border-gray-800 space-y-3 lg:space-y-4">
@@ -364,7 +369,7 @@ export default function Header() {
 
         {/* Navigation items */}
         <nav className="flex-1 p-3 lg:p-4 space-y-2">
-          <nav className="space-y-1 px-2 lg:px-3">
+          <div className="space-y-1 px-2 lg:px-3">
             {menuItems.map((item) => {
               const isActive = pathname === item.path;
               return (
@@ -378,7 +383,8 @@ export default function Header() {
                   }`}
                 >
                   <div className="relative">
-                    <item.icon className="w-5 h-5 lg:w-6 lg:h-6" />                    {item.badge !== undefined && item.badge > 0 && (
+                    <item.icon className="w-5 h-5 lg:w-6 lg:h-6" />
+                    {item.badge !== undefined && item.badge > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-4 lg:min-w-[18px] lg:h-[18px] flex items-center justify-center font-medium">
                         {item.badge > 99 ? "99+" : item.badge}
                       </span>
@@ -388,7 +394,9 @@ export default function Header() {
                 </Link>
               );
             })}
-          </nav>          {/* Bouton Ajouter un post - Responsive */}
+          </div>
+
+          {/* Bouton Ajouter un post - Responsive */}
           <button
             onClick={() => router.push("/tweets")}
             className="mt-4 lg:mt-6 w-full bg-red-600 text-white py-2 lg:py-3 px-3 lg:px-4 rounded-full font-medium hover:bg-red-700 transition-colors duration-200 text-sm lg:text-base"
@@ -398,7 +406,9 @@ export default function Header() {
               <span className="hidden sm:inline">Ajouter un post</span>
               <span className="sm:hidden">Post</span>
             </div>
-          </button>{" "}          {/* User profile section - Responsive */}
+          </button>
+
+          {/* User profile section - Responsive */}
           {profile && (
             <div className="mt-4 lg:mt-6 relative">
               <button
@@ -438,7 +448,9 @@ export default function Header() {
                   </div>
                 </div>
                 <MoreHorizontal className="w-4 h-4 lg:w-5 lg:h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" />
-              </button>              {/* Profile dropdown menu - Responsive */}
+              </button>
+
+              {/* Profile dropdown menu - Responsive */}
               {showProfileMenu && (
                 <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-black rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
                   {/* Logout button */}
