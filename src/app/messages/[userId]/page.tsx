@@ -40,13 +40,6 @@ export default function ConversationPage() {
   const [checkingPermissions, setCheckingPermissions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    userId,
-    currentContact,
-    profile,
-    canMessageUser,
-    currentMessagesLength: currentMessages?.length || 0
-  });
-
   const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!message.trim() || !canMessageUser) return;
@@ -65,8 +58,7 @@ export default function ConversationPage() {
         if (!userId || !profile) {
           return;
         }
-        
-        
+
         const { data, error } = await profileService.getProfileById(userId as string);
         
         if (error) {
@@ -74,9 +66,7 @@ export default function ConversationPage() {
         }
         
         if (data) {
-          // Forcer le rechargement des messages
           await fetchMessages(data);
-        } else {
         }
         
         const canMessage = await checkCanMessage(userId as string);
@@ -117,7 +107,6 @@ export default function ConversationPage() {
   
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden transition-all duration-300">
-      {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-100/30 dark:from-gray-950/30 via-transparent to-gray-100/30 dark:to-gray-950/30"></div>
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/4 dark:bg-gray-900/4 rounded-full blur-3xl"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/3 dark:bg-gray-800/3 rounded-full blur-3xl"></div>
@@ -301,7 +290,8 @@ export default function ConversationPage() {
                 />
               </div>
               <button
-                type="submit"                className={`p-3 rounded-full transition-all duration-200 ${
+                type="submit"
+                className={`p-3 rounded-full transition-all duration-200 ${
                   message.trim() && !sendingMessage
                     ? 'bg-red-600 hover:bg-red-700 text-white' 
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
