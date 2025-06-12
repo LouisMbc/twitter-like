@@ -195,7 +195,8 @@ export default function useFeed() {
             view_count: tweet.view_count || 0,
             retweet_id: tweet.retweet_id || null,
             author: author,
-            author_id: tweet.author_id
+            author_id: tweet.author_id,
+            originalTweet: null
           };
         });
         

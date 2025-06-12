@@ -21,6 +21,7 @@ export interface Profile {
 
 // Types pour les tweets
 export interface Tweet {
+  originalTweet: any;
   id: string;
   content: string;
   picture?: string[];
@@ -53,6 +54,15 @@ export interface Comment {
 
 // Types pour les hashtags
 export interface Hashtag {
+  [x: string]: number;
+  [x: string]: number;
+  [x: string]: boolean;
+  averageViews: number;
+  averageViews: number;
+  engagementRate: boolean;
+  averageViews: boolean;
+  trendScore: any;
+  category: string;
   id: string;
   name: string;
   usage_count: number;

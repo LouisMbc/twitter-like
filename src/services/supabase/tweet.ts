@@ -102,10 +102,17 @@ export const tweetService = {
   },
 
   createTweet: async (content: string, authorId: string, picture: string[] = []) => {
-    // Code existant...
+    const { data, error } = await supabase
+      .from('Tweets')
+      .insert([{
+        author_id: authorId,
+        content: content,
+        picture: picture
+      }])
+      .select();
 
     // Si le tweet est créé avec succès, créer des notifications pour les abonnés
-    if (data) {
+    if (data && data.length > 0) {
       // Récupérer les followers pour envoyer des notifications
       const { data: followers } = await supabase
         .from('Following')

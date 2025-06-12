@@ -85,6 +85,7 @@ export default function ProfilePage() {
                 view_count: tweet.view_count,
                 retweet_id: tweet.retweet_id,
                 author_id: tweet.author_id,
+                originalTweet: null,
                 author: author
                   ? {
                       id: author.id,
@@ -152,12 +153,13 @@ export default function ProfilePage() {
   }
 
   if (!profile) {
-    return (      <div className="min-h-screen bg-background text-foreground transition-all duration-300">
+    return (
+      <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
         <div className="flex items-center justify-center min-h-screen">
           <div className="max-w-md mx-auto p-8 text-center">
-            <div className="bg-card rounded-lg p-8 border border-border transition-all duration-300">
+            <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-8 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
               <svg
-                className="w-16 h-16 mx-auto text-muted-foreground mb-4"
+                className="w-16 h-16 mx-auto text-gray-400 mb-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -169,13 +171,13 @@ export default function ProfilePage() {
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z"
                 />
               </svg>
-              <h2 className="text-2xl font-bold mb-4 text-foreground">Profil non trouvé</h2>
-              <p className="text-muted-foreground mb-6">
+              <h2 className="text-2xl font-bold mb-4">Profil non trouvé</h2>
+              <p className="text-gray-400 mb-6">
                 Ce profil n'existe pas ou a été supprimé.
               </p>
               <button
                 onClick={() => router.push("/dashboard")}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
               >
                 Retour à l'accueil
               </button>
@@ -185,13 +187,14 @@ export default function ProfilePage() {
       </div>
     );
   }
+
   return (
-    <div className="min-h-screen flex bg-background text-foreground overflow-hidden transition-all duration-300">
+    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-white overflow-hidden transition-colors duration-300">
       <Header />
 
       {/* Main content - fixed positioning to prevent layout shifts */}
       <div className="ml-64 flex-1 relative">
-        <div className="w-full bg-background min-h-screen transition-all duration-300">
+        <div className="w-full bg-white dark:bg-black min-h-screen transition-colors duration-300">
           {/* Profile Section - Full Width */}
           <div className="w-full">
             <ProfileHeader
