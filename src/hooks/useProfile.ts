@@ -42,7 +42,6 @@ export const useProfile = () => {
       }
       
       if (!profileData) {
-        console.error('Profil non trouvé');
         setLoading(false);
         setIsInitialized(true);
         return;
@@ -64,7 +63,6 @@ export const useProfile = () => {
       setIsInitialized(true);
 
     } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
       setLoading(false);
       setIsInitialized(true);
     }
@@ -91,13 +89,11 @@ export const useProfile = () => {
         .single();
 
       if (profileError) {
-        console.error('Erreur lors de la récupération du profil :', {
           code: profileError.code,
           message: profileError.message
         });
         
         if (profileError.code === 'PGRST116') {
-          console.warn('Profil non trouvé pour l\'utilisateur actuel - création nécessaire');
         }
         throw profileError;
       }
@@ -129,10 +125,8 @@ export const useProfile = () => {
         ? { name: error.name, message: error.message }
         : { error };
         
-      console.error('Erreur lors du chargement du profil connecté :', errorDetails);
       
       if (error instanceof Error && error.message.includes('auth')) {
-        console.warn('Possible problème d\'authentification');
       }
       setLoading(false);
       setIsInitialized(true);
@@ -163,7 +157,6 @@ export const useProfile = () => {
 
       setHasTweetsMore((tweetsData || []).length === ITEMS_PER_PAGE);
     } catch (error) {
-      console.error('Erreur lors du chargement des tweets:', error);
     } finally {
       setTweetsLoading(false);
     }
@@ -185,7 +178,6 @@ export const useProfile = () => {
       if (commentsError) throw commentsError;
       setComments(commentsData || []);
     } catch (error) {
-      console.error('Erreur lors du chargement des commentaires:', error);
     } finally {
       setCommentsLoading(false);
     }
@@ -199,7 +191,6 @@ export const useProfile = () => {
       // Cette fonction peut être élaborée davantage si nécessaire
       setCommentPage(page);
     } catch (error) {
-      console.error('Erreur lors du chargement des commentaires:', error);
     } finally {
       setCommentsLoading(false);
     }

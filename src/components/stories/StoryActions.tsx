@@ -20,7 +20,6 @@ export default function StoryActions({ storyId, mediaUrl, onDelete }: StoryActio
       await deleteStory(storyId, mediaUrl);
       onDelete?.();
     } catch (error) {
-      console.error('Erreur lors de la suppression de la story:', error);
     } finally {
       setLoading(false);
     }

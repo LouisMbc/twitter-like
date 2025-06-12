@@ -22,7 +22,6 @@ export default function TweetActions({ tweetId, onDelete }: TweetActionsProps) {
       if (error) throw error;
       onDelete?.();
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
     } finally {
       setLoading(false);
     }

@@ -48,10 +48,8 @@ export const useMessages = () => {
       const { data, error } = await messageService.getConversations(profile.id);
       if (error) throw error;
       
-      console.log('Conversations récupérées:', data);
       setConversations((data || []) as Conversation[]);
     } catch (err) {
-      console.error('Erreur lors du chargement des conversations:', err);
       setError('Impossible de charger vos conversations');
     } finally {
       setLoading(false);
@@ -77,7 +75,6 @@ export const useMessages = () => {
       // Rafraîchir les conversations pour mettre à jour les compteurs
       fetchConversations();
     } catch (err) {
-      console.error('Erreur lors du chargement des messages:', err);
       setError('Impossible de charger les messages');
     } finally {
       setLoading(false);
@@ -108,7 +105,6 @@ export const useMessages = () => {
       
       return true;
     } catch (err) {
-      console.error('Erreur lors de l\'envoi du message:', err);
       setError('Impossible d\'envoyer le message');
       return false;
     } finally {
@@ -128,7 +124,6 @@ export const useMessages = () => {
       
       return canMessage;
     } catch (err) {
-      console.error('Erreur lors de la vérification des permissions:', err);
       return false;
     }
   }, [profile]);
@@ -143,7 +138,6 @@ export const useMessages = () => {
       
       return data || [];
     } catch (err) {
-      console.error('Erreur lors de la recherche d\'utilisateurs:', err);
       setError('Impossible de rechercher les utilisateurs');
       return [];
     }

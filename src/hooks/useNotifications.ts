@@ -53,7 +53,6 @@ export const useNotifications = () => {
       const unreadNotifications = cleanedData.filter(notif => !notif.is_read);
       setUnreadCount(unreadNotifications.length);
     } catch (err) {
-      console.error('Erreur lors du chargement des notifications:', err);
       setError('Impossible de charger vos notifications');
     } finally {
       setLoading(false);
@@ -70,7 +69,6 @@ export const useNotifications = () => {
       // Appel au service pour supprimer la notification
       await notificationService.markAsRead(notificationId);
     } catch (err) {
-      console.error('Erreur lors de la suppression de la notification:', err);
       // Recharger les notifications en cas d'erreur pour rétablir l'état correct
       fetchNotifications();
     }
@@ -88,7 +86,6 @@ export const useNotifications = () => {
       setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true } as Notification)));
       setUnreadCount(0);
     } catch (err) {
-      console.error('Erreur lors du marquage des notifications:', err);
     }
   }, [profile]);
 
@@ -101,7 +98,6 @@ export const useNotifications = () => {
       if (error) throw new Error(String(error));
       return true;
     } catch (err) {
-      console.error('Erreur lors du like:', err);
       return false;
     }
   }, [profile]);

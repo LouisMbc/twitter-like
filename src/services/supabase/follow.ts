@@ -10,7 +10,6 @@ export const followService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Error fetching followings:', error);
       return { data: null, error };
     }
   },
@@ -24,7 +23,6 @@ export const followService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Error fetching followers:', error);
       return { data: null, error };
     }
   },
@@ -37,7 +35,6 @@ export const followService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Error following user:', error);
       return { data: null, error };
     }
   },
@@ -52,7 +49,6 @@ export const followService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Error unfollowing user:', error);
       return { data: null, error };
     }
   },

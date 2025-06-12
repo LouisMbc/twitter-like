@@ -58,7 +58,6 @@ export const mentionService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Erreur lors de la création des notifications de mention:', error);
       return { data: null, error };
     }
   },
@@ -107,7 +106,6 @@ export const mentionService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Erreur lors de la création des notifications de mention:', error);
       return { data: null, error };
     }
   },

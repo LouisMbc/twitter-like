@@ -19,7 +19,6 @@ export function useAuth() {
         const { data: { session } } = await supabase.auth.getSession();
         setUser(session?.user || null);
       } catch (error) {
-        console.error('Erreur lors de la récupération de la session:', error);
       } finally {
         setLoading(false);
       }

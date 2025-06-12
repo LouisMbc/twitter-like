@@ -35,11 +35,9 @@ const createUserProfile = async (user: any) => {
         });
 
       if (error) {
-        console.error('Error creating user profile:', error);
       }
     }
   } catch (error) {
-    console.error('Error in createUserProfile:', error);
   }
 };
 
@@ -69,11 +67,9 @@ export default function AuthPage() {
       });
       
       if (error) {
-        console.error("Erreur Google OAuth:", error);
         alert("Erreur lors de la connexion Google: " + error.message);
       }
     } catch (error) {
-      console.error("Erreur lors de la connexion Google:", error);
       alert("Erreur lors de la connexion Google");
     }
   };
@@ -89,11 +85,9 @@ export default function AuthPage() {
       });
       
       if (error) {
-        console.error("Erreur Apple OAuth:", error);
         alert("Erreur lors de la connexion Apple: " + error.message);
       }
     } catch (error) {
-      console.error("Erreur lors de la connexion Apple:", error);
       alert("Erreur lors de la connexion Apple");
     }
   };

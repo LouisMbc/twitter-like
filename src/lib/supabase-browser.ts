@@ -8,7 +8,6 @@ const isBrowser = typeof window !== 'undefined';
 
 if (!supabaseUrl || !supabaseKey) {
   if (isBrowser) {
-    console.error('Missing Supabase environment variables');
   }
 }
 

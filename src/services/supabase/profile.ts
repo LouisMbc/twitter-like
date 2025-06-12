@@ -99,7 +99,6 @@ export const profileService = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Erreur lors de la récupération des commentaires:', error);
     }
     
     return { data, error };

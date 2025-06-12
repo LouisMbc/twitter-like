@@ -35,7 +35,6 @@ export function useStories() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erreur Supabase:', error);
         throw error;
       }
       
@@ -57,7 +56,6 @@ export function useStories() {
 
       setStories(formattedStories);
     } catch (err) {
-      console.error('Erreur lors du chargement des stories:', err);
       setError('Impossible de charger les stories');
       setStories([]); // S'assurer d'avoir un tableau vide en cas d'erreur
     } finally {

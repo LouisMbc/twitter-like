@@ -98,7 +98,6 @@ export function useProfileData(userId: string) {
       setProfile(profileData);
 
     } catch (error) {
-      console.error('Erreur détaillée:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -133,7 +132,6 @@ export function useProfileData(userId: string) {
       }
       setIsFollowing(!isFollowing);
     } catch (error) {
-      console.error('Erreur:', error);
     }
   };
 

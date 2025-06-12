@@ -66,7 +66,6 @@ export default function ProfileHeader({
         refreshStories();
       }
     } catch (error) {
-      console.error("Erreur:", error);
     } finally {
       setIsUploading(false);
     }
@@ -102,16 +101,11 @@ export default function ProfileHeader({
         return;
       }
       
-      console.log("Vérification des permissions de messagerie");
-      console.log("currentProfileId:", currentProfileId);
-      console.log("profile.id:", profile.id);
       
       try {
         const { canMessage: canSendMessage, error } = await messageService.canMessage(currentProfileId, profile.id);
-        console.log("Résultat canMessage:", canSendMessage, error);
         setCanMessage(canSendMessage);
       } catch (err) {
-        console.error("Erreur lors de la vérification des permissions de messagerie:", err);
         setCanMessage(false);
       }
     };

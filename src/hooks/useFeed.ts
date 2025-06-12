@@ -20,12 +20,10 @@ export default function useFeed() {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
-        console.error('Erreur de session:', sessionError);
         throw sessionError;
       }
       
       if (!session) {
-        console.error('Pas de session trouvée');
         throw new Error("Utilisateur non authentifié");
       }
       
@@ -39,7 +37,6 @@ export default function useFeed() {
       if (!profileData) throw new Error('Profil non trouvé');
       
       if (profileError) {
-        console.error('Erreur de profil:', profileError);
         throw profileError;
       }
 
@@ -50,7 +47,6 @@ export default function useFeed() {
         .eq('follower_id', profileData.id);
       
       if (followingError) {
-        console.error('Erreur lors de la récupération des following:', followingError);
         throw followingError;
       }
       
@@ -60,12 +56,10 @@ export default function useFeed() {
       
       // 5. Si l'utilisateur ne suit personne, afficher un message approprié
       if (followingIds.length === 0) {
-        console.log("Vous ne suivez aucun utilisateur. Seuls vos tweets seront affichés.");
       }
       
       // 6. Récupérer tous les tweets des utilisateurs suivis + les siens
       if (userIds.length === 0) {
-        console.error('Aucun ID d\'utilisateur pour récupérer les tweets');
         setTweets([]);
         return;
       }
@@ -93,7 +87,6 @@ export default function useFeed() {
       const { data: initialTweets, error: tweetsError } = await query;
       
       if (tweetsError) {
-        console.error('Erreur lors de la récupération des tweets:', tweetsError);
         throw tweetsError;
       }
       
@@ -150,19 +143,16 @@ export default function useFeed() {
       
       // 7. S'assurer que les données sont valides
       if (!allTweets) {
-        console.error('allTweets est undefined ou null');
         setTweets([]);
         return;
       }
       
       if (!Array.isArray(allTweets)) {
-        console.error('allTweets n\'est pas un tableau:', typeof allTweets);
         setTweets([]);
         return;
       }
       
       if (allTweets.length === 0) {
-        console.log("Aucun tweet trouvé dans votre fil d'actualité");
         setTweets([]);
         return;
       }
@@ -179,11 +169,9 @@ export default function useFeed() {
               : tweet.author;
             
             if (!author) {
-              console.warn(`Tweet ${tweet.id}: Auteur manquant, utilisation d'une valeur par défaut`);
               author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
             }
           } catch (authorError) {
-            console.error(`Erreur lors du traitement de l'auteur pour le tweet ${tweet.id}:`, authorError);
             author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
           }
           
@@ -257,12 +245,10 @@ export default function useFeed() {
         setHasMore(enrichedTweets.length === TWEETS_PER_PAGE);
         setPage(pageToLoad);
       } catch (formatError) {
-        console.error('Erreur lors du formatage des tweets:', formatError);
         throw formatError;
       }
       
     } catch (err) {
-      console.error('Erreur lors du chargement du feed:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors du chargement du feed');
     } finally {
       setLoading(false);

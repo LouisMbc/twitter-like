@@ -52,7 +52,6 @@ export default function ConversationList({ onSelectConversation, selectedUserId 
         const lastMessage = conversation.lastMessage?.content || 'Aucun message';
 
         if (!conversationId) {
-          console.warn('Conversation sans ID:', conversation);
           return null;
         }
 

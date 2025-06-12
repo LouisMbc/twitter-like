@@ -40,7 +40,6 @@ export default function ConversationPage() {
   const [checkingPermissions, setCheckingPermissions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  console.log("État actuel:", {
     userId,
     currentContact,
     profile,
@@ -64,33 +63,25 @@ export default function ConversationPage() {
         setCheckingPermissions(true);
         
         if (!userId || !profile) {
-          console.log("userId ou profile manquant", { userId, profile });
           return;
         }
         
-        console.log("Chargement du profil pour", userId);
         
         const { data, error } = await profileService.getProfileById(userId as string);
         
         if (error) {
-          console.error("Erreur lors du chargement du profil:", error);
           return;
         }
         
         if (data) {
-          console.log("Profil chargé:", data);
           // Forcer le rechargement des messages
           await fetchMessages(data);
         } else {
-          console.log("Profil non trouvé pour ID:", userId);
         }
         
-        console.log("Vérification des permissions de messagerie entre", profile.id, "et", userId);
         const canMessage = await checkCanMessage(userId as string);
-        console.log("Résultat canMessage:", canMessage);
         setCanMessageUser(canMessage);
       } catch (err) {
-        console.error("Erreur lors du chargement:", err);
       } finally {
         setCheckingPermissions(false);
       }

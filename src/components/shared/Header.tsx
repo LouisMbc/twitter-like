@@ -111,7 +111,6 @@ export default function Header() {
         const { count } = await messageService.getUnreadCount(profileId);
         setUnreadMessageCount(count || 0);
       } catch (error) {
-        console.error(
           "Erreur lors de la récupération des messages non lus:",
           error
         );
@@ -164,7 +163,6 @@ export default function Header() {
         const { count } = await notificationService.getUnreadCount(profileId);
         setUnreadNotificationCount(count || 0);
       } catch (error) {
-        console.error(
           "Erreur lors de la récupération des notifications non lues:",
           error
         );

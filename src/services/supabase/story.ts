@@ -21,7 +21,6 @@ export const addStory = async (
       });
 
     if (uploadError) {
-      console.error("Erreur lors de l'upload du fichier :", uploadError.message);
       return null;
     }
 
@@ -47,7 +46,6 @@ export const addStory = async (
     ]).select();
 
     if (error) {
-      console.error("Erreur lors de l'ajout de la story :", error.message);
       return null;
     }
 
@@ -57,7 +55,6 @@ export const addStory = async (
     
     return null;
   } catch (error) {
-    console.error("Erreur lors de l'ajout de la story :", error);
     return null;
   }
 };
@@ -86,7 +83,6 @@ export const getStories = async () => {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error("Erreur lors de la récupération des stories:", error);
     return [];
   }
 };
@@ -104,7 +100,6 @@ export const deleteStory = async (storyId: string, mediaUrl: string) => {
       .remove([filePath]);
     
     if (deleteStorageError) {
-      console.error('Erreur lors de la suppression du fichier média:', deleteStorageError);
     }
     
     // Supprimer l'entrée de la base de données
@@ -119,7 +114,6 @@ export const deleteStory = async (storyId: string, mediaUrl: string) => {
     
     return true;
   } catch (error) {
-    console.error('Erreur lors de la suppression de la story:', error);
     throw error;
   }
 };

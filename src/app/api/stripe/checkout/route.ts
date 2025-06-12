@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-// Ajouter une vérification pour s'assurer que la clé API est définie
+// Vérification des variables d'environnement
 if (!process.env.STRIPE_SECRET_KEY) {
-  console.error('La variable d\'environnement STRIPE_SECRET_KEY est manquante');
+  throw new Error('La variable d\'environnement STRIPE_SECRET_KEY est manquante');
 }
 
 if (!process.env.STRIPE_PREMIUM_PRICE_ID) {
-  console.error('La variable d\'environnement STRIPE_PREMIUM_PRICE_ID est manquante');
+  throw new Error('La variable d\'environnement STRIPE_PREMIUM_PRICE_ID est manquante');
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -47,11 +47,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error: any) {
-    console.error('Erreur lors de la création de la session:', error);
     return NextResponse.json(
       { 
-        error: 'Erreur lors de la création de la session de checkout',
-        details: error.message || 'Aucun détail disponible'
+        error: 'Erreur lors de la création de la session de checkout'
       },
       { status: 500 }
     );

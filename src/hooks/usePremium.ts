@@ -49,7 +49,6 @@ export const usePremium = () => {
       
       setSubscriptionData(data as Subscription | null);
     } catch (err) {
-      console.error('Erreur lors de la récupération du statut de l\'abonnement:', err);
       setError('Impossible de vérifier le statut de votre abonnement');
     } finally {
       setLoading(false);
@@ -91,7 +90,6 @@ export const usePremium = () => {
       
       window.location.href = data.url;
     } catch (error) {
-      console.error("Erreur lors de l'abonnement:", error);
       setError(error instanceof Error ? error.message : "Une erreur est survenue");
     } finally {
       setLoading(false);
@@ -119,7 +117,6 @@ export const usePremium = () => {
       
       fetchSubscriptionStatus();
     } catch (err) {
-      console.error('Erreur lors de l\'annulation de l\'abonnement:', err);
       setError('Impossible d\'annuler votre abonnement');
     } finally {
       setLoading(false);
@@ -147,7 +144,6 @@ export const usePremium = () => {
       
       fetchSubscriptionStatus();
     } catch (err) {
-      console.error('Erreur lors de la réactivation de l\'abonnement:', err);
       setError('Impossible de réactiver votre abonnement');
     } finally {
       setLoading(false);

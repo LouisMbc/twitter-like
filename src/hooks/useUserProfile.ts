@@ -42,7 +42,6 @@ export function useUserProfile(userId: string) {
         setCurrentProfileId(currentUserProfile.id);
       }
 
-      console.log('Recherche du profil pour userId:', userId);
 
       let profileData = null;
       
@@ -54,7 +53,6 @@ export function useUserProfile(userId: string) {
 
       if (profileById) {
         profileData = profileById;
-        console.log('Profil trouvé par ID:', profileData);
       } else {
         const { data: profileByUserId, error: errorByUserId } = await supabase
           .from('Profile')
@@ -64,9 +62,7 @@ export function useUserProfile(userId: string) {
 
         if (profileByUserId) {
           profileData = profileByUserId;
-          console.log('Profil trouvé par user_id:', profileData);
         } else {
-          console.error('Profil non trouvé:', { errorById, errorByUserId });
           setLoading(false);
           return;
         }
@@ -112,7 +108,6 @@ export function useUserProfile(userId: string) {
         .order('published_at', { ascending: false });
 
       if (tweetsError) {
-        console.error('Erreur lors du chargement des tweets:', tweetsError);
       } else {
         const cleanedTweets = (tweetsData || []).map(tweet => {
           const authorData = tweet.author as any;
@@ -153,7 +148,6 @@ export function useUserProfile(userId: string) {
         .order('created_at', { ascending: false });
 
       if (likedTweetsError) {
-        console.error('Erreur lors du chargement des tweets likés:', likedTweetsError);
       } else {
         const cleanedLikedTweets = (likedTweetsData || [])
           .filter(like => like.tweet) // S'assurer que le tweet existe
@@ -189,7 +183,6 @@ export function useUserProfile(userId: string) {
         .order('created_at', { ascending: false });
 
       if (commentsError) {
-        console.error('Erreur lors du chargement des commentaires:', commentsError);
       } else {
         const cleanedComments = (commentsData || []).map(comment => {
           const author = comment.author as any;
@@ -205,7 +198,6 @@ export function useUserProfile(userId: string) {
       }
 
     } catch (error) {
-      console.error('Erreur lors du chargement des données du profil utilisateur:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -240,7 +232,6 @@ export function useUserProfile(userId: string) {
       }
       setIsFollowing(!isFollowing);
     } catch (error) {
-      console.error('Erreur lors du follow/unfollow:', error);
     }
   };
 

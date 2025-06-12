@@ -182,7 +182,6 @@ export const messageService = {
 
       return { data: users || [], error: null };
     } catch (error) {
-      console.error('Erreur lors de la recherche d\'utilisateurs:', error);
       return { data: [], error };
     }
   },

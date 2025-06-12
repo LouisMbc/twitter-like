@@ -124,7 +124,6 @@ export const notificationService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Erreur lors de la création de la notification de like:', error);
       return { data: null, error };
     }
   },
@@ -158,7 +157,6 @@ export const notificationService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Erreur lors de la création de la notification de retweet:', error);
       return { data: null, error };
     }
   },
@@ -191,7 +189,6 @@ export const notificationService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Erreur lors de la création de la notification de suivi:', error);
       return { data: null, error };
     }
   },
@@ -233,7 +230,6 @@ export const notificationService = {
 
       return { data, error };
     } catch (error) {
-      console.error('Erreur lors du like:', error);
       return { data: null, error };
     }
   },
@@ -262,7 +258,6 @@ export const notificationService = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Erreur lors du blocage des notifications:', error);
       return { data: null, error };
     }
   },
@@ -277,7 +272,6 @@ export const notificationService = {
 
       return { error };
     } catch (error) {
-      console.error('Erreur lors de la suppression des notifications:', error);
       return { error };
     }
   },

@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
   const payload = await req.text();
   const signature = req.headers.get('stripe-signature') as string;
     
-  console.log("Webhook reçu");
 
   let event;
   try {
@@ -21,9 +20,7 @@ export async function POST(req: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-    console.log("Événement validé:", event.type);
   } catch (error) {
-    console.error("Erreur webhook:", error);
     return new NextResponse(
       JSON.stringify({ error: 'Webhook error' }),
       { status: 400 }
@@ -34,7 +31,6 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log("Session checkout complétée:", session.id);
       await handleCheckoutSessionCompleted(session);
       break;
     case 'invoice.payment_succeeded':
@@ -78,7 +74,6 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }, { onConflict: 'subscription_id' });
 
   if (error) {
-    console.error('Erreur Supabase upsert Subscriptions:', error);
   }
 
   const { error: profileUpdateError } = await supabase
@@ -95,7 +90,6 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     .eq('id', profileId);
 
   if (profileUpdateError) {
-    console.error('Erreur Supabase update Profile:', profileUpdateError);
   }
 }
 
@@ -108,7 +102,6 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   
   // Vérifier si l'abonnement est disponible
   if (!invoiceWithSubscription.subscription) {
-    console.log('Aucun abonnement trouvé pour cette facture:', invoice);
     return;
   }
   

@@ -39,7 +39,6 @@ export const stripeService = {
 
       return { customerId: customer.id };
     } catch (error) {
-      console.error('Erreur lors de la création du client Stripe:', error);
       throw error;
     }
   },
@@ -65,7 +64,6 @@ export const stripeService = {
 
       return { sessionId: session.id, sessionUrl: session.url };
     } catch (error) {
-      console.error('Erreur lors de la création de la session de checkout:', error);
       throw error;
     }
   },
@@ -75,7 +73,6 @@ export const stripeService = {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       return { subscription };
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'abonnement:', error);
       throw error;
     }
   },
@@ -87,7 +84,6 @@ export const stripeService = {
       });
       return { success: true, subscription };
     } catch (error) {
-      console.error('Erreur lors de l\'annulation de l\'abonnement:', error);
       throw error;
     }
   },
@@ -99,7 +95,6 @@ export const stripeService = {
       });
       return { success: true, subscription };
     } catch (error) {
-      console.error('Erreur lors de la réactivation de l\'abonnement:', error);
       throw error;
     }
   }

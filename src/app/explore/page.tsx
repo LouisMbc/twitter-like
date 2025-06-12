@@ -61,7 +61,6 @@ export default function ExplorePage() {
         const { data } = await hashtagService.getPopularHashtags(50); // Augmenter la limite pour plus de hashtags
         setPopularHashtags(data || []);
       } catch (error) {
-        console.error('Erreur lors du chargement des hashtags populaires:', error);
       } finally {
         setHashtagsLoading(false);
       }
@@ -114,7 +113,6 @@ export default function ExplorePage() {
       if (error) throw error;
       setSearchResults(data || []);
     } catch (error) {
-      console.error('Erreur de recherche:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -154,7 +152,6 @@ export default function ExplorePage() {
       }));
 
     } catch (error) {
-      console.error('Erreur lors du follow/unfollow:', error);
     } finally {
       setFollowingLoading(prev => ({ ...prev, [userId]: false }));
     }

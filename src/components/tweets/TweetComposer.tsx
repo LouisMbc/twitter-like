@@ -52,7 +52,6 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         .gte('published_at', today.toISOString());
 
       if (error) {
-        console.error('Erreur lors de la vérification de la limite de tweets:', error);
         return;
       }
 
@@ -93,11 +92,9 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   };
 
   const uploadMedia = async (tweetId: string) => {
-    console.log('[TweetComposer] Début de uploadMedia pour tweetId:', tweetId);
     const uploadPromises = media.map(async (file) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${tweetId}/${Math.random()}.${fileExt}`;
-      console.log('[TweetComposer] Tentative de téléversement du fichier:', fileName, 'Type:', file.type);
       
       const { error: uploadError } = await supabase.storage
         .from('tweets')
@@ -107,10 +104,8 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         });
 
       if (uploadError) {
-        console.error('[TweetComposer] Erreur de téléversement Supabase Storage:', uploadError);
         return null; 
       }
-      console.log('[TweetComposer] Fichier téléversé avec succès:', fileName);
 
       const { data: urlData } = supabase.storage
         .from('tweets')
@@ -128,12 +123,9 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     e.preventDefault();
     
     const hashtagNames = hashtagService.extractHashtags(content);
-    console.log('🏷️ Hashtags détectés dans le contenu:', content);
-    console.log('🏷️ Hashtags extraits:', hashtagNames);
     
     setUploading(true);
     setError('');
-    console.log('[TweetComposer] handleSubmit - Début');
 
     if (!isPremium && tweetCount >= 5) {
       setError("Vous avez atteint votre limite de tweets pour aujourd'hui. Passez à Premium pour des tweets illimités !");
@@ -152,9 +144,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         .single();
 
       if (!profile) throw new Error('Profil non trouvé');
-      console.log('[TweetComposer] handleSubmit - Profil ID:', profile.id);
 
-      console.log('[TweetComposer] handleSubmit - Insertion du tweet initial (sans images)...');
       const { data: tweet, error: tweetError } = await supabase
         .from('Tweets')
         .insert([{
@@ -166,66 +156,48 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         .single();
 
       if (tweetError) {
-        console.error('[TweetComposer] handleSubmit - Erreur d\'insertion du tweet:', tweetError);
         throw tweetError;
       }
-      console.log('[TweetComposer] handleSubmit - Tweet inséré avec ID:', tweet.id);
 
       // NOUVEAU : Gérer les hashtags
       try {
         const hashtagNames = hashtagService.extractHashtags(content);
-        console.log('🔍 Hashtags extraits:', hashtagNames);
         
         if (hashtagNames.length > 0) {
-          console.log('📝 Création/récupération des hashtags...');
           const hashtags = await hashtagService.createOrGetHashtags(hashtagNames);
-          console.log('✅ Hashtags créés:', hashtags);
           
           if (hashtags.length > 0) {
             const hashtagIds = hashtags.map(h => h.id);
-            console.log('🔗 Liaison avec le tweet, IDs:', hashtagIds);
             const result = await hashtagService.linkHashtagsToTweet(tweet.id, hashtagIds);
-            console.log('🎯 Résultat de la liaison:', result);
           }
         }
       } catch (hashtagError) {
-        console.error('❌ Erreur avec les hashtags :', hashtagError);
       }
 
       // NOUVEAU : Gérer les mentions
       try {
         const mentions = mentionService.extractMentions(content);
-        console.log('👤 Mentions détectées :', mentions);
         
         if (mentions.length > 0) {
-          console.log('📧 Création des notifications de mention...');
           await mentionService.createMentionNotifications(tweet.id, profile.id, mentions);
-          console.log('✅ Notifications de mention créées avec succès');
         }
       } catch (mentionError) {
-        console.error('❌ Erreur avec les mentions :', mentionError);
       }
 
       let finalMediaUrls: string[] = [];
       if (media.length > 0) {
-        console.log('[TweetComposer] handleSubmit - Téléversement des médias...');
         finalMediaUrls = await uploadMedia(tweet.id);
-        console.log('[TweetComposer] handleSubmit - URLs des médias après téléversement:', finalMediaUrls);
 
         if (finalMediaUrls.length > 0) {
-          console.log('[TweetComposer] handleSubmit - Mise à jour du tweet avec les URLs:', finalMediaUrls);
           const { error: updateError } = await supabase
             .from('Tweets')
             .update({ picture: finalMediaUrls })
             .eq('id', tweet.id);
 
           if (updateError) {
-            console.error('[TweetComposer] handleSubmit - Erreur de mise à jour du tweet avec les médias:', updateError);
             throw updateError;
           }
-          console.log('[TweetComposer] handleSubmit - Tweet mis à jour avec les médias.');
         } else if (media.length > 0 && finalMediaUrls.length === 0) {
-          console.warn('[TweetComposer] handleSubmit - Des médias étaient sélectionnés mais aucune URL valide n\'a été obtenue après le téléversement.');
         }
       }
       
@@ -245,11 +217,9 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       }
 
     } catch (err) {
-      console.error('[TweetComposer] handleSubmit - Erreur catchée:', err);
       setError((err as Error).message);
     } finally {
       setUploading(false);
-      console.log('[TweetComposer] handleSubmit - Fin');
     }
   };
 

@@ -51,14 +51,12 @@ export const useProfileEdit = () => {
           .single();
 
         if (subscriptionError) {
-          console.error('Erreur lors de la récupération de l\'abonnement:', subscriptionError);
         } else if (subscription && subscription.status === 'active' && !profile.is_premium) {
           // Mettre à jour le statut premium si nécessaire
           await profileService.updateProfile(sessionResult.session.user.id, { is_premium: true });
           profile.is_premium = true;
         }
       } catch (err) {
-        console.error('Exception lors de la vérification de l\'abonnement:', err);
       }
       
       // Nettoyer le nickname s'il contient un @
@@ -80,7 +78,6 @@ export const useProfileEdit = () => {
       }));
 
     } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
       setError('Erreur lors du chargement du profil: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
     } finally {
       setLoading(false);
@@ -168,7 +165,6 @@ export const useProfileEdit = () => {
 
       router.push('/profile');
     } catch (err) {
-      console.error('Erreur lors de la mise à jour du profil :', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la mise à jour');
     } finally {
       setLoading(false);

@@ -55,7 +55,6 @@ export default function RetweetPage() {
         setOriginalTweet(data);
       } catch (err) {
         setError("Erreur lors du chargement du tweet");
-        console.error(err);
       } finally {
         setLoading(false);
       }

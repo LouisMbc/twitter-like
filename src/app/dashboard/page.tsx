@@ -41,7 +41,6 @@ export default function DashboardPage() {
           router.push('/auth/login');
         }
       } catch (error) {
-        console.error('Erreur d\'authentification:', error);
       } finally {
         setAuthChecked(true);
       }
@@ -75,7 +74,6 @@ export default function DashboardPage() {
       await new Promise(resolve => setTimeout(resolve, 500));
       await refreshFeed();
     } catch (error) {
-      console.error('Erreur lors de l\'actualisation du feed:', error);
     } finally {
       setIsRefreshing(false);
     }

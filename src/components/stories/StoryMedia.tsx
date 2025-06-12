@@ -32,13 +32,11 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
           .single();
 
         if (error) {
-          console.error("Erreur lors de la récupération de la story:", error);
           return;
         }
 
         setStory(data);
       } catch (error) {
-        console.error("Erreur:", error);
       } finally {
         setLoading(false);
       }
@@ -71,7 +69,6 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
           alt="Story"
           className="w-full h-full object-cover rounded-3xl"
           onError={(e) => {
-            console.error('Erreur de chargement de l\'image:', e);
             (e.target as HTMLImageElement).src = '/placeholder-image.png';
           }}
         />
@@ -92,13 +89,10 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
           loop={false}
           preload="metadata"
           onError={(e) => {
-            console.error('Erreur de chargement de la vidéo:', e);
           }}
           onLoadStart={() => {
-            console.log('Début du chargement de la vidéo');
           }}
           onCanPlay={() => {
-            console.log('Vidéo prête à être lue');
           }}
         />
         {/* Overlay gradient pour améliorer la lisibilité */}

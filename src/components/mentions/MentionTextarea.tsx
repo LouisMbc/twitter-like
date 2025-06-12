@@ -68,7 +68,6 @@ export default function MentionTextarea({
         setSelectedIndex(0);
       }
     } catch (error) {
-      console.error('Erreur lors de la recherche d\'utilisateurs :', error);
     }
   };
 

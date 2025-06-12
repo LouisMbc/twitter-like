@@ -52,7 +52,6 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
         .match(tweetId ? { tweet_id: tweetId } : { comment_id: commentId });
 
       if (error) {
-        console.error('Erreur Supabase:', error.message);
         return;
       }
 
@@ -79,7 +78,6 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
 
       setReactions(counts);
     } catch (error: any) {
-      console.error('Erreur lors du chargement des réactions:', error.message || error);
     }
   };
 
@@ -187,7 +185,6 @@ export default function ReactionBar({ tweetId, commentId }: ReactionBarProps) {
       await loadReactions();
       await checkUserReaction();
     } catch (error) {
-      console.error('Erreur lors de la réaction:', error);
     }
   };
 

@@ -78,7 +78,6 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
             );
           }
         } catch (mentionError) {
-          console.error('❌ Erreur avec les mentions :', mentionError);
         }
   
         // Appeler le callback IMMÉDIATEMENT avec le commentaire formaté
@@ -89,7 +88,6 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
         if (onCancel) onCancel();
         
       } catch (error) {
-        console.error('Erreur lors de l\'envoi du commentaire :', error);
       } finally {
         setLoading(false);
       }

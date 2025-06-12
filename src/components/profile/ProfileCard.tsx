@@ -69,7 +69,6 @@ export default function ProfileCard({
         
         setIsFollowing(!!data);
       } catch (error) {
-        console.error("Erreur lors de la vérification du statut d'abonnement:", error);
       }
     };
     
@@ -98,7 +97,6 @@ export default function ProfileCard({
         .single();
       
       if (!profileData) {
-        console.error("Profil non trouvé");
         return;
       }
       
@@ -151,7 +149,6 @@ export default function ProfileCard({
       router.refresh();
       
     } catch (error) {
-      console.error("Erreur lors de la modification de l'abonnement", error);
     } finally {
       setLoading(false);
     }

@@ -86,7 +86,6 @@ export const useProfileSetup = () => {
 
       router.push('/profile');
     } catch (error) {
-      console.error("Erreur lors de la création du profil:", error);
       setError(error instanceof Error ? error.message : 'Une erreur est survenue');
     } finally {
       setLoading(false);

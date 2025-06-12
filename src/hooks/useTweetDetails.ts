@@ -27,7 +27,6 @@ export function useTweetDetails(tweetId?: string) {
         // Incrémenter le compteur de vues
         await tweetService.incrementViewCount(tweetId, data.view_count);
       } catch (err) {
-        console.error("Erreur lors du chargement du tweet:", err);
         setError("Erreur lors du chargement du tweet");
       } finally {
         setLoading(false);

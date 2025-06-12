@@ -20,7 +20,6 @@ export const useHashtags = (profileId: string | null) => {
       setSubscriptions(subsData.data || []);
       setBlocks(blocksData.data || []);
     } catch (error) {
-      console.error('Erreur lors du chargement des hashtags utilisateur:', error);
     } finally {
       setLoading(false);
     }
@@ -37,7 +36,6 @@ export const useHashtags = (profileId: string | null) => {
       await hashtagService.subscribeToHashtag(profileId, hashtagId);
       fetchUserHashtags(); // Rafraîchir la liste
     } catch (error) {
-      console.error('Erreur lors de l\'abonnement:', error);
     }
   };
 
@@ -48,7 +46,6 @@ export const useHashtags = (profileId: string | null) => {
       await hashtagService.unsubscribeFromHashtag(profileId, hashtagId);
       fetchUserHashtags(); // Rafraîchir la liste
     } catch (error) {
-      console.error('Erreur lors du désabonnement:', error);
     }
   };
 
@@ -59,7 +56,6 @@ export const useHashtags = (profileId: string | null) => {
       await hashtagService.blockHashtag(profileId, hashtagId);
       fetchUserHashtags(); // Rafraîchir la liste
     } catch (error) {
-      console.error('Erreur lors du blocage:', error);
     }
   };
 
@@ -70,7 +66,6 @@ export const useHashtags = (profileId: string | null) => {
       await hashtagService.unblockHashtag(profileId, hashtagId);
       fetchUserHashtags(); // Rafraîchir la liste
     } catch (error) {
-      console.error('Erreur lors du déblocage:', error);
     }
   };
 

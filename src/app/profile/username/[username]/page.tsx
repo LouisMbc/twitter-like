@@ -29,7 +29,6 @@ export default function UsernameProfilePage() {
           router.push('/404');
         }
       } catch (error) {
-        console.error('Erreur lors de la recherche du profil:', error);
         router.push('/404');
       } finally {
         setLoading(false);

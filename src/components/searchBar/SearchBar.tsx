@@ -86,7 +86,6 @@ export default function SearchBar({
       setSearchResults(users || []);
       setHashtagResults(hashtags);
     } catch (error) {
-      console.error('Erreur de recherche:', error);
       setSearchResults([]);
       setHashtagResults([]);
     } finally {

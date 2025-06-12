@@ -72,7 +72,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
         locale: fr 
       });
     } catch (error) {
-      console.error("Date formatting error:", error);
       return "récemment";
     }
   })();
@@ -89,7 +88,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
         locale: fr 
       });
     } catch (error) {
-      console.error("Date formatting error:", error);
       return "récemment";
     }
   };
@@ -151,12 +149,10 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
   }, []);
 
   if (!tweet) {
-    console.error('Tweet manquant');
     return <div>Tweet non disponible</div>;
   }
 
   if (!tweet?.author) {
-    console.warn(`⚠️ Tweet sans auteur ! ID: ${tweet.id}`, tweet);
     return <div className="text-red-500">Erreur : ce tweet n'a pas d'auteur.</div>;
   }
   
@@ -220,7 +216,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                       preload="metadata"
                       className="rounded-lg max-h-96 w-full object-cover"
                       onError={(e) => {
-                        console.error("Erreur de chargement vidéo:", e);
                         // Fallback: essayer d'afficher comme image
                         const target = e.target as HTMLVideoElement;
                         const parent = target.parentElement;
@@ -237,7 +232,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                       alt="Tweet image"
                       className="rounded-lg max-h-96 w-auto object-cover"
                       onError={(e) => {
-                        console.error("Erreur de chargement image:", e);
                         const target = e.target as HTMLImageElement;
                         target.src = "/placeholder-image.png"; // Optionnel: image de fallback
                       }}

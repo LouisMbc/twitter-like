@@ -45,13 +45,11 @@ export default function MessagesPage() {
       const { data: allUsers, error } = await messageService.searchMessagableUsers(profile.id, searchQuery);
       
       if (error) {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
         return;
       }
       
       setFollowings(allUsers || []);
     } catch (err) {
-      console.error('Erreur lors du chargement des utilisateurs:', err);
     } finally {
       setLoadingFollowings(false);
     }
@@ -67,13 +65,11 @@ export default function MessagesPage() {
         const { data: searchedUsers, error } = await messageService.searchMessagableUsers(profile.id, query);
         
         if (error) {
-          console.error('Erreur lors de la recherche:', error);
           return;
         }
         
         setFollowings(searchedUsers || []);
       } catch (err) {
-        console.error('Erreur lors de la recherche:', err);
       } finally {
         setLoadingFollowings(false);
       }
@@ -108,13 +104,11 @@ export default function MessagesPage() {
       // Utiliser directement les données de l'utilisateur sélectionné
       await handleSelectConversation(userId, selectedUser);
     } else {
-      console.error('Utilisateur non trouvé dans la liste');
     }
   };
 
   // Fonction pour sélectionner une conversation
   const handleSelectConversation = async (userId: string, userData?: ContactType) => {
-    console.log('Sélection de la conversation:', userId);
     setSelectedUserId(userId);
     setCheckingPermissions(true);
     
@@ -124,7 +118,6 @@ export default function MessagesPage() {
       // Si nous avons les données de l'utilisateur, les utiliser directement
       if (userData) {
         contact = userData;
-        console.log('Utilisation des données utilisateur fournies:', contact);
       } else {
         // Récupérer les informations du contact depuis les conversations existantes d'abord
         const existingConversation = conversations.find((conv: any) => 
@@ -132,7 +125,6 @@ export default function MessagesPage() {
         );
         
         if (existingConversation) {
-          console.log('Contact trouvé dans les conversations existantes:', existingConversation);
           
           contact = {
             id: existingConversation.id || existingConversation.user?.id || userId,
@@ -141,7 +133,6 @@ export default function MessagesPage() {
           };
         } else {
           // Si pas trouvé dans les conversations, chercher dans la base de données
-          console.log('Contact non trouvé dans les conversations, recherche dans la DB...');
           
           const { data: profileData, error: profileError } = await supabase
             .from('Profile')
@@ -155,9 +146,7 @@ export default function MessagesPage() {
               nickname: profileData.nickname || 'Utilisateur',
               profilePicture: profileData.profilePicture
             };
-            console.log('Contact trouvé dans Profile:', contact);
           } else {
-            console.error('Impossible de trouver le contact:', profileError);
             return;
           }
         }
@@ -171,7 +160,6 @@ export default function MessagesPage() {
       fetchMessages(contact);
       
     } catch (error) {
-      console.error('Erreur lors de la sélection de conversation:', error);
     } finally {
       setCheckingPermissions(false);
     }
@@ -185,7 +173,6 @@ export default function MessagesPage() {
     // Vérifier si l'utilisateur peut envoyer un message (abonnement mutuel)
     const canMessage = await checkCanMessage(selectedUserId);
     if (!canMessage) {
-      console.error("Impossible d'envoyer un message : abonnement mutuel requis");
       return;
     }
     

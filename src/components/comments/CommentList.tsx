@@ -104,7 +104,6 @@ const CommentList: React.FC<CommentListProps> = ({ tweetId, comments: initialCom
       });
       setComments(formattedComments as Comment[]);
     } catch (err) {
-      console.error('Error loading comments:', err);
       setError('Erreur lors du chargement des commentaires');
       setComments(initialComments || []); // Fallback to initial or empty
     } finally {

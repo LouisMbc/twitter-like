@@ -111,7 +111,6 @@ export default function ProfilePage() {
   // Fonction pour charger plus de tweets (placeholder)
   const loadMoreTweets = useCallback(async (profileId: string, page: number) => {
     // Logique pour charger plus de tweets si nécessaire
-    console.log('Loading more tweets for profile:', profileId, 'page:', page);
   }, []);
 
   // Callback uniquement pour les tweets

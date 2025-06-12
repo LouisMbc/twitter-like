@@ -71,7 +71,6 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                     hashtagService.getTweetsByHashtag(hashtagName, 0, 10)
                         .then(({ data: tweetData, error: tweetError }) => {
                             if (tweetError) {
-                                console.error('Erreur tweets:', tweetError);
                                 return;
                             }
                             
@@ -89,7 +88,6 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                                 setTweets(formattedTweets);
                             }
                         })
-                        .catch(error => console.error('Erreur tweets:', error));
                 }
 
                 // 6. Chargement asynchrone des états (encore plus en arrière-plan)
@@ -102,12 +100,10 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                             setIsSubscribed(subscribed.isSubscribed);
                             setIsBlocked(blocked.isBlocked);
                         }).catch(error => {
-                            console.error('Erreur états:', error);
                         });
                     }, 100);
                 }
             } catch (error) {
-                console.error('Erreur chargement:', error);
                 setLoading(false);
             }
         };
@@ -129,7 +125,6 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                 setIsSubscribed(true);
             }
         } catch (error) {
-            console.error('Erreur lors de l\'abonnement:', error);
         }
     };
 
@@ -146,7 +141,6 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                 setIsSubscribed(false);
             }
         } catch (error) {
-            console.error('Erreur lors du blocage:', error);
         }
     };
 

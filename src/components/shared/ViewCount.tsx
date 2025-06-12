@@ -39,7 +39,6 @@ export default function ViewCounter({ contentId, contentType, initialCount = 0 }
 
     const updateViews = async () => {
       try {
-        console.log('Starting view count update:', { contentId, contentType, visitorId });
         
         // Déterminer la colonne à utiliser
         const idColumn = contentType === 'tweet' ? 'tweet_id' : 'comment_id';
