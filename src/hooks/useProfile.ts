@@ -89,11 +89,9 @@ export const useProfile = () => {
         .single();
 
       if (profileError) {
-          code: profileError.code,
-          message: profileError.message
-        });
-        
+        // Log supprimé pour la production
         if (profileError.code === 'PGRST116') {
+          // Profil non trouvé
         }
         throw profileError;
       }
@@ -125,8 +123,8 @@ export const useProfile = () => {
         ? { name: error.name, message: error.message }
         : { error };
         
-      
       if (error instanceof Error && error.message.includes('auth')) {
+        // Erreur d'authentification
       }
       setLoading(false);
       setIsInitialized(true);
@@ -157,6 +155,7 @@ export const useProfile = () => {
 
       setHasTweetsMore((tweetsData || []).length === ITEMS_PER_PAGE);
     } catch (error) {
+      // Log supprimé pour la production
     } finally {
       setTweetsLoading(false);
     }
@@ -178,6 +177,7 @@ export const useProfile = () => {
       if (commentsError) throw commentsError;
       setComments(commentsData || []);
     } catch (error) {
+      // Log supprimé pour la production
     } finally {
       setCommentsLoading(false);
     }
@@ -191,6 +191,7 @@ export const useProfile = () => {
       // Cette fonction peut être élaborée davantage si nécessaire
       setCommentPage(page);
     } catch (error) {
+      // Log supprimé pour la production
     } finally {
       setCommentsLoading(false);
     }
@@ -243,9 +244,14 @@ export const useProfile = () => {
     loadProfileData,
     loadMoreTweets,
     loadAllComments,
-    loadMoreComments
+    loadMoreComments,
+    loadMoreTweetsData,
+    loadMoreCommentsData,
+    incrementFollowingCount,
+    decrementFollowingCount
   };
 };
+
 export default useProfile;
 
 
