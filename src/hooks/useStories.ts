@@ -10,6 +10,9 @@ export function useStories() {
   const fetchStories = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('🔄 Récupération des stories...');
       
       // Récupérer toutes les stories qui ne sont pas encore expirées
       const now = new Date();
@@ -35,29 +38,35 @@ export function useStories() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erreur Supabase:', error);
+        console.error('❌ Erreur Supabase lors de la récupération des stories:', error);
         throw error;
       }
       
+      console.log('✅ Stories récupérées:', data?.length || 0);
+      
       // S'assurer que les données ne sont pas null/undefined
       if (!data || data.length === 0) {
+        console.log('ℹ️ Aucune story trouvée');
         setStories([]);
         return;
       }
 
       // Formater les données pour correspondre à l'interface Story
-      const formattedStories = data.map((story: any) => ({
-        ...story,
-        author: story.Profile || {
-          id: 'unknown',
-          nickname: 'Utilisateur',
-          profilePicture: null
-        }
-      }));
+      const formattedStories = data
+        .filter(story => story && story.id) // Filtrer les stories invalides
+        .map((story: any) => ({
+          ...story,
+          author: story.Profile || {
+            id: 'unknown',
+            nickname: 'Utilisateur',
+            profilePicture: null
+          }
+        }));
 
+      console.log('✅ Stories formatées:', formattedStories.length);
       setStories(formattedStories);
     } catch (err) {
-      console.error('Erreur lors du chargement des stories:', err);
+      console.error('❌ Erreur lors du chargement des stories:', err);
       setError('Impossible de charger les stories');
       setStories([]); // S'assurer d'avoir un tableau vide en cas d'erreur
     } finally {

@@ -1,5 +1,95 @@
 import supabase from '@/lib/supabase';
 
+// Fonction pour compresser une image
+const compressImage = (file: File, maxWidth: number = 1080, quality: number = 0.8): Promise<File> => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Calculer les nouvelles dimensions en gardant le ratio
+      let { width, height } = img;
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxWidth) {
+          width = (width * maxWidth) / height;
+          height = maxWidth;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Dessiner l'image redimensionnée
+      ctx!.drawImage(img, 0, 0, width, height);
+      
+      // Convertir en blob puis en fichier
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const compressedFile = new File([blob], file.name, {
+            type: file.type,
+            lastModified: Date.now()
+          });
+          resolve(compressedFile);
+        } else {
+          resolve(file); // Fallback vers le fichier original
+        }
+      }, file.type, quality);
+    };
+    
+    img.src = URL.createObjectURL(file);
+  });
+};
+
+// Fonction pour valider et traiter le fichier
+const processMediaFile = async (file: File): Promise<{ processedFile: File; error?: string }> => {
+  const maxSize = 50 * 1024 * 1024; // 50MB limite Supabase
+  const maxImageSize = 10 * 1024 * 1024; // 10MB pour les images
+  const maxVideoSize = 50 * 1024 * 1024; // 50MB pour les vidéos
+  
+  // Vérifier le type de fichier
+  if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+    return { processedFile: file, error: 'Format de fichier non supporté. Utilisez des images ou des vidéos.' };
+  }
+  
+  // Pour les vidéos, vérifier directement la taille
+  if (file.type.startsWith('video/')) {
+    if (file.size > maxVideoSize) {
+      return { processedFile: file, error: 'La vidéo est trop volumineuse. Taille maximum: 50MB.' };
+    }
+    return { processedFile: file };
+  }
+  
+  // Pour les images, compresser si nécessaire
+  if (file.type.startsWith('image/')) {
+    if (file.size > maxImageSize) {
+      try {
+        const compressedFile = await compressImage(file, 1080, 0.7);
+        if (compressedFile.size > maxImageSize) {
+          // Si encore trop gros, compresser davantage
+          const moreCompressed = await compressImage(file, 720, 0.5);
+          if (moreCompressed.size > maxImageSize) {
+            return { processedFile: file, error: 'Impossible de compresser l\'image suffisamment. Veuillez choisir une image plus petite.' };
+          }
+          return { processedFile: moreCompressed };
+        }
+        return { processedFile: compressedFile };
+      } catch (error) {
+        console.error('Erreur lors de la compression:', error);
+        return { processedFile: file, error: 'Erreur lors de la compression de l\'image.' };
+      }
+    }
+    return { processedFile: file };
+  }
+  
+  return { processedFile: file };
+};
+
 export const addStory = async (
   userId: string, 
   file: File, 
@@ -7,21 +97,41 @@ export const addStory = async (
   duration?: number // Durée personnalisée en secondes
 ) => {
   try {
-    // Utiliser le fichier tel quel, sans conversion
-    const fileExt = file.name.split('.').pop();
+    // Traiter le fichier (compression si nécessaire)
+    const { processedFile, error: processError } = await processMediaFile(file);
+    
+    if (processError) {
+      console.error("Erreur lors du traitement du fichier :", processError);
+      alert(processError); // Afficher l'erreur à l'utilisateur
+      return null;
+    }
+    
+    console.log(`Fichier traité: ${file.size} bytes -> ${processedFile.size} bytes`);
+    
+    const fileExt = processedFile.name.split('.').pop();
     const filePath = `stories/${userId}/${Date.now()}.${fileExt}`;
 
-    // Upload du fichier
+    // Upload du fichier traité
     const { error: uploadError } = await supabase.storage
       .from("stories")
-      .upload(filePath, file, { 
+      .upload(filePath, processedFile, { 
         cacheControl: "3600", 
         upsert: false,
-        contentType: file.type
+        contentType: processedFile.type
       });
 
     if (uploadError) {
       console.error("Erreur lors de l'upload du fichier :", uploadError.message);
+      
+      // Messages d'erreur plus spécifiques
+      if (uploadError.message.includes("exceeded the maximum allowed size")) {
+        alert("Le fichier est trop volumineux. Veuillez choisir un fichier plus petit.");
+      } else if (uploadError.message.includes("Invalid file type")) {
+        alert("Format de fichier non supporté.");
+      } else {
+        alert("Erreur lors de l'upload. Veuillez réessayer.");
+      }
+      
       return null;
     }
 

@@ -46,6 +46,19 @@ export default function ProfileHeader({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Vérification préliminaire du type de fichier
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      alert('Veuillez sélectionner une image ou une vidéo.');
+      return;
+    }
+
+    // Vérification de la taille maximale (50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      alert('Le fichier est trop volumineux. Taille maximum autorisée: 50MB.');
+      return;
+    }
+
     try {
       setIsUploading(true);
       const mediaType = file.type.startsWith("image") ? "image" : "video";
@@ -55,6 +68,8 @@ export default function ProfileHeader({
         throw new Error("Non autorisé");
       }
 
+      console.log(`Upload en cours: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+      
       const success = await addStory(profile.id, file, mediaType);
       if (success) {
         // Réinitialiser l'input file
@@ -64,9 +79,13 @@ export default function ProfileHeader({
         
         // Rafraîchir les stories sans redirection
         refreshStories();
+        console.log('Story uploadée avec succès');
+      } else {
+        console.error('Échec de l\'upload de la story');
       }
     } catch (error) {
       console.error("Erreur:", error);
+      alert('Une erreur est survenue lors de l\'upload. Veuillez réessayer.');
     } finally {
       setIsUploading(false);
     }
@@ -192,14 +211,13 @@ export default function ProfileHeader({
                   className="absolute bottom-2 right-2 group/add z-20"
                   disabled={isUploading}
                   type="button"
+                  title="Ajouter une story"
                 >
-                  <div className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center transition-colors duration-300 border-2 border-background">
+                  <div className="story-add-button bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 border-2 border-background shadow-lg hover:shadow-red-500/25 hover:scale-110">
                     {isUploading ? (
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
+                      <span className="plus-icon text-white font-bold text-lg leading-none">+</span>
                     )}
                   </div>
                 </button>
@@ -212,6 +230,7 @@ export default function ProfileHeader({
                 accept="image/*,video/*"
                 className="hidden"
                 onChange={handleFileChange}
+                key={Date.now()} // Force le refresh de l'input
               />
             </div>
               {/* Bouton "Modifier le profil" - Fixed positioning */}
