@@ -26,6 +26,9 @@ export function useStories() {
   const fetchStories = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('🔄 Récupération des stories...');
       
       // Récupérer toutes les stories qui ne sont pas encore expirées
       const now = new Date();
@@ -54,8 +57,11 @@ export function useStories() {
         throw error;
       }
       
+      console.log('✅ Stories récupérées:', data?.length || 0);
+      
       // S'assurer que les données ne sont pas null/undefined
       if (!data || data.length === 0) {
+        console.log('ℹ️ Aucune story trouvée');
         setStories([]);
         return;
       }
@@ -70,6 +76,7 @@ export function useStories() {
         }
       }));
 
+      console.log('✅ Stories formatées:', formattedStories.length);
       setStories(formattedStories);
     } catch {
       setError('Impossible de charger les stories');

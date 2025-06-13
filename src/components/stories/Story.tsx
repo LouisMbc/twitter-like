@@ -66,7 +66,16 @@ const Story = ({
     const checkCurrentUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setCurrentUserId(session.user.id);
+        // Récupérer l'ID du profil utilisateur depuis la table Profile
+        const { data: profile } = await supabase
+          .from('Profile')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (profile) {
+          setCurrentUserId(profile.id);
+        }
       }
     };
     
@@ -180,18 +189,19 @@ const Story = ({
     <>
       {/* Affichage de la liste des stories (uniquement si pas en plein écran) */}
       {!isFullScreen && !currentStory && (
-        <div className="flex space-x-4 overflow-x-auto p-2 scrollbar-hide">
+        <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
           {Object.entries(storiesByUser).map(([userId, userStories]) => {
             const firstStory = userStories[0];
+            
             return (
               <div
                 key={userId}
-                className="flex-shrink-0 relative group cursor-pointer"
+                className="flex-shrink-0 cursor-pointer"
                 onClick={() => {
                   if (onStoryClick) {
                     onStoryClick(userId, 0);
                   } else {
-                    setCurrentStoryIndex(0);
+                    setCurrentStoryIndex(stories.findIndex(story => story.user_id === userId));
                     setTimeRemaining(STORY_DURATION);
                   }
                 }}
@@ -229,14 +239,21 @@ const Story = ({
               </div>
             );
           })}
+          
+          {/* Message si aucune story */}
+          {Object.keys(storiesByUser).length === 0 && (
+            <div className="text-gray-400 text-sm">
+              Aucune story disponible
+            </div>
+          )}
         </div>
       )}
 
       {/* Affichage en plein écran de la Story sélectionnée */}
-      {(isFullScreen || currentStory) && userId && (
+      {(isFullScreen || currentStory) && userId && filteredStories.length > 0 && (
         <div
-          className="w-full h-full flex items-center justify-center"
-          onClick={onClose} // Fermer en cliquant sur l'arrière-plan
+          className="w-full h-full flex items-center justify-center bg-black/95"
+          onClick={onClose}
         >
           {/* Barre de progression */}
           <div className="absolute top-6 left-6 right-6 z-[10000]">
@@ -262,16 +279,16 @@ const Story = ({
                   />
                 ) : (
                   <span className="text-sm">
-                    {filteredStories[0]?.Profile?.nickname?.charAt(0).toUpperCase() || 'U'}
+                    {filteredStories[currentStoryIndex || 0]?.Profile?.nickname?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 )}
               </div>
               <div>
                 <p className="text-white font-semibold text-sm">
-                  {filteredStories[0]?.Profile?.nickname || 'Utilisateur'}
+                  {filteredStories[currentStoryIndex || 0]?.Profile?.nickname || 'Utilisateur'}
                 </p>
                 <p className="text-gray-300 text-xs">
-                  {filteredStories[0] && new Date(filteredStories[0].created_at || '').toLocaleTimeString('fr-FR', { 
+                  {filteredStories[currentStoryIndex || 0] && new Date(filteredStories[currentStoryIndex || 0].created_at || '').toLocaleTimeString('fr-FR', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
                   })}
@@ -320,7 +337,7 @@ const Story = ({
             </button>
           )}
           
-          {/* Contenu principal de la story - Style de l'image */}
+          {/* Contenu principal de la story */}
           <div 
             className="w-full h-full max-w-lg mx-auto flex items-center justify-center p-6"
             onClick={(e) => e.stopPropagation()}
