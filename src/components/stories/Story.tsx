@@ -8,8 +8,15 @@ import StoryMedia from './StoryMedia';
 import StoryActions from './StoryActions';
 import supabase from '@/lib/supabase-browser';
 import LogoLoader from '@/components/loader/loader';
+import Image from 'next/image';
 
 const STORY_DURATION = 60; // Durée en secondes (1 minute)
+
+interface StoryUser {
+  id: string;
+  nickname: string;
+  profilePicture?: string;
+}
 
 const Story = ({ 
   userId, 
@@ -98,10 +105,13 @@ const Story = ({
   }, [currentStoryIndex]);
 
   // Ajoutez un gestionnaire pour le bouton de fermeture
-  const handleClose = () => {
-    setCurrentStoryIndex(null);
-    if (onClose) onClose();
-  };
+  const handleClose = useCallback(() => {
+    setIsPlaying(false);
+    setTimeRemaining(STORY_DURATION);
+    if (onClose) {
+      onClose();
+    }
+  }, [onClose]);
 
   // Démarrer le timer lorsqu'une story est ouverte
   useEffect(() => {
@@ -247,13 +257,12 @@ const Story = ({
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold overflow-hidden">
                 {filteredStories[0]?.Profile?.profilePicture ? (
-                  <img 
-                    src={filteredStories[0].Profile.profilePicture} 
+                  <Image
+                    src={filteredStories[0].Profile.profilePicture}
                     alt={filteredStories[0].Profile.nickname || 'Profile'}
+                    width={40}
+                    height={40}
                     className="w-full h-full rounded-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
                   />
                 ) : (
                   <span className="text-sm">
@@ -277,12 +286,9 @@ const Story = ({
             {/* Bouton fermer */}
             <button 
               className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-all duration-200"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onClose) onClose();
-              }}
+              onClick={handleClose}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

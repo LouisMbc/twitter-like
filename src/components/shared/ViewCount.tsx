@@ -18,122 +18,79 @@ function generateUUID() {
   });
 }
 
-export default function ViewCounter({ contentId, contentType, initialCount = 0 }: ViewCounterProps) {
-  const [views, setViews] = useState(initialCount); // Utiliser la valeur initiale
-  
+export default function ViewCount({ contentId, contentType, initialCount }: ViewCounterProps) {
+  const [count, setCount] = useState(initialCount || 0);
+
   useEffect(() => {
-    // Ne pas recompter si nous avons déjà une valeur initiale non nulle
-    if (initialCount > 0) {
-      setViews(initialCount);
-    }
-
-    // Ne compter les vues que côté client
-    if (typeof window === 'undefined') return;
-    
-    // Récupérer ou créer un identifiant visiteur unique
-    let visitorId = localStorage.getItem('visitor_id');
-    if (!visitorId) {
-      visitorId = generateUUID();
-      localStorage.setItem('visitor_id', visitorId);
-    }
-
-    const updateViews = async () => {
+    const fetchViewCount = async () => {
       try {
-        
-        // Déterminer la colonne à utiliser
-        const idColumn = contentType === 'tweet' ? 'tweet_id' : 'comment_id';
-        
-        // Récupérer d'abord le compteur de vues actuel depuis la table de contenu
-        const contentTable = contentType === 'tweet' ? 'Tweets' : 'Comments';
-        
-        const { data: contentData } = await supabase
-          .from(contentTable)
-          .select('view_count')
-          .eq('id', contentId)
-          .single();
-          
-        
-        // Vérifier si l'entrée existe déjà dans la table views
-        const { data: viewData } = await supabase
-          .from('views')
-          .select('id, views_count, viewers')
-          .eq(idColumn, contentId)
-          .single();
-          
-        
-        // Vérifier si l'utilisateur a déjà vu ce contenu
-        // IMPORTANT: viewers est un JSONB array, pas un JavaScript array
-        let hasViewed = false;
-        let currentViewers = [];
-        
-        if (viewData && viewData.viewers) {
-          try {
-            // Si c'est déjà un array JavaScript
-            if (Array.isArray(viewData.viewers)) {
-              currentViewers = viewData.viewers;
-              hasViewed = currentViewers.includes(visitorId);
-            } 
-            // Si c'est un string JSON
-            else if (typeof viewData.viewers === 'string') {
-              currentViewers = JSON.parse(viewData.viewers);
-              hasViewed = currentViewers.includes(visitorId);
-            }
-            // Si c'est déjà un objet JSON parsé
-            else {
-              currentViewers = viewData.viewers;
-              hasViewed = currentViewers.includes(visitorId);
-            }
-          } catch (e) {
-          }
-        }
-        
-        
-        // Si l'utilisateur a déjà vu ce contenu, juste retourner le compte actuel
-        if (hasViewed) {
-          setViews(viewData?.views_count || contentData?.view_count || 0);
-          return;
-        }
-        
-        // L'utilisateur n'a pas encore vu ce contenu, incrémenter le compteur
-        const newViewCount = ((viewData?.views_count || contentData?.view_count) || 0) + 1;
-        const updatedViewers = [...currentViewers, visitorId];
-        
-        
-        // Préparer les données pour l'upsert
-        const viewsData = {
-          views_count: newViewCount,
-          viewers: updatedViewers,
-          [idColumn]: contentId // Use computed property name here
-        };
-        
-        // Mettre à jour ou créer l'entrée dans la table views
-        const { error: viewsError } = await supabase
-          .from('views')
-          .upsert([viewsData]);
-          
-        if (viewsError) {
-          return;
-        }
-        
-        // Mettre à jour également la table de contenu
-        const { error: contentError } = await supabase
-          .from(contentTable)
-          .update({ view_count: newViewCount })
-          .eq('id', contentId);
-          
-        if (contentError) {
-          return;
-        }
-        
-        // Mettre à jour l'affichage
-        setViews(newViewCount);
-      } catch (error) {
+        const { count } = await supabase
+          .from('ViewCounts')
+          .select('*', { count: 'exact', head: true })
+          .eq('content_id', contentId)
+          .eq('content_type', contentType);
+
+        setCount(count || initialCount);
+      } catch (err) {
+        console.error('Error fetching view count:', err);
+        setCount(initialCount);
       }
     };
 
-    // Mettre à jour les vues
-    updateViews();
+    fetchViewCount();
   }, [contentId, contentType, initialCount]);
 
-  return <span className="text-sm text-gray-500">{views} vue{views !== 1 ? 's' : ''}</span>;
+  const incrementViewCount = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: profileData } = await supabase
+        .from('Profile')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (!profileData) return;
+
+      // Check if user already viewed this content
+      const { data: existingView } = await supabase
+        .from('ViewCounts')
+        .select('id')
+        .eq('content_id', contentId)
+        .eq('content_type', contentType)
+        .eq('viewer_id', profileData.id)
+        .single();
+
+      if (existingView) return; // Already viewed
+
+      // Add new view
+      await supabase
+        .from('ViewCounts')
+        .insert([{
+          content_id: contentId,
+          content_type: contentType,
+          viewer_id: profileData.id
+        }]);
+
+      // Update count
+      setCount(prevCount => prevCount + 1);
+    } catch (err) {
+      console.error('Error incrementing view count:', err);
+    }
+  };
+
+  return (
+    <div className="flex items-center text-gray-500">
+      <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+        <path
+          fillRule="evenodd"
+          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+          clipRule="evenodd"
+        />
+      </svg>
+      <span>{count}</span>
+    </div>
+  );
 }

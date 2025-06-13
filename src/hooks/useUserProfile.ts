@@ -5,13 +5,48 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile } from '@/types/profile';
 
+interface TweetData {
+  id: string;
+  content: string;
+  picture?: string;
+  published_at: string;
+  view_count: number;
+  retweet_id?: string;
+  author: {
+    id: string;
+    nickname: string;
+    profilePicture?: string;
+  } | null;
+}
+
+interface CommentData {
+  id: string;
+  content: string;
+  created_at: string;
+  view_count: number;
+  parent_comment_id?: string;
+  tweet: {
+    id: string;
+    content: string;
+  } | null;
+  author: {
+    id: string;
+    nickname: string;
+    profilePicture?: string;
+  } | null;
+}
+
+interface LikeData {
+  tweet: TweetData;
+}
+
 export function useUserProfile(userId: string) {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [tweets, setTweets] = useState<any[]>([]);
-  const [comments, setComments] = useState<any[]>([]);
-  const [mediaTweets, setMediaTweets] = useState<any[]>([]);
-  const [likedTweets, setLikedTweets] = useState<any[]>([]);
+  const [tweets, setTweets] = useState<TweetData[]>([]);
+  const [comments, setComments] = useState<CommentData[]>([]);
+  const [mediaTweets, setMediaTweets] = useState<TweetData[]>([]);
+  const [likedTweets, setLikedTweets] = useState<TweetData[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -25,7 +60,7 @@ export function useUserProfile(userId: string) {
     
     try {
       setLoading(true);
-      
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push('/auth/login');
@@ -42,10 +77,9 @@ export function useUserProfile(userId: string) {
         setCurrentProfileId(currentUserProfile.id);
       }
 
-
       let profileData = null;
       
-      const { data: profileById, error: errorById } = await supabase
+      const { data: profileById } = await supabase
         .from('Profile')
         .select('*')
         .eq('id', userId)
@@ -54,7 +88,7 @@ export function useUserProfile(userId: string) {
       if (profileById) {
         profileData = profileById;
       } else {
-        const { data: profileByUserId, error: errorByUserId } = await supabase
+        const { data: profileByUserId } = await supabase
           .from('Profile')
           .select('*')
           .eq('user_id', userId)
@@ -93,7 +127,7 @@ export function useUserProfile(userId: string) {
       setIsFollowing(!!isFollowingResult.data);
 
       // Charger tous les tweets
-      const { data: tweetsData, error: tweetsError } = await supabase
+      const { data: tweetsData } = await supabase
         .from('Tweets')
         .select(`
           id,
@@ -107,10 +141,9 @@ export function useUserProfile(userId: string) {
         .eq('author_id', profileData.id)
         .order('published_at', { ascending: false });
 
-      if (tweetsError) {
-      } else {
-        const cleanedTweets = (tweetsData || []).map(tweet => {
-          const authorData = tweet.author as any;
+      if (tweetsData) {
+        const cleanedTweets = tweetsData.map(tweet => {
+          const authorData = tweet.author as Profile | Profile[];
           return {
             ...tweet,
             author: authorData ? {
@@ -131,7 +164,7 @@ export function useUserProfile(userId: string) {
       }
 
       // Charger les tweets likés
-      const { data: likedTweetsData, error: likedTweetsError } = await supabase
+      const { data: likedTweetsData } = await supabase
         .from('Likes')
         .select(`
           tweet:tweet_id (
@@ -147,12 +180,11 @@ export function useUserProfile(userId: string) {
         .eq('profile_id', profileData.id)
         .order('created_at', { ascending: false });
 
-      if (likedTweetsError) {
-      } else {
-        const cleanedLikedTweets = (likedTweetsData || [])
-          .filter(like => like.tweet) // S'assurer que le tweet existe
-          .map(like => {
-            const tweet = like.tweet as any; // Type assertion pour éviter les erreurs TypeScript
+      if (likedTweetsData) {
+        const cleanedLikedTweets = likedTweetsData
+          .filter((like: LikeData) => like.tweet)
+          .map((like: LikeData) => {
+            const tweet = like.tweet;
             return {
               ...tweet,
               author: tweet.author ? {
@@ -164,7 +196,7 @@ export function useUserProfile(userId: string) {
         setLikedTweets(cleanedLikedTweets);
       }
 
-      const { data: commentsData, error: commentsError } = await supabase
+      const { data: commentsData } = await supabase
         .from('Comments')
         .select(`
           id,
@@ -182,10 +214,9 @@ export function useUserProfile(userId: string) {
         .eq('author_id', profileData.id)
         .order('created_at', { ascending: false });
 
-      if (commentsError) {
-      } else {
-        const cleanedComments = (commentsData || []).map(comment => {
-          const author = comment.author as any;
+      if (commentsData) {
+        const cleanedComments = commentsData.map(comment => {
+          const author = comment.author as Profile | Profile[];
           return {
             ...comment,
             author: author ? {
@@ -197,12 +228,12 @@ export function useUserProfile(userId: string) {
         setComments(cleanedComments);
       }
 
-    } catch (error) {
+    } catch {
       setProfile(null);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, router]);
 
   // Fonction pour gérer le follow/unfollow
   const handleFollowToggle = async () => {
@@ -231,7 +262,8 @@ export function useUserProfile(userId: string) {
         setFollowersCount(prev => prev + 1);
       }
       setIsFollowing(!isFollowing);
-    } catch (error) {
+    } catch {
+      // Erreur lors du suivi/désuivi
     }
   };
 

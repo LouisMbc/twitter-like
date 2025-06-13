@@ -13,199 +13,70 @@ import {
   Plus,
   LogOut,
   Sparkles,
-  ArrowLeft,
   MoreHorizontal,
 } from "lucide-react";
 import supabase from "@/lib/supabase";
 import SearchBar from "@/components/searchBar/SearchBar";
-import { messageService } from "@/services/supabase/message";
 import { notificationService } from "@/services/supabase/notification";
 import { ThemeToggle } from "./ThemeToggle";
-import LogoLoader from "@/components/loader/loader";
-
-export function Navbar() {
-  return (
-    <nav className="p-4 flex justify-between items-center">
-      <div>Logo</div>
-    </nav>
-  );
-}
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [unreadMessageCount] = useState(0);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // IMPORTANT: Déclarez tous les hooks useState AVANT tout code conditionnel
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthChecked, setIsAuthChecked] = useState(false);
-  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
-  const [profileId, setProfileId] = useState<string | null>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-  // Ne pas afficher le header sur certaines pages
-  const authPages = [
-    "/auth/login",
-    "/auth/register",
-    "/auth/callback",
-    "/profile/setup",
-  ];
-  const shouldDisplayHeader = !authPages.some((page) =>
-    pathname?.startsWith(page)
-  );
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/auth/login");
-  };
-
   useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
+    const getProfile = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) return;
 
-      if (session) {
-        const { data } = await supabase
+        const { data: profileData } = await supabase
           .from("Profile")
           .select("*")
           .eq("user_id", session.user.id)
           .single();
 
-        if (data) {
-          setProfileId(data.id);
-          setProfile(data);
+        if (profileData) {
+          setProfile(profileData);
         }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
       }
-      setIsAuthChecked(true);
     };
 
-    checkAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
-      if (!session) {
-        setProfileId(null);
-        setProfile(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    getProfile();
   }, []);
 
   useEffect(() => {
-    if (!profileId) {
-      setUnreadMessageCount(0);
-      return;
-    }
-
-    const fetchUnreadMessageCount = async () => {
-      try {
-        const { count } = await messageService.getUnreadCount(profileId);
-        setUnreadMessageCount(count || 0);
-      } catch (error) {
-        // Log supprimé pour la production
-      }
-    };
-
-    fetchUnreadMessageCount();
-
-    const subscription = supabase
-      .channel("messages-count")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "Messages",
-          filter: `recipient_id=eq.${profileId}`,
-        },
-        () => {
-          fetchUnreadMessageCount();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "Messages",
-          filter: `recipient_id=eq.${profileId}`,
-        },
-        () => {
-          fetchUnreadMessageCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, [profileId]);
-
-  // Récupérer le nombre de notifications non lues
-  useEffect(() => {
-    if (!profileId) {
-      setUnreadNotificationCount(0);
-      return;
-    }
     const fetchUnreadNotificationCount = async () => {
+      if (!profile?.id) return;
+
       try {
-        const { count } = await notificationService.getUnreadCount(profileId);
-        setUnreadNotificationCount(count || 0);
-      } catch (error) {
-        // Log supprimé pour la production
+        const count = await notificationService.getUnreadCount(profile.id);
+        setUnreadNotificationCount(count);
+      } catch (err) {
+        console.error("Error fetching notification count:", err);
       }
     };
 
     fetchUnreadNotificationCount();
-    const subscription = supabase
-      .channel("notifications-count")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "Notifications",
-          filter: `user_id=eq.${profileId}`,
-        },
-        () => {
-          fetchUnreadNotificationCount();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "Notifications",
-          filter: `user_id=eq.${profileId}`,
-        },
-        () => {
-          fetchUnreadNotificationCount();
-        }
-      )
-      .subscribe();
+  }, [profile?.id]);
 
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, [profileId]);
-
-  // Pages qui nécessitent une flèche de retour
-  const pagesWithBackButton = ["/premium/success", "/premium/cancel"];
-
-  // Retourner null après avoir déclaré tous les hooks si le header ne doit pas s'afficher
-  if (!shouldDisplayHeader) {
-    return null;
-  }
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push("/auth/login");
+    } catch (err) {
+      console.error("Error signing out:", err);
+    }
+  };
 
   const menuItems = [
     { icon: Home, label: "Accueil", path: "/dashboard" },
@@ -238,13 +109,15 @@ export default function Header() {
             height={28}
             className="sm:w-8 sm:h-8 rounded-lg"
           />
-          <h1 className="text-base sm:text-lg font-bold text-foreground">Flow</h1>
+          <h1 className="text-base sm:text-lg font-bold text-foreground">
+            Flow
+          </h1>
         </Link>
 
         <div className="flex items-center space-x-2 sm:space-x-3">
           {/* Theme toggle for mobile */}
           <ThemeToggle />
-          
+
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -287,7 +160,7 @@ export default function Header() {
             <div className="px-3 sm:px-4 mb-3 sm:mb-4">
               <SearchBar placeholder="Rechercher..." />
             </div>
-            
+
             <nav className="px-3 sm:px-4 space-y-1 sm:space-y-2">
               {menuItems.map((item) => (
                 <Link
@@ -443,7 +316,8 @@ export default function Header() {
                       {profile.nickname || profile.username || "Votre pseudo"}
                     </span>
                     <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 text-left truncate w-full">
-                      @{(profile.nickname || profile.username || "votre_pseudo").toLowerCase()}
+                      @{(profile.nickname || profile.username || "votre_pseudo")
+                        .toLowerCase()}
                     </span>
                   </div>
                 </div>

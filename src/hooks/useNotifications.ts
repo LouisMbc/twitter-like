@@ -4,22 +4,23 @@ import { notificationService } from '@/services/supabase/notification';
 import { useProfile } from '@/hooks/useProfile';
 import supabase from '@/lib/supabase';
 
-// Define the notification interface
 interface Sender {
   id: string;
   nickname: string;
-  profilePicture: string;
+  profilePicture?: string;
 }
 
 interface Notification {
   id: string;
-  content_id: string;
-  content_type: string;
-  type: string;
+  user_id: string;
+  sender_id: string;
+  content_id?: string;
+  content_type: 'tweet' | 'story' | 'follow' | 'like' | 'retweet' | 'message' | 'mention';
+  type: 'like' | 'retweet' | 'follow' | 'mention' | 'comment' | 'new_tweet';
   message: string;
   is_read: boolean;
   created_at: string;
-  sender: Sender[];
+  sender?: Sender[];
 }
 
 export const useNotifications = () => {
@@ -29,7 +30,6 @@ export const useNotifications = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Récupérer les notifications
   const fetchNotifications = useCallback(async () => {
     if (!profile) return;
 
@@ -38,43 +38,38 @@ export const useNotifications = () => {
       const { data, error } = await notificationService.getNotifications(profile.id);
       if (error) throw error;
 
-      // Nettoyer les nicknames pour éviter les @ doubles
-      const cleanedData = (data || []).map(notification => ({
-        ...notification,
-        sender: notification.sender && notification.sender.length > 0 ? {
-          ...notification.sender[0],
-          nickname: notification.sender[0].nickname?.replace(/^@+/, '') || ''
-        } : null
+      const cleanedNotifications = (data || []).map((notif: Notification) => ({
+        ...notif,
+        sender: notif.sender?.map((sender: Sender) => ({
+          ...sender,
+          nickname: sender.nickname?.startsWith('@') ? sender.nickname : sender.nickname
+        })) || []
       }));
 
-      setNotifications(cleanedData as unknown as Notification[]);
-      
-      // Mettre à jour le compteur de notifications non lues
-      const unreadNotifications = cleanedData.filter(notif => !notif.is_read);
-      setUnreadCount(unreadNotifications.length);
-    } catch (err) {
-      setError('Impossible de charger vos notifications');
+      setNotifications(cleanedNotifications);
+      setUnreadCount(cleanedNotifications.filter(notif => !notif.is_read).length);
+    } catch {
+      setError('Impossible de charger les notifications');
     } finally {
       setLoading(false);
     }
   }, [profile]);
 
-  // Marquer une notification comme lue
   const markAsRead = useCallback(async (notificationId: string) => {
+    if (!profile) return;
+
     try {
-      // Supprimer localement la notification avant l'appel API pour une UX fluide
-      setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
+      setNotifications(prev => prev.map(notif => 
+        notif.id === notificationId ? { ...notif, is_read: true } : notif
+      ));
       setUnreadCount(prev => (prev > 0 ? prev - 1 : 0));
       
-      // Appel au service pour supprimer la notification
       await notificationService.markAsRead(notificationId);
-    } catch (err) {
-      // Recharger les notifications en cas d'erreur pour rétablir l'état correct
+    } catch {
       fetchNotifications();
     }
   }, [fetchNotifications]);
 
-  // Marquer toutes les notifications comme lues
   const markAllAsRead = useCallback(async () => {
     if (!profile) return;
 
@@ -82,27 +77,24 @@ export const useNotifications = () => {
       const { error } = await notificationService.markAllAsRead(profile.id);
       if (error) throw error;
 
-      // Mettre à jour localement
       setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true } as Notification)));
       setUnreadCount(0);
-    } catch (err) {
+    } catch {
+      // Erreur lors du marquage comme lu
     }
   }, [profile]);
 
-  // Liker un post depuis une notification
   const likePostFromNotification = useCallback(async (tweetId: string) => {
     if (!profile) return false;
 
     try {
-      const { data, error } = await notificationService.likePostFromNotification(profile.id, tweetId);
-      if (error) throw new Error(String(error));
+      await notificationService.likePostFromNotification(profile.id, tweetId);
       return true;
-    } catch (err) {
+    } catch {
       return false;
     }
   }, [profile]);
 
-  // Bloquer les notifications d'un utilisateur
   const blockNotificationsFromUser = useCallback(async (senderId: string) => {
     if (!profile) return false;
 
@@ -110,16 +102,14 @@ export const useNotifications = () => {
       const { error } = await notificationService.blockNotificationsFromUser(profile.id, senderId);
       if (error) throw new Error(String(error));
       
-      // Supprimer localement toutes les notifications de cet utilisateur
       setNotifications(prev => prev.filter(notif => notif.sender?.[0]?.id !== senderId));
       
       return true;
-    } catch (err) {
+    } catch {
       return false;
     }
   }, [profile]);
 
-  // Écouter les nouvelles notifications en temps réel
   useEffect(() => {
     if (!profile) return;
 
@@ -130,19 +120,16 @@ export const useNotifications = () => {
         schema: 'public',
         table: 'Notifications',
         filter: `user_id=eq.${profile.id}`
-      }, (payload) => {
-        // Ajouter la nouvelle notification
-        setNotifications(prev => [payload.new as Notification, ...prev]);
-        setUnreadCount(prev => prev + 1);
+      }, () => {
+        fetchNotifications();
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [profile]);
+  }, [profile, fetchNotifications]);
 
-  // Charger les notifications au démarrage
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
@@ -152,10 +139,10 @@ export const useNotifications = () => {
     unreadCount,
     loading,
     error,
+    fetchNotifications,
     markAsRead,
     markAllAsRead,
     likePostFromNotification,
-    blockNotificationsFromUser,
-    refreshNotifications: fetchNotifications
+    blockNotificationsFromUser
   };
 };

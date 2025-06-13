@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { mentionService } from '@/services/supabase/mention';
+import Image from 'next/image';
 
 interface MentionTextareaProps {
   value: string;
@@ -27,7 +28,6 @@ export default function MentionTextarea({
   const [suggestions, setSuggestions] = useState<User[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,7 +45,6 @@ export default function MentionTextarea({
     
     if (mentionMatch) {
       const query = mentionMatch[1];
-      setMentionQuery(query);
       setCursorPosition(cursorPos);
       
       if (query.length >= 1) {
@@ -117,12 +116,28 @@ export default function MentionTextarea({
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+    
+    const cursorPosition = e.target.selectionStart;
+    const textBeforeCursor = newValue.substring(0, cursorPosition);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    
+    if (mentionMatch) {
+      searchUsers(mentionMatch[1]);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
   return (
     <div className="relative">
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className={className}

@@ -9,12 +9,9 @@ import { useRouter } from 'next/navigation';
 
 interface RetweetButtonProps {
   tweetId: string;
-  onRetweet?: () => void;
 }
 
-export default function RetweetButton({ tweetId, onRetweet }: RetweetButtonProps) {
-  const [hasRetweeted, setHasRetweeted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+export default function RetweetButton({ tweetId }: RetweetButtonProps) {
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
   const router = useRouter();
   
@@ -32,10 +29,6 @@ export default function RetweetButton({ tweetId, onRetweet }: RetweetButtonProps
         
         if (data) {
           setCurrentProfileId(data.id);
-          
-          // Vérifier si l'utilisateur a déjà retweeté ce tweet
-          const { hasRetweeted } = await tweetService.hasRetweeted(data.id, tweetId);
-          setHasRetweeted(hasRetweeted);
         }
       }
     };
@@ -55,7 +48,7 @@ export default function RetweetButton({ tweetId, onRetweet }: RetweetButtonProps
   return (
     <button 
       onClick={handleRetweet}
-      disabled={isLoading || !currentProfileId}
+      disabled={!currentProfileId}
       className="flex items-center text-sm text-gray-500 hover:text-green-600 transition-colors disabled:opacity-50"
     >
       <ArrowPathIcon className="h-5 w-5 mr-1" />

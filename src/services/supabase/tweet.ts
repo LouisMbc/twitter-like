@@ -28,9 +28,7 @@ export const tweetService = {
     return { error };
   },
 
-  // Méthode pour créer un retweet
   createRetweet: async (userId: string, originalTweetId: string) => {
-    // D'abord, récupérer les informations du tweet original
     const { data: originalTweet, error: fetchError } = await supabase
       .from('Tweets')
       .select('content, picture, author_id')
@@ -39,7 +37,6 @@ export const tweetService = {
     
     if (fetchError) return { data: null, error: fetchError };
     
-    // Ensuite, créer un nouveau tweet qui référence le tweet original
     const { data, error } = await supabase
       .from('Tweets')
       .insert([{
@@ -50,7 +47,6 @@ export const tweetService = {
       }])
       .select();
 
-    // Créer une notification de retweet si ce n'est pas son propre tweet
     if (!error && data && originalTweet.author_id !== userId) {
       await notificationService.createRetweetNotification(
         originalTweetId,
@@ -62,7 +58,6 @@ export const tweetService = {
     return { data, error };
   },
   
-  // Vérifier si un utilisateur a retweeté un tweet spécifique
   hasRetweeted: async (userId: string, tweetId: string) => {
     const { data, error } = await supabase
       .from('Tweets')
@@ -73,7 +68,6 @@ export const tweetService = {
     return { hasRetweeted: !!data && data.length > 0, error };
   },
   
-  // Supprimer un retweet
   removeRetweet: async (userId: string, originalTweetId: string) => {
     const { data, error } = await supabase
       .from('Tweets')
@@ -111,25 +105,19 @@ export const tweetService = {
       }])
       .select();
 
-    // Si le tweet est créé avec succès, créer des notifications pour les abonnés
     if (data && data.length > 0) {
-      // Récupérer les followers pour envoyer des notifications
       const { data: followers } = await supabase
         .from('Following')
         .select('follower_id')
         .eq('following_id', authorId);
       
       if (followers && followers.length > 0) {
-        // Récupérer les informations sur l'auteur pour le message
         const { data: authorData } = await supabase
           .from('Profile')
           .select('nickname')
           .eq('id', authorId)
           .single();
         
-        const authorName = authorData ? authorData.nickname : 'Un utilisateur';
-        
-        // Créer une notification pour chaque follower
         const notificationPromises = followers.map(follower => 
           notificationService.createNotification({
             user_id: follower.follower_id,

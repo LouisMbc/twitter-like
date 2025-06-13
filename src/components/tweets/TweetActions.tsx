@@ -14,14 +14,15 @@ export default function TweetActions({ tweetId, onDelete }: TweetActionsProps) {
     
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('Tweets')
         .delete()
         .eq('id', tweetId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
       onDelete?.();
-    } catch (error) {
+    } catch (err) {
+      console.error('Error deleting tweet:', err);
     } finally {
       setLoading(false);
     }

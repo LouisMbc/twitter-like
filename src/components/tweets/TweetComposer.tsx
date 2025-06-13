@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { FaImage, FaTimes, FaGift } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
-import { tweetService } from '@/services/supabase/tweet';
 import { hashtagService } from '@/services/supabase/hashtag';
 import { mentionService } from '@/services/supabase/mention';
 import MentionTextarea from '@/components/mentions/MentionTextarea';
+import Image from 'next/image';
 
 interface TweetComposerProps {
   onSuccess?: () => void;
@@ -29,19 +28,21 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   const [clientOnly, setClientOnly] = useState(false);
 
   useEffect(() => {
-    // Set clientOnly to true after the component mounts
     setClientOnly(true);
 
     const checkTweetLimit = async () => {
       if (!profile) return;
 
-      // Using type assertion to handle the property that doesn't exist in the type definition
-      setIsPremium(!!(profile as any).isPremium || !!(profile as any).is_premium);
+      const profileData = profile as {
+        id: string;
+        isPremium?: boolean;
+        is_premium?: boolean;
+      };
 
-      // Check if user is premium before proceeding with tweet limit check
-      if ((profile as any).isPremium || (profile as any).is_premium) return;
+      setIsPremium(!!(profileData.isPremium || profileData.is_premium));
 
-      // Create date object only on client-side
+      if (profileData.isPremium || profileData.is_premium) return;
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -69,7 +70,6 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
       return;
     }
 
-    // Validation des types de fichiers
     const validFiles = files.filter(file => {
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|ogg|mov|avi)$/i.test(file.name);
@@ -82,9 +82,8 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
     }
 
     setMedia(validFiles);
-    setError(''); // Clear error
+    setError('');
 
-    // Créer les previews
     const previews = validFiles.map(file => {
       return URL.createObjectURL(file);
     });
@@ -92,6 +91,8 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   };
 
   const uploadMedia = async (tweetId: string) => {
+    if (media.length === 0) return [];
+    
     const uploadPromises = media.map(async (file) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${tweetId}/${Math.random()}.${fileExt}`;
@@ -122,8 +123,6 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const hashtagNames = hashtagService.extractHashtags(content);
-    
     setUploading(true);
     setError('');
 
@@ -150,7 +149,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         .insert([{
           content,
           author_id: profile.id,
-          picture: [] // Initialement vide
+          picture: []
         }])
         .select()
         .single();
@@ -159,7 +158,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         throw tweetError;
       }
 
-      // NOUVEAU : Gérer les hashtags
+      // Gérer les hashtags
       try {
         const hashtagNames = hashtagService.extractHashtags(content);
         
@@ -168,26 +167,28 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
           
           if (hashtags.length > 0) {
             const hashtagIds = hashtags.map(h => h.id);
-            const result = await hashtagService.linkHashtagsToTweet(tweet.id, hashtagIds);
+            await hashtagService.linkHashtagsToTweet(tweet.id, hashtagIds);
           }
         }
-      } catch (hashtagError) {
+      } catch (err) {
+        console.error('Error processing hashtags:', err);
       }
 
-      // NOUVEAU : Gérer les mentions
+      // Gérer les mentions
       try {
         const mentions = mentionService.extractMentions(content);
         
         if (mentions.length > 0) {
           await mentionService.createMentionNotifications(tweet.id, profile.id, mentions);
         }
-      } catch (mentionError) {
+      } catch (err) {
+        console.error('Error processing mentions:', err);
       }
 
       let finalMediaUrls: string[] = [];
       if (media.length > 0) {
         finalMediaUrls = await uploadMedia(tweet.id);
-
+        
         if (finalMediaUrls.length > 0) {
           const { error: updateError } = await supabase
             .from('Tweets')
@@ -258,7 +259,6 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
             className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
           />
           
-          {/* Aperçu avec mentions et hashtags colorés */}
           {content && (
             <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
               <span className="text-gray-600">Aperçu: </span>
@@ -279,10 +279,11 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
                     preload="metadata"
                   />
                 ) : (
-                  <img
+                  <Image
                     src={url}
                     alt={`Preview ${index + 1}`}
-                    className="w-full h-full object-cover rounded"
+                    fill
+                    className="object-cover rounded"
                   />
                 )}
                 <button
@@ -338,7 +339,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         {clientOnly && !isPremium && (
           <div className="mt-2 text-sm text-gray-500 flex justify-between">
             <span>
-              {tweetCount}/5 tweets aujourd'hui {reachedLimit && '(limite atteinte)'}
+              {tweetCount}/5 tweets aujourd&apos;hui {reachedLimit && '(limite atteinte)'}
             </span>
             <a
               href="/premium"
@@ -354,7 +355,7 @@ export default function TweetComposer({ onSuccess }: TweetComposerProps) {
         <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
           <h3 className="font-semibold text-yellow-800">Limite de tweets atteinte</h3>
           <p className="text-sm text-yellow-700 mb-3">
-            Vous avez utilisé vos 5 tweets quotidiens gratuits. Passez à Premium pour des tweets illimités et d'autres avantages !
+            Vous avez utilisé vos 5 tweets quotidiens gratuits. Passez à Premium pour des tweets illimités et d&apos;autres avantages !
           </p>
           <a
             href="/premium"

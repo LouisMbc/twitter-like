@@ -1,3 +1,7 @@
+interface PremiumFeatures {
+  [key: string]: string | number | boolean;
+}
+
 export interface Profile {
   id: string;
   user_id: string;
@@ -11,7 +15,7 @@ export interface Profile {
   following_count: number;
   certified: boolean;
   is_premium: boolean;
-  premium_features: any;
+  premium_features: PremiumFeatures;
 }
 
 export interface ProfileForm {

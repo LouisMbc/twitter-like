@@ -18,7 +18,8 @@ export function useAuth() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         setUser(session?.user || null);
-      } catch (error) {
+      } catch {
+        // Erreur lors de la récupération de la session
       } finally {
         setLoading(false);
       }

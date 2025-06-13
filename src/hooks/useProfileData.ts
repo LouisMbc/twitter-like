@@ -1,5 +1,5 @@
 // src/hooks/useProfileData.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile, Tweet, Comment } from '@/types';
@@ -16,7 +16,7 @@ export function useProfileData(userId: string) {
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
 
   // Load profile data
-  const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
     try {
       // Get current session
       const { data: { session } } = await supabase.auth.getSession();
@@ -97,12 +97,12 @@ export function useProfileData(userId: string) {
 
       setProfile(profileData);
 
-    } catch (error) {
+    } catch {
       setProfile(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, router]);
 
   // Handle follow/unfollow
   const handleFollowToggle = async () => {
@@ -131,7 +131,8 @@ export function useProfileData(userId: string) {
         setFollowersCount(prev => prev + 1);
       }
       setIsFollowing(!isFollowing);
-    } catch (error) {
+    } catch {
+      // Erreur lors du suivi/désuivi
     }
   };
 
@@ -140,7 +141,7 @@ export function useProfileData(userId: string) {
     if (userId) {
       loadProfileData();
     }
-  }, [userId]);
+  }, [userId, loadProfileData]);
 
   return {
     profile,

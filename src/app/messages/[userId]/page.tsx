@@ -1,12 +1,13 @@
 // src/app/messages/[userId]/page.tsx
 "use client";
 
-import { useEffect, useState, useRef, FormEvent } from 'react';
+import { useEffect, useState, useRef, FormEvent, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useMessages } from '@/hooks/useMessages';
 import { useProfile } from '@/hooks/useProfile';
 import { ArrowLeftIcon, PaperAirplaneIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { profileService } from '@/services/supabase/profile';
+import Image from 'next/image';
 
 interface ContactType {
   id: string;
@@ -21,19 +22,30 @@ interface MessageType {
   created_at: string;
 }
 
+interface MessagesPageProps {
+  currentMessages: MessageType[];
+  currentContact: ContactType | null;
+  loading: boolean;
+  sendingMessage: boolean;
+  error: string | null;
+  fetchMessages: (contact: ContactType) => void;
+  sendMessage: (userId: string, content: string) => Promise<boolean>;
+  checkCanMessage: (userId: string) => Promise<boolean>;
+}
+
 export default function ConversationPage() {
   const { userId } = useParams();
   const router = useRouter();
-  const { currentMessages, currentContact, loading, sendingMessage, error, fetchMessages, sendMessage, checkCanMessage } = useMessages() as {
-    currentMessages: MessageType[];
-    currentContact: ContactType | null;
-    loading: boolean;
-    sendingMessage: boolean;
-    error: string | null;
-    fetchMessages: (contact: any) => void;
-    sendMessage: (userId: string, content: string) => Promise<boolean>;
-    checkCanMessage: (userId: string) => Promise<boolean>;
-  };
+  const { 
+    currentMessages, 
+    currentContact, 
+    loading, 
+    sendingMessage, 
+    error, 
+    fetchMessages, 
+    sendMessage, 
+    checkCanMessage 
+  } = useMessages() as MessagesPageProps;
   const { profile } = useProfile();
   const [message, setMessage] = useState('');
   const [canMessageUser, setCanMessageUser] = useState(true);
@@ -50,37 +62,39 @@ export default function ConversationPage() {
     }
   };
 
-  useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        setCheckingPermissions(true);
-        
-        if (!userId || !profile) {
-          return;
-        }
-
-        const { data, error } = await profileService.getProfileById(userId as string);
-        
-        if (error) {
-          return;
-        }
-        
-        if (data) {
-          await fetchMessages(data);
-        }
-        
-        const canMessage = await checkCanMessage(userId as string);
-        setCanMessageUser(canMessage);
-      } catch (err) {
-      } finally {
-        setCheckingPermissions(false);
+  const loadMessages = useCallback(async () => {
+    try {
+      setCheckingPermissions(true);
+      
+      if (!userId || !profile) {
+        return;
       }
-    };
-    
+
+      const { data, error } = await profileService.getProfileById(userId as string);
+      
+      if (error) {
+        console.error('Error loading profile:', error);
+        return;
+      }
+      
+      if (data) {
+        await fetchMessages(data);
+      }
+      
+      const canMessage = await checkCanMessage(userId as string);
+      setCanMessageUser(canMessage);
+    } catch (err) {
+      console.error('Error in loadMessages:', err);
+    } finally {
+      setCheckingPermissions(false);
+    }
+  }, [userId, profile, fetchMessages, checkCanMessage]);
+
+  useEffect(() => {
     if (profile && userId) {
       loadMessages();
     }
-  }, [userId, profile]);
+  }, [loadMessages, profile, userId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -124,10 +138,12 @@ export default function ConversationPage() {
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 mr-3">
                   {currentContact.profilePicture ? (
-                    <img
+                    <Image
                       src={currentContact.profilePicture}
                       alt={currentContact.nickname}
-                      className="w-full h-full object-cover"
+                      width={40}
+                      height={40}
+                      className="object-cover rounded-full"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white font-medium">
@@ -162,7 +178,7 @@ export default function ConversationPage() {
                 </div>
                 
                 <h2 className="text-2xl font-bold mb-4 text-white">
-                  Impossible d'envoyer des messages
+                  Impossible d&apos;envoyer des messages
                 </h2>
                 <p className="text-gray-400 mb-8 leading-relaxed text-sm">
                   Vous devez vous suivre mutuellement pour pouvoir communiquer.
@@ -192,7 +208,7 @@ export default function ConversationPage() {
             </div>
           ) : (
             <div className="space-y-3 pb-4">
-              {currentMessages.map((msg, index) => (
+              {currentMessages.map((msg) => (
                 <div 
                   key={msg.id} 
                   className={`flex items-start space-x-3 ${msg.sender_id === profile?.id ? 'justify-end' : 'justify-start'}`}
@@ -201,10 +217,12 @@ export default function ConversationPage() {
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600">
                         {currentContact?.profilePicture ? (
-                          <img
+                          <Image
                             src={currentContact.profilePicture}
                             alt={currentContact.nickname}
-                            className="w-full h-full object-cover"
+                            width={40}
+                            height={40}
+                            className="object-cover rounded-full"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium">
@@ -238,9 +256,11 @@ export default function ConversationPage() {
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600">
                         {profile?.profilePicture ? (
-                          <img
+                          <Image
                             src={profile.profilePicture}
                             alt={profile.nickname || 'Profile'}
+                            width={32}
+                            height={32}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -274,7 +294,7 @@ export default function ConversationPage() {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       if (message.trim()) {
-                        handleSendMessage(e as any);
+                        handleSendMessage(e as unknown as FormEvent<HTMLFormElement>);
                       }
                     }
                   }}

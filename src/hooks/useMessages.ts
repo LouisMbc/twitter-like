@@ -2,9 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { messageService } from '@/services/supabase/message';
 import { useProfile } from '@/hooks/useProfile';
-import supabase from '@/lib/supabase'; 
+import supabase from '@/lib/supabase';
 
-// Define the types for our data structures
 interface Message {
   id: string;
   sender_id: string;
@@ -25,7 +24,7 @@ interface Conversation {
   nickname: string;
   profilePicture?: string;
   user?: Contact;
-  lastMessage?: any;
+  lastMessage?: Message;
   unreadCount: number;
   last_message_at?: string;
 }
@@ -39,7 +38,6 @@ export const useMessages = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Récupérer toutes les conversations
   const fetchConversations = useCallback(async () => {
     if (!profile) return;
     
@@ -49,14 +47,13 @@ export const useMessages = () => {
       if (error) throw error;
       
       setConversations((data || []) as Conversation[]);
-    } catch (err) {
+    } catch {
       setError('Impossible de charger vos conversations');
     } finally {
       setLoading(false);
     }
   }, [profile]);
 
-  // Récupérer les messages d'une conversation spécifique
   const fetchMessages = useCallback(async (otherUser: Contact) => {
     if (!profile || !otherUser) return;
     
@@ -69,81 +66,69 @@ export const useMessages = () => {
       
       setCurrentMessages((data || []) as Message[]);
       
-      // Marquer les messages comme lus
       await messageService.markAsRead(profile.id, otherUser.id);
       
-      // Rafraîchir les conversations pour mettre à jour les compteurs
       fetchConversations();
-    } catch (err) {
+    } catch {
       setError('Impossible de charger les messages');
     } finally {
       setLoading(false);
     }
   }, [profile, fetchConversations]);
-  // Envoyer un nouveau message
-  const sendMessage = useCallback(async (recipientId: string, content: string) => {
+
+  const sendMessage = useCallback(async (recipientId: string, content: string): Promise<boolean> => {
     if (!profile || !content.trim()) return false;
-    
-    // Empêcher d'envoyer des messages à soi-même
-    if (profile.id === recipientId) {
-      setError('Impossible d\'envoyer un message à soi-même');
-      return false;
-    }
     
     setSendingMessage(true);
     try {
-      const { data, error } = await messageService.sendMessage(profile.id, recipientId, content);
+      const { error } = await messageService.sendMessage(profile.id, recipientId, content);
       if (error) throw error;
       
-      // Ajouter le nouveau message à la conversation actuelle
-      if (data && data[0]) {
-        setCurrentMessages(prev => [...prev, data[0] as Message]);
-      }
+      setCurrentMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        sender_id: profile.id,
+        recipient_id: recipientId,
+        content,
+        created_at: new Date().toISOString(),
+        is_read: false
+      }]);
       
-      // Rafraîchir les conversations
       fetchConversations();
       
       return true;
-    } catch (err) {
+    } catch {
       setError('Impossible d\'envoyer le message');
       return false;
     } finally {
       setSendingMessage(false);
     }
   }, [profile, fetchConversations]);
-  // Vérifier si l'utilisateur peut envoyer un message à quelqu'un
-  const checkCanMessage = useCallback(async (otherUserId: string) => {
+
+  const checkCanMessage = useCallback(async (userId: string): Promise<boolean> => {
     if (!profile) return false;
     
-    // Empêcher les interactions avec soi-même
-    if (profile.id === otherUserId) return false;
-    
     try {
-      const { canMessage, error } = await messageService.canMessage(profile.id, otherUserId);
-      if (error) throw error;
-      
+      const { canMessage } = await messageService.canMessage(profile.id, userId);
       return canMessage;
-    } catch (err) {
+    } catch {
       return false;
     }
   }, [profile]);
 
-  // Rechercher les utilisateurs avec qui on peut échanger des messages
-  const searchMessagableUsers = useCallback(async (query: string = '') => {
-    if (!profile) return [];
+  const searchMessagableUsers = useCallback(async (query: string): Promise<Contact[]> => {
+    if (!profile || !query.trim()) return [];
     
     try {
       const { data, error } = await messageService.searchMessagableUsers(profile.id, query);
       if (error) throw error;
       
-      return data || [];
-    } catch (err) {
+      return (data || []) as Contact[];
+    } catch {
       setError('Impossible de rechercher les utilisateurs');
       return [];
     }
   }, [profile]);
 
-  // Écouter les nouveaux messages en temps réel
   useEffect(() => {
     if (!profile) return;
     
@@ -155,13 +140,11 @@ export const useMessages = () => {
         table: 'Messages',
         filter: `recipient_id=eq.${profile.id}`
       }, (payload) => {
-        // Mettre à jour la conversation actuelle si nécessaire
         if (currentContact && payload.new.sender_id === currentContact.id) {
           setCurrentMessages(prev => [...prev, payload.new as Message]);
           messageService.markAsRead(profile.id, currentContact.id);
         }
         
-        // Rafraîchir les conversations
         fetchConversations();
       })
       .subscribe();
@@ -171,7 +154,6 @@ export const useMessages = () => {
     };
   }, [profile, currentContact, fetchConversations]);
 
-  // Charger les conversations au démarrage
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);

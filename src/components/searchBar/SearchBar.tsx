@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { hashtagService } from '@/services/supabase/hashtag';
 import { Profile } from '@/types';
+import Image from 'next/image';
 
 interface SearchBarProps {
   placeholder?: string;

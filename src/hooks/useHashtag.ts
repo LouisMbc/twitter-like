@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { hashtagService } from '@/services/supabase/hashtag';
-import { Hashtag, HashtagSubscription, HashtagBlock } from '@/types';
+import { HashtagSubscription, HashtagBlock } from '@/types';
 
 export const useHashtags = (profileId: string | null) => {
   const [subscriptions, setSubscriptions] = useState<HashtagSubscription[]>([]);
   const [blocks, setBlocks] = useState<HashtagBlock[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchUserHashtags = async () => {
+  const fetchUserHashtags = useCallback(async () => {
     if (!profileId) return;
 
     setLoading(true);
@@ -19,23 +19,25 @@ export const useHashtags = (profileId: string | null) => {
 
       setSubscriptions(subsData.data || []);
       setBlocks(blocksData.data || []);
-    } catch (error) {
+    } catch {
+      // Erreur lors du chargement des hashtags
     } finally {
       setLoading(false);
     }
-  };
+  }, [profileId]);
 
   useEffect(() => {
     fetchUserHashtags();
-  }, [profileId]);
+  }, [fetchUserHashtags]);
 
   const subscribeToHashtag = async (hashtagId: string) => {
     if (!profileId) return;
 
     try {
       await hashtagService.subscribeToHashtag(profileId, hashtagId);
-      fetchUserHashtags(); // Rafraîchir la liste
-    } catch (error) {
+      fetchUserHashtags();
+    } catch {
+      // Erreur lors de l'abonnement
     }
   };
 
@@ -44,8 +46,9 @@ export const useHashtags = (profileId: string | null) => {
 
     try {
       await hashtagService.unsubscribeFromHashtag(profileId, hashtagId);
-      fetchUserHashtags(); // Rafraîchir la liste
-    } catch (error) {
+      fetchUserHashtags();
+    } catch {
+      // Erreur lors du désabonnement
     }
   };
 
@@ -54,8 +57,9 @@ export const useHashtags = (profileId: string | null) => {
 
     try {
       await hashtagService.blockHashtag(profileId, hashtagId);
-      fetchUserHashtags(); // Rafraîchir la liste
-    } catch (error) {
+      fetchUserHashtags();
+    } catch {
+      // Erreur lors du blocage
     }
   };
 
@@ -64,8 +68,9 @@ export const useHashtags = (profileId: string | null) => {
 
     try {
       await hashtagService.unblockHashtag(profileId, hashtagId);
-      fetchUserHashtags(); // Rafraîchir la liste
-    } catch (error) {
+      fetchUserHashtags();
+    } catch {
+      // Erreur lors du déblocage
     }
   };
 

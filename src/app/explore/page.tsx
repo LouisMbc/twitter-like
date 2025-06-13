@@ -9,6 +9,7 @@ import { hashtagService } from '@/services/supabase/hashtag';
 import { useAuth } from '@/hooks/useAuth';
 import { Profile, Hashtag } from '@/types';
 import LogoLoader from "@/components/loader/loader";
+import Image from 'next/image';
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -58,9 +59,10 @@ export default function ExplorePage() {
   useEffect(() => {
     const fetchPopularHashtags = async () => {
       try {
-        const { data } = await hashtagService.getPopularHashtags(50); // Augmenter la limite pour plus de hashtags
+        const { data } = await hashtagService.getPopularHashtags(50);
         setPopularHashtags(data || []);
-      } catch (error) {
+      } catch (err) {
+        console.error('Error fetching hashtags:', err);
       } finally {
         setHashtagsLoading(false);
       }
@@ -94,25 +96,24 @@ export default function ExplorePage() {
   }, [currentUserId, searchResults]);
 
   const handleSearch = async (searchQuery: string) => {
-    if (searchQuery.length < 2) {
+    if (searchQuery.trim().length < 2) {
       setSearchResults([]);
       setHasSearched(false);
       return;
     }
 
     setIsSearching(true);
-    setHasSearched(true);
-
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('Profile')
-        .select('id, user_id, nickname, profilePicture, firstName, lastName, bio')
-        .ilike('nickname', `%${searchQuery}%`)
+        .select('id, nickname, firstName, lastName, bio, profilePicture')
+        .or(`nickname.ilike.%${searchQuery}%,firstName.ilike.%${searchQuery}%,lastName.ilike.%${searchQuery}%`)
         .limit(20);
 
-      if (error) throw error;
       setSearchResults(data || []);
-    } catch (error) {
+      setHasSearched(true);
+    } catch (err) {
+      console.error('Search error:', err);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -120,13 +121,12 @@ export default function ExplorePage() {
   };
 
   const handleFollowToggle = async (userId: string, isCurrentlyFollowing: boolean) => {
-    if (!currentUserId || userId === currentUserId) return;
+    if (!currentUserId || followingLoading[userId]) return;
 
     setFollowingLoading(prev => ({ ...prev, [userId]: true }));
-
+    
     try {
       if (isCurrentlyFollowing) {
-        // Unfollow
         const { error } = await supabase
           .from('Following')
           .delete()
@@ -135,23 +135,22 @@ export default function ExplorePage() {
 
         if (error) throw error;
       } else {
-        // Follow
         const { error } = await supabase
           .from('Following')
-          .insert([
-            { follower_id: currentUserId, following_id: userId }
-          ]);
+          .insert([{ 
+            follower_id: currentUserId, 
+            following_id: userId 
+          }]);
 
         if (error) throw error;
       }
 
-      // Mettre à jour l'état local
       setFollowingStates(prev => ({
         ...prev,
         [userId]: !isCurrentlyFollowing
       }));
-
-    } catch (error) {
+    } catch (err) {
+      console.error('Follow error:', err);
     } finally {
       setFollowingLoading(prev => ({ ...prev, [userId]: false }));
     }
@@ -297,10 +296,12 @@ export default function ExplorePage() {
                         >
                           <div className="w-10 lg:w-12 h-10 lg:h-12 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-600 flex-shrink-0 border border-gray-400 dark:border-gray-500">
                             {user.profilePicture ? (
-                              <img
+                              <Image
                                 src={user.profilePicture}
                                 alt={user.nickname || 'Utilisateur'}
-                                className="w-full h-full object-cover"
+                                width={48}
+                                height={48}
+                                className="object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -358,7 +359,7 @@ export default function ExplorePage() {
                 </div>
               ) : hasSearched ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-700 dark:text-gray-400">Aucun utilisateur trouvé pour "{query}"</p>
+                  <p className="text-gray-700 dark:text-gray-400">Aucun utilisateur trouvé pour &quot;{query}&quot;</p>
                   <p className="text-sm text-gray-600 dark:text-gray-500 mt-2">
                     Essayez avec un autre terme de recherche
                   </p>
@@ -439,7 +440,7 @@ export default function ExplorePage() {
                     Aucune tendance disponible
                   </p>
                   <p className="text-gray-600 dark:text-gray-500 text-sm">
-                    Les hashtags populaires apparaîtront ici dès qu'ils seront utilisés
+                    Les hashtags populaires apparaîtront ici dès qu&apos;ils seront utilisés
                   </p>
                 </div>
               )}

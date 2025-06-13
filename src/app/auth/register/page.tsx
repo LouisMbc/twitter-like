@@ -3,7 +3,6 @@
 import RegisterForm from '@/components/auth/RegisterForm';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Footer from "@/components/shared/Footer";
 
 export default function RegisterPage() {
@@ -49,7 +48,7 @@ export default function RegisterPage() {
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     En créant un compte, vous acceptez nos{' '}
                     <a href="/terms" className="text-red-500 hover:text-red-400 underline">
-                      conditions d'utilisation
+                      conditions d&apos;utilisation
                     </a>
                   </p>
                 </div>

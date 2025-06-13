@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import supabase from '@/lib/supabase';
 import { Tweet } from '@/types';
-import { tweetService } from '@/services/supabase/tweet';
-import { hashtagService } from '@/services/supabase/hashtag';
 
 export default function useFeed() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
@@ -16,7 +14,6 @@ export default function useFeed() {
     try {
       setLoading(true);
       
-      // 1. Obtenir l'identifiant de l'utilisateur connecté
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -27,20 +24,16 @@ export default function useFeed() {
         throw new Error("Utilisateur non authentifié");
       }
       
-      // 2. Récupérer le profil de l'utilisateur
       const { data: profileData, error: profileError } = await supabase
         .from('Profile')
         .select('id')
         .eq('user_id', session.user.id)
         .single();
 
-      if (!profileData) throw new Error('Profil non trouvé');
-      
       if (profileError) {
         throw profileError;
       }
 
-      // 3. Récupérer la liste des utilisateurs suivis
       const { data: followingData, error: followingError } = await supabase
         .from('Following')
         .select('following_id')
@@ -50,15 +43,13 @@ export default function useFeed() {
         throw followingError;
       }
       
-      // 4. Préparer un tableau avec les IDs des utilisateurs suivis + l'utilisateur lui-même
       const followingIds = followingData?.map(item => item.following_id) || [];
       const userIds = [...followingIds, profileData.id];
       
-      // 5. Si l'utilisateur ne suit personne, afficher un message approprié
       if (followingIds.length === 0) {
+        // Utilisateur ne suit personne
       }
       
-      // 6. Récupérer tous les tweets des utilisateurs suivis + les siens
       if (userIds.length === 0) {
         setTweets([]);
         return;
@@ -92,7 +83,6 @@ export default function useFeed() {
       
       let allTweets = initialTweets;
       
-      // 7. Récupérer les tweets des hashtags suivis
       const { data: hashtagSubscriptions } = await supabase
         .from('hashtag_subscriptions') 
         .select('hashtag_id')
@@ -126,22 +116,19 @@ export default function useFeed() {
         if (hashtagTweets) {
           const formattedHashtagTweets = hashtagTweets
             .filter(item => item.Tweets)
-            .map(item => item.Tweets as any);
+            .map(item => item.Tweets as Tweet);
           
-          // Fusionner avec les tweets existants et supprimer les doublons
           const allTweetsCombined = [...(allTweets || []), ...formattedHashtagTweets];
           const uniqueTweets = allTweetsCombined.filter((tweet, index, self) => 
             index === self.findIndex(t => t.id === tweet.id)
           );
           
-          // Trier par date
           allTweets = uniqueTweets.sort((a, b) => 
             new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
           );
         }
       }
       
-      // 7. S'assurer que les données sont valides
       if (!allTweets) {
         setTweets([]);
         return;
@@ -157,11 +144,8 @@ export default function useFeed() {
         return;
       }
       
-      // Transformer les données pour correspondre à votre interface Tweet
       try {
-        const formattedTweets = allTweets.map((tweet, index) => {
-          
-          // Vérifier si author est un tableau et prendre le premier élément si c'est le cas
+        const formattedTweets = allTweets.map((tweet) => {
           let author;
           try {
             author = Array.isArray(tweet.author) 
@@ -171,7 +155,7 @@ export default function useFeed() {
             if (!author) {
               author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
             }
-          } catch (authorError) {
+          } catch {
             author = { id: 'inconnu', nickname: 'Utilisateur inconnu', profilePicture: null };
           }
           
@@ -188,20 +172,15 @@ export default function useFeed() {
           };
         });
         
-        // Pour chaque retweet, récupérer le tweet original
-        // Typer la fonction d'enrichissement pour les retweets
         const enrichTweetsWithOriginals = async (tweets: Tweet[]): Promise<Tweet[]> => {
-          // Collectez tous les retweet_ids
           const retweetIds = tweets
             .filter((tweet: Tweet) => tweet.retweet_id)
             .map((tweet: Tweet) => tweet.retweet_id);
           
-          // Si aucun retweet, retourner les tweets tels quels
           if (retweetIds.length === 0) {
             return tweets;
           }
           
-          // Récupérer tous les tweets originaux en une seule requête
           const { data: originalTweets } = await supabase
             .from('Tweets')
             .select(`
@@ -218,15 +197,13 @@ export default function useFeed() {
             `)
             .in('id', retweetIds);
           
-          // Créer un mapping pour un accès facile
-          const originalsMap: { [key: string]: any } = {};
+          const originalsMap: { [key: string]: Tweet } = {};
           if (originalTweets) {
             originalTweets.forEach(original => {
               originalsMap[original.id] = original;
             });
           }
           
-          // Enrichir les tweets
           return tweets.map((tweet: Tweet) => {
             if (tweet.retweet_id && originalsMap[tweet.retweet_id]) {
               tweet.originalTweet = originalsMap[tweet.retweet_id];
@@ -241,7 +218,6 @@ export default function useFeed() {
         } else {
           setTweets(prev => [...prev, ...enrichedTweets]);
         }
-        
         setHasMore(enrichedTweets.length === TWEETS_PER_PAGE);
         setPage(pageToLoad);
       } catch (formatError) {
@@ -255,17 +231,14 @@ export default function useFeed() {
     }
   };
   
-  // Charger le feed au montage du composant
   useEffect(() => {
     fetchFeed();
   }, []);
   
-  // Fonction pour rafraîchir le feed
   const refreshFeed = () => {
     fetchFeed();
   };
   
-  // Fonction pour charger plus de tweets
   const loadMoreTweets = () => {
     if (hasMore && !loading) {
       fetchFeed(page + 1);

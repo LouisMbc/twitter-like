@@ -1,10 +1,10 @@
-import { Profile, Tweet, Comment } from '@/types';
+import { Profile } from '@/types';
 import supabase from '@/lib/supabase';
 
 export const profileService = {
   updateProfile: async (userId: string, data: Partial<Profile>) => {
     const { error } = await supabase
-      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
+      .from('Profile')
       .update(data)
       .eq('user_id', userId);
     return { error };
@@ -30,7 +30,7 @@ export const profileService = {
 
   getProfile: async (userId: string) => {
     const { data, error } = await supabase
-      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
+      .from('Profile')
       .select('*')
       .eq('user_id', userId)
       .single();
@@ -40,10 +40,10 @@ export const profileService = {
 
   createProfile: async (userId: string, profileData: Partial<Profile>) => {
     const { data, error } = await supabase
-      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
+      .from('Profile')
       .insert([{
         user_id: userId,
-        follower_count: 0,  // Add default values for required fields
+        follower_count: 0,
         following_count: 0,
         ...profileData
       }])
@@ -55,7 +55,7 @@ export const profileService = {
 
   getUserProfile: async (userId: string) => {
     const { data, error } = await supabase
-      .from('Profile')  // Changed from 'profiles' to 'Profile' for consistency
+      .from('Profile')
       .select('*, follower_count, following_count')
       .eq('user_id', userId)
       .single();
@@ -98,9 +98,6 @@ export const profileService = {
       .eq('author_id', profileId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-    }
-    
     return { data, error };
   },
 

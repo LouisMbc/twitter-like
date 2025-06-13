@@ -7,12 +7,11 @@ import supabase from '@/lib/supabase';
 
 interface CommentFormProps {
   tweetId: string;
+  onCommentAdded: (comment: Comment) => void;
   parentCommentId?: string;
-  onCommentAdded: (comment: any) => void; // Modifier le type si nécessaire
-  onCancel?: () => void;
 }
 
-export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, onCancel }: CommentFormProps) {
+export default function CommentForm({ tweetId, onCommentAdded, parentCommentId }: CommentFormProps) {
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(false);
   
@@ -35,59 +34,38 @@ export default function CommentForm({ tweetId, parentCommentId, onCommentAdded, 
           throw new Error('Profil utilisateur non trouvé');
         }
 
+        // Gérer les mentions dans les commentaires
+        try {
+          const mentions = mentionService.extractMentions(content);
+          
+          // Process mentions but don't use mentionError variable
+          if (mentions.length > 0) {
+            await mentionService.createMentions(mentions, tweetId, 'comment');
+          }
+        } catch (mentionError) {
+        }
+  
         // Créer le commentaire
-        const { data: commentData, error } = await supabase
+        const { data: comment } = await supabase
           .from('Comments')
           .insert([{
             content,
             tweet_id: tweetId,
             author_id: userProfile.id, // Utiliser l'ID du profil
-            parent_comment_id: parentCommentId || null
+            parent_id: parentCommentId
           }])
           .select(`
-            id,
-            content,
-            created_at,
-            tweet_id,
-            author_id,
-            parent_comment_id
+            *,
+            author:Profile!inner(id, nickname, profilePicture)
           `)
           .single();
 
-        if (error) throw error;
-
-        // Créer l'objet commentaire formaté pour l'affichage immédiat
-        const formattedComment = {
-          ...commentData,
-          author: {
-            id: userProfile.id,
-            nickname: userProfile.nickname,
-            profilePicture: userProfile.profilePicture
-          }
-        };
-
-        // Gérer les mentions dans les commentaires
-        try {
-          const mentions = mentionService.extractMentions(content);
-          if (mentions.length > 0) {
-            await mentionService.createCommentMentionNotifications(
-              commentData.id,
-              tweetId, 
-              userProfile.id,
-              mentions
-            );
-          }
-        } catch (mentionError) {
+        if (comment) {
+          onCommentAdded(comment);
+          setContent('');
         }
-  
-        // Appeler le callback IMMÉDIATEMENT avec le commentaire formaté
-        onCommentAdded(formattedComment);
-        
-        // Réinitialiser le formulaire
-        setContent('');
-        if (onCancel) onCancel();
-        
-      } catch (error) {
+      } catch (err) {
+        console.error('Error creating comment:', err);
       } finally {
         setLoading(false);
       }

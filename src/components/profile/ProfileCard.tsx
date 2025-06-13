@@ -7,6 +7,7 @@ import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import supabase from '@/lib/supabase';
 import { notificationService } from '@/services/supabase/notification';
+import Image from 'next/image';
 
 interface ProfileCardProps {
   profile: {
@@ -164,9 +165,11 @@ export default function ProfileCard({
         {/* Photo de profil - larger */}
         <div className="w-40 h-40 rounded-full overflow-hidden">
           {profile.profilePicture ? (
-            <img
+            <Image
               src={profile.profilePicture}
               alt={profile.nickname}
+              width={160}
+              height={160}
               className="w-full h-full object-cover"
             />
           ) : (

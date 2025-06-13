@@ -7,7 +7,16 @@ import Footer from "@/components/shared/Footer";
 import supabase from "@/lib/supabase";
 
 // Fonction pour créer le profil utilisateur
-const createUserProfile = async (user: any) => {
+const createUserProfile = async (user: {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    given_name?: string;
+    family_name?: string;
+    name?: string;
+    avatar_url?: string;
+  };
+}) => {
   try {
     // Vérifier si le profil existe déjà
     const { data: existingProfile } = await supabase
@@ -18,7 +27,7 @@ const createUserProfile = async (user: any) => {
 
     if (!existingProfile) {
       // Créer un nouveau profil
-      const { error } = await supabase
+      await supabase
         .from('Profile')
         .insert({
           user_id: user.id,
@@ -33,11 +42,9 @@ const createUserProfile = async (user: any) => {
           follower_count: 0,
           following_count: 0
         });
-
-      if (error) {
-      }
     }
-  } catch (error) {
+  } catch {
+    // Gérer silencieusement les erreurs
   }
 };
 
@@ -57,38 +64,38 @@ export default function AuthPage() {
   }, [router]);
 
   // Fonction pour l'auth Google - maintenant activée
-  const handleGoogleSignUp = async () => {
+  const handleGoogleSignUp = async (provider: 'google' | 'apple') => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
       });
       
       if (error) {
-        alert("Erreur lors de la connexion Google: " + error.message);
+        console.error('OAuth error:', error);
       }
-    } catch (error) {
-      alert("Erreur lors de la connexion Google");
+    } catch (err) {
+      console.error('Unexpected OAuth error:', err);
     }
   };
 
   // Fonction pour l'auth Apple - maintenant activée
   const handleAppleSignUp = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "apple",
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
       });
       
       if (error) {
-        alert("Erreur lors de la connexion Apple: " + error.message);
+        console.error('Apple OAuth error:', error);
       }
-    } catch (error) {
-      alert("Erreur lors de la connexion Apple");
+    } catch (err) {
+      console.error('Unexpected Apple OAuth error:', err);
     }
   };
 
@@ -102,7 +109,7 @@ export default function AuthPage() {
       <div className="relative z-10">
         <div className="w-full py-16">
           <h1 className="text-4xl md:text-6xl font-bold text-center bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-            L'essentiel de l'information est ici
+            L&apos;essentiel de l&apos;information est ici
           </h1>
           <p className="text-center text-gray-400 mt-4 text-lg">
             Découvrez, partagez et connectez-vous avec le monde
@@ -142,7 +149,7 @@ export default function AuthPage() {
                   <p className="text-center text-2xl font-semibold mb-6 text-white">Inscrivez-vous</p>
                   <button
                     className="w-full flex items-center justify-center gap-3 bg-white text-black font-medium rounded-full py-3 hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-lg"
-                    onClick={handleGoogleSignUp}
+                    onClick={() => handleGoogleSignUp('google')}
                   >
                     <Image src="/google.png" alt="Google" width={22} height={22} />
                     Inscrivez-vous avec Google
@@ -181,7 +188,7 @@ export default function AuthPage() {
                   <p className="text-sm text-gray-400">
                     En vous inscrivant, vous acceptez nos{' '}
                     <a href="/terms" className="text-red-400 hover:text-red-300 underline">
-                      conditions d'utilisation
+                      conditions d&apos;utilisation
                     </a>
                   </p>
                 </div>

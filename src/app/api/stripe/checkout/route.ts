@@ -46,11 +46,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error('Stripe checkout error:', error);
     return NextResponse.json(
-      { 
-        error: 'Erreur lors de la création de la session de checkout'
-      },
+      { error: 'Erreur lors de la création de la session de checkout' },
       { status: 500 }
     );
   }

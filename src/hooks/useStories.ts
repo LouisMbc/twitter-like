@@ -2,6 +2,22 @@ import { useState, useEffect, useCallback } from 'react';
 import supabase from '@/lib/supabase';
 import { Story } from '@/types/story';
 
+interface StoryData {
+  id: string;
+  user_id: string;
+  content: string;
+  media_url: string;
+  media_type: string;
+  created_at: string;
+  expires_at: string;
+  duration: number;
+  Profile: {
+    id: string;
+    nickname: string;
+    profilePicture?: string;
+  } | null;
+}
+
 export function useStories() {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,9 +59,9 @@ export function useStories() {
         setStories([]);
         return;
       }
-
+      
       // Formater les données pour correspondre à l'interface Story
-      const formattedStories = data.map((story: any) => ({
+      const formattedStories = data.map((story: StoryData) => ({
         ...story,
         author: story.Profile || {
           id: 'unknown',
@@ -55,7 +71,7 @@ export function useStories() {
       }));
 
       setStories(formattedStories);
-    } catch (err) {
+    } catch {
       setError('Impossible de charger les stories');
       setStories([]); // S'assurer d'avoir un tableau vide en cas d'erreur
     } finally {

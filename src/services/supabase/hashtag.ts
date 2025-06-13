@@ -1,5 +1,16 @@
 import supabase from '@/lib/supabase';
-import { Hashtag } from '@/types';
+
+interface HashtagWithStats {
+  id: string;
+  name: string;
+  usage_count: number;
+  totalViews: number;
+  tweetCount: number;
+  averageViews: number;
+  recencyScore: number;
+  category: string;
+  trendScore?: number;
+}
 
 export const hashtagService = {
   // Extraire les hashtags d'un texte
@@ -257,7 +268,7 @@ export const hashtagService = {
     }
 
     // Calculer les vues totales par hashtag
-    const hashtagStats = new Map();
+    const hashtagStats = new Map<string, HashtagWithStats>();
     
     data?.forEach(item => {
       const hashtagId = item.hashtag_id;
@@ -272,7 +283,7 @@ export const hashtagService = {
       const recencyFactor = Math.max(0.1, 1 - (hoursAgo / 168)); // Décroît sur 7 jours
 
       if (hashtagStats.has(hashtagId)) {
-        const existing = hashtagStats.get(hashtagId);
+        const existing = hashtagStats.get(hashtagId)!;
         existing.totalViews += viewCount;
         existing.tweetCount += 1;
         existing.recencyScore += recencyFactor;
@@ -315,7 +326,7 @@ export const hashtagService = {
   // Récupérer toutes les catégories de tendances
   getAllTrendingCategories: async (limit = 10) => {
     const categories = ['Pour vous', 'Tendances', 'Actualités', 'Sport', 'Divertissement'];
-    const results: { [key: string]: any[] } = {};
+    const results: { [key: string]: HashtagWithStats[] } = {};
 
     for (const category of categories) {
       const { data } = await hashtagService.getTrendingHashtagsByCategory(category, limit);

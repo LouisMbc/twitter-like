@@ -1,59 +1,46 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { Profile } from '@/types/profile';
 import { profileService } from '@/services/supabase/profile';
 
 export const useProfile = () => {
-  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [tweets, setTweets] = useState<any[]>([]);
-  const [comments, setComments] = useState<any[]>([]);
-  const [mediaTweets, setMediaTweets] = useState<any[]>([]);
+  const [tweets, setTweets] = useState<Record<string, unknown>[]>([]);
+  const [comments, setComments] = useState<Record<string, unknown>[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [activeTab, setActiveTab] = useState<'tweets' | 'comments'>('tweets');
   const [loading, setLoading] = useState(true);
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  
-  // États pour pagination
-  const [tweetPage, setTweetPage] = useState(0);
+
+  const [tweetPage] = useState(0);
   const [commentPage, setCommentPage] = useState(0);
   const [hasTweetsMore, setHasTweetsMore] = useState(true);
-  const [hasCommentsMore, setHasCommentsMore] = useState(true);
   const [tweetsLoading, setTweetsLoading] = useState(false);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
-  // Fonction pour charger un profil spécifique (ex: autre utilisateur)
   const loadProfileData = async (userId: string) => {
     try {
       setLoading(true);
       setIsInitialized(false);
       
-      // Optimisation: Chargement du profil en priorité, autres données en arrière-plan
-      const { data: profileData, error } = await profileService.getUserProfile(userId);
-      
-      if (error) {
-        throw error;
-      }
+      const { data: profileData } = await profileService.getUserProfile(userId);
       
       if (!profileData) {
         setLoading(false);
         setIsInitialized(true);
         return;
       }
-      
-      // Afficher immédiatement le profil
+
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
       
-      // Charger les tweets et commentaires en arrière-plan
       await Promise.allSettled([
         loadMoreTweets(profileData.id, 0),
         loadAllComments(profileData.id)
@@ -62,7 +49,7 @@ export const useProfile = () => {
       setLoading(false);
       setIsInitialized(true);
 
-    } catch (error) {
+    } catch {
       setLoading(false);
       setIsInitialized(true);
     }
@@ -89,7 +76,6 @@ export const useProfile = () => {
         .single();
 
       if (profileError) {
-        // Log supprimé pour la production
         if (profileError.code === 'PGRST116') {
           // Profil non trouvé
         }
@@ -103,13 +89,11 @@ export const useProfile = () => {
         return;
       }
 
-      // Conserver le nickname tel quel dans les données
       setProfile(profileData);
       setCurrentProfileId(profileData.id);
       setFollowersCount(profileData.follower_count || 0);
       setFollowingCount(profileData.following_count || 0);
       
-      // Charger les données en arrière-plan
       await Promise.allSettled([
         loadMoreTweets(profileData.id, 0),
         loadAllComments(profileData.id)
@@ -117,12 +101,8 @@ export const useProfile = () => {
       
       setLoading(false);
       setIsInitialized(true);
-      
+
     } catch (error) {
-      const errorDetails = error instanceof Error 
-        ? { name: error.name, message: error.message }
-        : { error };
-        
       if (error instanceof Error && error.message.includes('auth')) {
         // Erreur d'authentification
       }
@@ -131,7 +111,6 @@ export const useProfile = () => {
     }
   }, []);
 
-  // Fonction pour charger plus de tweets
   const loadMoreTweets = async (profileId: string, page: number) => {
     try {
       setTweetsLoading(true);
@@ -154,14 +133,13 @@ export const useProfile = () => {
       }
 
       setHasTweetsMore((tweetsData || []).length === ITEMS_PER_PAGE);
-    } catch (error) {
-      // Log supprimé pour la production
+    } catch {
+      // Erreur lors du chargement des tweets
     } finally {
       setTweetsLoading(false);
     }
   };
 
-  // Fonction pour charger tous les commentaires
   const loadAllComments = async (profileId: string) => {
     try {
       setCommentsLoading(true);
@@ -176,50 +154,38 @@ export const useProfile = () => {
 
       if (commentsError) throw commentsError;
       setComments(commentsData || []);
-    } catch (error) {
-      // Log supprimé pour la production
+    } catch {
+      // Erreur lors du chargement des commentaires
     } finally {
       setCommentsLoading(false);
     }
   };
 
-  // Fonction pour charger plus de commentaires avec pagination
   const loadMoreComments = async (profileId: string, page: number) => {
     try {
       setCommentsLoading(true);
-      // Implementation similaire à loadMoreTweets mais pour les commentaires
-      // Cette fonction peut être élaborée davantage si nécessaire
       setCommentPage(page);
-    } catch (error) {
-      // Log supprimé pour la production
+    } catch {
+      // Erreur lors du chargement des commentaires
     } finally {
       setCommentsLoading(false);
     }
   };
 
-  // Sélectionne une langue aléatoire (utile pour MultiluinguiX)
-  const getRandomLanguage = (languages: string[]) => {
-    const randomIndex = Math.floor(Math.random() * languages.length);
-    return languages[randomIndex];
-  };
-
-  // Fonctions pour charger plus d'éléments
   const loadMoreTweetsData = useCallback(() => {
     if (!profile || !hasTweetsMore || tweetsLoading) return;
     loadMoreTweets(profile.id, tweetPage + 1);
   }, [profile, hasTweetsMore, tweetsLoading, tweetPage]);
 
   const loadMoreCommentsData = useCallback(() => {
-    if (!profile || !hasCommentsMore || commentsLoading) return;
+    if (!profile || commentsLoading) return;
     loadMoreComments(profile.id, commentPage + 1);
-  }, [profile, hasCommentsMore, commentsLoading, commentPage]);
+  }, [profile, commentsLoading, commentPage]);
 
-  // Chargement des données au montage du composant
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
 
-  // Ajouter des méthodes pour mettre à jour les compteurs
   const incrementFollowingCount = useCallback(() => {
     setFollowingCount(prevCount => prevCount + 1);
   }, []);
@@ -232,7 +198,6 @@ export const useProfile = () => {
     profile,
     tweets,
     comments,
-    mediaTweets,
     followersCount,
     followingCount,
     activeTab,

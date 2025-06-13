@@ -3,6 +3,17 @@ import { getStories } from "@/services/supabase/story";
 import { tweetService } from "@/services/supabase/tweet";
 import { Tweet } from "@/types";
 
+interface StoryData {
+  id: string;
+  user_id: string;
+  content: string;
+  media_url: string;
+  media_type: string;
+  created_at: string;
+  expires_at: string;
+  duration: number;
+}
+
 export function useTweetDetails(tweetId?: string) {
   const [tweet, setTweet] = useState<Tweet | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +37,7 @@ export function useTweetDetails(tweetId?: string) {
         
         // Incrémenter le compteur de vues
         await tweetService.incrementViewCount(tweetId, data.view_count);
-      } catch (err) {
+      } catch {
         setError("Erreur lors du chargement du tweet");
       } finally {
         setLoading(false);
@@ -40,7 +51,7 @@ export function useTweetDetails(tweetId?: string) {
 }
 
 export const useStories = () => {
-  const [stories, setStories] = useState<any[]>([]);
+  const [stories, setStories] = useState<StoryData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {

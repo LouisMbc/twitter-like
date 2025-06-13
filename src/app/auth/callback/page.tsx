@@ -13,30 +13,19 @@ export default function AuthCallback() {
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
-          router.push('/auth?error=auth_failed');
+          console.error('Auth callback error:', error);
+          router.push('/auth?error=callback_failed');
           return;
         }
-
-        if (data.session?.user) {
-          // Vérifier si le profil existe
-          const { data: profileData } = await supabase
-            .from('Profile')
-            .select('id')
-            .eq('user_id', data.session.user.id)
-            .single();
-
-          if (!profileData) {
-            // Le profil n'existe pas, rediriger vers la configuration
-            router.push('/profile/setup');
-          } else {
-            // L'utilisateur est connecté et a un profil, rediriger vers le dashboard
-            router.push('/dashboard');
-          }
+        
+        if (data.session) {
+          router.push('/dashboard');
         } else {
           router.push('/auth');
         }
-      } catch (error) {
-        router.push('/auth?error=callback_failed');
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        router.push('/auth?error=unexpected');
       }
     };
 

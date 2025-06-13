@@ -2,21 +2,17 @@ import { FC } from 'react';
 import supabase from '@/lib/supabase';
 
 export interface FollowButtonProps {
-  currentProfileId: string;
-  targetProfileId: string;
   isFollowing: boolean;
-  onFollowToggle: () => Promise<void>;
+  onToggle: () => void;
 }
 
 const FollowButton: FC<FollowButtonProps> = ({ 
-  currentProfileId, 
-  targetProfileId, 
   isFollowing, 
-  onFollowToggle 
+  onToggle 
 }) => {
   return (
     <button 
-      onClick={onFollowToggle} 
+      onClick={onToggle} 
       className={`px-4 py-2 rounded-full font-medium transition-colors ${
       isFollowing 
       ? 'bg-gray-100 hover:bg-red-50 hover:text-red-500 text-gray-700' 

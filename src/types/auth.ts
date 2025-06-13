@@ -3,16 +3,20 @@
 import { Session } from '@supabase/supabase-js';
 import { UserLanguagePreferences } from './language';
 
+interface UserMetadata {
+  [key: string]: string | number | boolean;
+}
+
+interface AppMetadata {
+  [key: string]: string | number | boolean;
+}
+
 export interface AuthSession {
   user: {
     id: string;
     email?: string;
-    user_metadata?: {
-      [key: string]: any;
-    };
-    app_metadata?: {
-      [key: string]: any;
-    };
+    user_metadata?: UserMetadata;
+    app_metadata?: AppMetadata;
   };
   access_token: string;
   refresh_token?: string;
@@ -23,11 +27,7 @@ export interface AuthSession {
 export interface AuthUser {
   id: string;
   email?: string;
-  user_metadata?: {
-    [key: string]: any;
-  };
-  app_metadata?: {
-    [key: string]: any;
-  };
+  user_metadata?: UserMetadata;
+  app_metadata?: AppMetadata;
 }
 

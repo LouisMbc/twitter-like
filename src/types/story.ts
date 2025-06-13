@@ -1,5 +1,11 @@
+interface StoryProfile {
+  id: string;
+  nickname: string;
+  profilePicture: string | null;
+}
+
 export interface Story {
-  Profile: any;
+  Profile: StoryProfile;
   id: string;
   user_id: string;
   content: string;
@@ -7,7 +13,7 @@ export interface Story {
   media_type: 'image' | 'video';
   created_at: string;
   expires_at: string;
-  duration?: number; // Ajout du champ duration qui existe dans la BD
+  duration?: number;
   author: {
     id: string;
     nickname: string;
@@ -20,6 +26,6 @@ export interface CreateStoryDTO {
   media_url: string;
   media_type: 'image' | 'video';
   user_id: string;
-  expires_at: string; // Ajout du champ nécessaire
-  duration?: number; // Ajout du champ duration optionnel
+  expires_at: string;
+  duration?: number;
 }

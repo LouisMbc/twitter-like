@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { profileService } from '@/services/supabase/profile';
 import { authService } from '@/services/supabase/auth';
@@ -8,7 +8,8 @@ import supabase from '@/lib/supabase';
 export const useProfileEdit = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');  const [formData, setFormData] = useState<ProfileForm>({
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState<ProfileForm>({
     lastName: '',
     firstName: '',
     nickname: '',
@@ -20,8 +21,6 @@ export const useProfileEdit = () => {
     password: '',
     confirmPassword: ''
   });
-
-  // Modifier la fonction loadProfile pour vérifier également l'état de l'abonnement
 
   async function loadProfile() {
     try {
@@ -51,12 +50,14 @@ export const useProfileEdit = () => {
           .single();
 
         if (subscriptionError) {
+          // Pas d'abonnement trouvé
         } else if (subscription && subscription.status === 'active' && !profile.is_premium) {
           // Mettre à jour le statut premium si nécessaire
           await profileService.updateProfile(sessionResult.session.user.id, { is_premium: true });
           profile.is_premium = true;
         }
-      } catch (err) {
+      } catch {
+        // Erreur lors de la vérification de l'abonnement
       }
       
       // Nettoyer le nickname s'il contient un @
@@ -83,8 +84,9 @@ export const useProfileEdit = () => {
       setLoading(false);
     }
   }
+
   const validateForm = (data: ProfileForm) => {
-    let errors: string[] = [];
+    const errors: string[] = [];
     
     // Nettoyer et valider le pseudo
     const cleanNickname = data.nickname.replace(/^@+/, '').trim();

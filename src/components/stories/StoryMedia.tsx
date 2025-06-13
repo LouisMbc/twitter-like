@@ -3,13 +3,21 @@
 import { useState, useEffect } from 'react';
 import supabase from '@/lib/supabase-browser';
 import LogoLoader from '@/components/loader/loader';
+import Image from 'next/image';
+
+interface Story {
+  id: string;
+  media_url: string;
+  media_type: 'image' | 'video';
+  content: string;
+}
 
 interface StoryMediaProps {
   storyId: string;
 }
 
 export default function StoryMedia({ storyId }: StoryMediaProps) {
-  const [story, setStory] = useState<any>(null);
+  const [story, setStory] = useState<Story | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -18,25 +26,16 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
     
     const fetchStory = async () => {
       try {
-        const { data, error } = await supabase
-          .from("Stories")
-          .select(`
-            media_url,
-            media_type,
-            Profile:user_id (
-              profilePicture,
-              nickname
-            )
-          `)
+        const { data, error: fetchError } = await supabase
+          .from('Stories')
+          .select('*')
           .eq('id', storyId)
           .single();
 
-        if (error) {
-          return;
-        }
-
+        if (fetchError) throw fetchError;
         setStory(data);
-      } catch (error) {
+      } catch (err) {
+        console.error('Error fetching story:', err);
       } finally {
         setLoading(false);
       }
@@ -59,47 +58,41 @@ export default function StoryMedia({ storyId }: StoryMediaProps) {
   }
 
   if (!story) {
-    return <div>Story non disponible</div>;
-  }
-  if (story.media_type === 'image') {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-teal-900 rounded-3xl overflow-hidden relative">
-        <img 
-          src={story.media_url}
-          alt="Story"
-          className="w-full h-full object-cover rounded-3xl"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = '/placeholder-image.png';
-          }}
-        />
-        {/* Overlay gradient pour améliorer la lisibilité */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 rounded-3xl"></div>
-      </div>
-    );
-  } else if (story.media_type === 'video') {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-teal-900 rounded-3xl overflow-hidden relative">
-        <video
-          src={story.media_url}
-          className="w-full h-full object-cover rounded-3xl"
-          controls={false}
-          autoPlay
-          muted
-          playsInline
-          loop={false}
-          preload="metadata"
-          onError={(e) => {
-          }}
-          onLoadStart={() => {
-          }}
-          onCanPlay={() => {
-          }}
-        />
-        {/* Overlay gradient pour améliorer la lisibilité */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 rounded-3xl"></div>
+      <div className="w-full h-full flex items-center justify-center text-white">
+        Story non trouvée
       </div>
     );
   }
 
-  return <div>Format non supporté</div>;
+  return (
+    <div className="w-full h-full relative">
+      {story.media_type === 'video' ? (
+        <video
+          src={story.media_url}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <Image
+          src={story.media_url}
+          alt="Story"
+          fill
+          className="object-cover"
+          onError={() => {
+            console.error('Failed to load story image');
+          }}
+        />
+      )}
+      
+      {story.content && (
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+          <p className="text-white text-center">{story.content}</p>
+        </div>
+      )}
+    </div>
+  );
 }

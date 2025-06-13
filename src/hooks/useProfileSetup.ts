@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/services/supabase/auth';
 import { profileService } from '@/services/supabase/profile';
 import { ProfileForm } from '@/types';
 import supabase from '@/lib/supabase';

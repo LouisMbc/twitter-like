@@ -15,6 +15,23 @@ interface HashtagPageProps {
     };
 }
 
+interface TweetItem {
+  Tweets: {
+    id: string;
+    content: string;
+    picture: string[];
+    published_at: string;
+    view_count: number;
+    retweet_id: string | null;
+    author: {
+      id: string;
+      nickname: string;
+      profilePicture?: string;
+    };
+    author_id: string;
+  };
+}
+
 export default function HashtagPage({ params }: HashtagPageProps) {
     const hashtagName = decodeURIComponent(params.name);
     const router = useRouter();
@@ -30,7 +47,6 @@ export default function HashtagPage({ params }: HashtagPageProps) {
             try {
                 setLoading(true);
 
-                // 1. Récupération parallèle des données essentielles
                 const [sessionResult, hashtagResult] = await Promise.all([
                     supabase.auth.getSession(),
                     supabase
@@ -43,12 +59,10 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                 const { data: { session } } = sessionResult;
                 const { data: hashtagData } = hashtagResult;
 
-                // 2. Affichage immédiat du hashtag
                 if (hashtagData) {
                     setHashtag(hashtagData);
                 }
 
-                // 3. Récupération du profil utilisateur si connecté
                 let currentProfileId = null;
                 if (session) {
                     const { data: profile } = await supabase
@@ -63,47 +77,47 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                     }
                 }
 
-                // 4. Arrêt du loading principal
                 setLoading(false);
 
-                // 5. Chargement asynchrone des tweets (sans bloquer l'UI)
                 if (hashtagData) {
-                    hashtagService.getTweetsByHashtag(hashtagName, 0, 10)
-                        .then(({ data: tweetData, error: tweetError }) => {
-                            if (tweetError) {
-                                return;
-                            }
-                            
-                            if (tweetData) {
-                                const formattedTweets = tweetData.map((item: any) => ({
-                                    id: item.Tweets.id,
-                                    content: item.Tweets.content,
-                                    picture: item.Tweets.picture,
-                                    published_at: item.Tweets.published_at,
-                                    view_count: item.Tweets.view_count,
-                                    retweet_id: item.Tweets.retweet_id,
-                                    author: item.Tweets.author,
-                                    author_id: item.Tweets.author_id
-                                }));
-                                setTweets(formattedTweets);
-                            }
-                        })
+                  hashtagService.getTweetsByHashtag(hashtagName, 0, 10)
+                    .then(({ data: tweetData, error: tweetError }) => {
+                      if (tweetError) {
+                        console.error('Error fetching tweets:', tweetError);
+                        return;
+                      }
+                      
+                      if (tweetData) {
+                        const formattedTweets = tweetData.map((item: TweetItem) => ({
+                          id: item.Tweets.id,
+                          content: item.Tweets.content,
+                          picture: item.Tweets.picture,
+                          published_at: item.Tweets.published_at,
+                          view_count: item.Tweets.view_count,
+                          retweet_id: item.Tweets.retweet_id,
+                          author: item.Tweets.author,
+                          author_id: item.Tweets.author_id
+                        }));
+                        setTweets(formattedTweets);
+                      }
+                    });
                 }
 
-                // 6. Chargement asynchrone des états (encore plus en arrière-plan)
                 if (currentProfileId && hashtagData) {
-                    setTimeout(() => {
-                        Promise.all([
-                            hashtagService.isSubscribed(currentProfileId, hashtagData.id),
-                            hashtagService.isBlocked(currentProfileId, hashtagData.id)
-                        ]).then(([subscribed, blocked]) => {
-                            setIsSubscribed(subscribed.isSubscribed);
-                            setIsBlocked(blocked.isBlocked);
-                        }).catch(error => {
-                        });
-                    }, 100);
+                  setTimeout(() => {
+                    Promise.all([
+                      hashtagService.isSubscribed(currentProfileId, hashtagData.id),
+                      hashtagService.isBlocked(currentProfileId, hashtagData.id)
+                    ]).then(([subscribed, blocked]) => {
+                      setIsSubscribed(subscribed.isSubscribed);
+                      setIsBlocked(blocked.isBlocked);
+                    }).catch(err => {
+                      console.error('Error checking subscription status:', err);
+                    });
+                  }, 100);
                 }
-            } catch (error) {
+            } catch (err) {
+                console.error('Error fetching hashtag data:', err);
                 setLoading(false);
             }
         };
@@ -124,7 +138,8 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                 await hashtagService.subscribeToHashtag(profileId, hashtag.id);
                 setIsSubscribed(true);
             }
-        } catch (error) {
+        } catch (err) {
+            console.error('Error toggling subscription:', err);
         }
     };
 
@@ -140,7 +155,8 @@ export default function HashtagPage({ params }: HashtagPageProps) {
                 setIsBlocked(true);
                 setIsSubscribed(false);
             }
-        } catch (error) {
+        } catch (err) {
+            console.error('Error toggling block:', err);
         }
     };
 

@@ -4,14 +4,12 @@ export const addStory = async (
   userId: string, 
   file: File, 
   mediaType: 'image' | 'video',
-  duration?: number // Durée personnalisée en secondes
+  duration?: number
 ) => {
   try {
-    // Utiliser le fichier tel quel, sans conversion
     const fileExt = file.name.split('.').pop();
     const filePath = `stories/${userId}/${Date.now()}.${fileExt}`;
 
-    // Upload du fichier
     const { error: uploadError } = await supabase.storage
       .from("stories")
       .upload(filePath, file, { 
@@ -26,22 +24,19 @@ export const addStory = async (
 
     const mediaUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/stories/${filePath}`;
 
-    // Ajouter durée par défaut pour les images (60s) et durée réelle pour les vidéos
     const storyDuration = duration || 60;
-    
-    // Calcul de la date d'expiration (24 heures après création)
+
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    // Enregistrer dans la base de données
     const { data, error } = await supabase.from("Stories").insert([
       { 
         user_id: userId, 
         media_url: mediaUrl, 
         media_type: mediaType,
         duration: storyDuration,
-        content: '', // Champ obligatoire selon votre schéma
-        expires_at: expiresAt.toISOString() // Ajout de la date d'expiration
+        content: '',
+        expires_at: expiresAt.toISOString()
       }
     ]).select();
 
@@ -50,11 +45,11 @@ export const addStory = async (
     }
 
     if (data) {
-      return data[0].id; // Retourner l'ID de la story créée
+      return data[0].id;
     }
     
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -62,7 +57,6 @@ export const addStory = async (
 // 📌 Récupérer les Stories actives
 export const getStories = async () => {
   try {
-    // Calculer la date limite (24 heures en arrière)
     const twentyFourHoursAgo = new Date();
     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
     
@@ -77,12 +71,12 @@ export const getStories = async () => {
         created_at,
         Profile(id, nickname, profilePicture)
       `)
-      .gte('created_at', twentyFourHoursAgo.toISOString()) // Filtrer par date
+      .gte('created_at', twentyFourHoursAgo.toISOString())
       .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
-  } catch (error) {
+  } catch {
     return [];
   }
 };
@@ -90,19 +84,17 @@ export const getStories = async () => {
 // 📌 Supprimer une Story
 export const deleteStory = async (storyId: string, mediaUrl: string) => {
   try {
-    // Extraire le chemin du fichier à partir de l'URL
     const urlParts = mediaUrl.split('/');
     const filePath = urlParts.slice(urlParts.indexOf('stories')).join('/');
     
-    // Supprimer le fichier du stockage
     const { error: deleteStorageError } = await supabase.storage
       .from('stories')
       .remove([filePath]);
     
     if (deleteStorageError) {
+      // Log supprimé pour la production
     }
     
-    // Supprimer l'entrée de la base de données
     const { error: deleteDbError } = await supabase
       .from('Stories')
       .delete()

@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useStories } from "@/hooks/useStories";
 import Story from "@/components/stories/Story";
 import { messageService } from '@/services/supabase/message';
+import Image from 'next/image';
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -32,12 +33,11 @@ export default function ProfileHeader({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { stories, loading: storiesLoading, refreshStories } = useStories();
+  const { stories, refreshStories } = useStories(); // Remove unused storiesLoading
   const [isViewingStories, setIsViewingStories] = useState(false);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [canMessage, setCanMessage] = useState(false);
   
-  // Filtrer les stories du profil actuel
   const userStories = stories.filter(story => story.user_id === profile.id);
   const hasStories = userStories.length > 0;
 
@@ -48,24 +48,13 @@ export default function ProfileHeader({
 
     try {
       setIsUploading(true);
-      const mediaType = file.type.startsWith("image") ? "image" : "video";
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session || session.user.id !== profile.user_id) {
-        throw new Error("Non autorisé");
-      }
-
-      const success = await addStory(profile.id, file, mediaType);
-      if (success) {
-        // Réinitialiser l'input file
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        
-        // Rafraîchir les stories sans redirection
+      const result = await addStory(file, profile.id);
+      
+      if (result.success) {
         refreshStories();
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Upload failed:', err);
     } finally {
       setIsUploading(false);
     }

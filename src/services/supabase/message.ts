@@ -1,6 +1,33 @@
 // src/services/supabase/message.ts
 import supabase from '@/lib/supabase';
 
+interface MessageData {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  content: string;
+  created_at: string;
+  is_read: boolean;
+  sender?: ProfileData;
+  recipient?: ProfileData;
+}
+
+interface ProfileData {
+  id: string;
+  nickname: string;
+  profilePicture?: string;
+}
+
+interface ConversationData {
+  id: string;
+  nickname: string;
+  profilePicture?: string;
+  user?: ProfileData;
+  lastMessage?: MessageData;
+  unreadCount: number;
+  last_message_at?: string;
+}
+
 export const messageService = {
   // Récupérer les conversations de l'utilisateur
   getConversations: async (userId: string) => {
@@ -23,9 +50,9 @@ export const messageService = {
     if (error) return { error };
 
     // Regrouper les messages par conversation (par utilisateur)
-    const conversations: Record<string, any> = {};
+    const conversations: Record<string, ConversationData> = {};
     
-    data?.forEach((message: any) => {
+    data?.forEach((message: MessageData) => {
       // Déterminer qui est l'autre utilisateur dans la conversation
       const otherUserId = message.sender_id === userId ? message.recipient_id : message.sender_id;
       const otherUser = message.sender_id === userId ? message.recipient : message.sender;
@@ -53,28 +80,29 @@ export const messageService = {
           unreadCount: sender?.id !== userId && !message.is_read ? 1 : 0,
           last_message_at: message.created_at
         };
-      } else if (new Date(message.created_at) > new Date(conversations[otherUserId].lastMessage.created_at)) {
-        // Mettre à jour le dernier message s'il est plus récent
-        conversations[otherUserId].lastMessage = {
-          ...message,
-          sender,
-          recipient
-        };
-        conversations[otherUserId].last_message_at = message.created_at;
+      } else {
+        if (new Date(message.created_at) > new Date(conversations[otherUserId].last_message_at || '')) {
+          // Mettre à jour le dernier message s'il est plus récent
+          conversations[otherUserId].lastMessage = {
+            ...message,
+            sender,
+            recipient
+          };
+          conversations[otherUserId].last_message_at = message.created_at;
+        }
         
         // Incrémenter le compteur de non lus si nécessaire
         if (sender?.id !== userId && !message.is_read) {
-          conversations[otherUserId].unreadCount++;
-        }
-      } else {
-        // Même si ce n'est pas le dernier message, compter les non lus
-        if (sender?.id !== userId && !message.is_read) {
-          conversations[otherUserId].unreadCount++;
+          conversations[otherUserId].unreadCount += 1;
         }
       }
     });
 
-    return { data: Object.values(conversations) };
+    const conversationsList = Object.values(conversations).sort((a, b) => 
+      new Date(b.last_message_at || '').getTime() - new Date(a.last_message_at || '').getTime()
+    );
+
+    return { data: conversationsList, error: null };
   },
   
   // Récupérer les messages d'une conversation spécifique

@@ -15,6 +15,8 @@ import CommentForm from '@/components/comments/CommentForm';
 import { Tweet } from '@/types';
 import { tweetService } from '@/services/supabase/tweet';
 import supabase from '@/lib/supabase';
+import Image from 'next/image';
+import { Comment } from '@/types';
 
 interface TweetCardProps {
   tweet: Tweet;
@@ -28,8 +30,11 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
   const [originalTweet, setOriginalTweet] = useState<Tweet | null>(null);
   const [commentCount, setCommentCount] = useState(0);
   const [showComments, setShowComments] = useState(false);
-  const [commentsCount, setCommentsCount] = useState(0);
-  const [localComments, setLocalComments] = useState<any[]>([]);
+
+  // Fonction pour gérer l'ajout de commentaires avec mise à jour immédiate
+  const handleCommentAdded = useCallback((newComment: Comment) => {
+    setCommentCount(prev => prev + 1);
+  }, []);
 
   // Récupérer le tweet original si c'est un retweet
   useEffect(() => {
@@ -136,26 +141,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
     }
   };
 
-  const handleCommentClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    router.push(`/tweets/${tweet.id}#comments`);
-  };
-
-  // Fonction pour gérer l'ajout de commentaires avec mise à jour immédiate
-  const handleCommentAdded = useCallback((newComment: any) => {
-    // Ajouter le commentaire à l'état local IMMÉDIATEMENT
-    setLocalComments(prev => [...prev, newComment]);
-    setCommentCount(prev => prev + 1);
-  }, []);
-
-  if (!tweet) {
-    return <div>Tweet non disponible</div>;
-  }
-
-  if (!tweet?.author) {
-    return <div className="text-red-500">Erreur : ce tweet n'a pas d'auteur.</div>;
-  }
-  
   return (
     <div 
       className={`p-4 ${!isComment && 'border-b'} border-gray-800 hover:bg-gray-900/30`}
@@ -166,10 +151,12 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
         <div className="flex-shrink-0">
           <Link href={`/profile/${tweet.author.id}`} onClick={(e) => e.stopPropagation()}>
             {tweet.author.profilePicture ? (
-              <img
+              <Image
                 src={tweet.author.profilePicture}
                 alt={tweet.author.nickname}
-                className="w-12 h-12 rounded-full object-cover"
+                width={48}
+                height={48}
+                className="rounded-full object-cover"
               />
             ) : (
               <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-white">
@@ -181,7 +168,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
 
         {/* Contenu principal */}
         <div className="flex-1">
-          {/* En-tête: nom et date */}
           <div className="flex items-center mb-1">
             <Link 
               href={`/profile/${tweet.author.id}`} 
@@ -204,7 +190,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
           {tweet.picture && tweet.picture.length > 0 && (
             <div className="mb-4 grid grid-cols-2 gap-2">
               {tweet.picture.map((pic, index) => {
-                // Améliorer la détection des vidéos
                 const isVideo = /\.(mp4|webm|ogg|mov|avi)(\?.*)?$/i.test(pic) || pic.includes('video');
                 
                 return isVideo ? (
@@ -216,7 +201,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                       preload="metadata"
                       className="rounded-lg max-h-96 w-full object-cover"
                       onError={(e) => {
-                        // Fallback: essayer d'afficher comme image
                         const target = e.target as HTMLVideoElement;
                         const parent = target.parentElement;
                         if (parent) {
@@ -227,14 +211,12 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                   </div>
                 ) : (
                   <div key={index} className="relative">
-                    <img
+                    <Image
                       src={pic}
                       alt="Tweet image"
+                      width={400}
+                      height={300}
                       className="rounded-lg max-h-96 w-auto object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/placeholder-image.png"; // Optionnel: image de fallback
-                      }}
                     />
                   </div>
                 );
@@ -250,15 +232,16 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                 <span>Tweet original de {originalTweet.author.nickname}</span>
               </div>
               
-              {/* Tweet original intégré */}
               <div className="bg-gray-800 p-3 rounded-md">
                 <div className="flex items-center mb-2">
                   <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
                     {originalTweet.author.profilePicture ? (
-                      <img
+                      <Image
                         src={originalTweet.author.profilePicture}
                         alt={originalTweet.author.nickname}
-                        className="w-full h-full object-cover"
+                        width={32}
+                        height={32}
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white">
@@ -293,9 +276,11 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
                           className="rounded-md max-h-64 w-auto"
                         />
                       ) : (
-                        <img
+                        <Image
                           src={pic}
                           alt="Original tweet image"
+                          width={256}
+                          height={192}
                           className="rounded-md max-h-64 w-auto"
                         />
                       );
@@ -343,14 +328,12 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
           {/* Section des commentaires */}
           {showComments && (
             <div className="border-t border-gray-200 dark:border-gray-800 mt-4">
-              {/* UN SEUL formulaire principal pour ajouter un commentaire */}
               <div className="p-4 border-b border-gray-700">
                 <CommentForm
                   tweetId={tweet.id}
                   onCommentAdded={handleCommentAdded}
                 />
               </div>
-              {/* Liste des commentaires existants - SANS le formulaire interne */}
               <CommentList 
                 tweetId={tweet.id} 
                 onCommentAdded={handleCommentAdded}

@@ -1,8 +1,10 @@
 // Remove duplicate Profile interface - use the one from profile.ts
 export * from './profile';
 
-// Add other types here if needed
-// Types pour les profils
+interface PremiumFeatures {
+  [key: string]: string | number | boolean;
+}
+
 export interface Profile {
   id: string;
   user_id: string;
@@ -16,12 +18,12 @@ export interface Profile {
   following_count?: number;
   certified?: boolean;
   is_premium?: boolean;
-  premium_features?: any;
+  premium_features?: PremiumFeatures;
 }
 
 // Types pour les tweets
 export interface Tweet {
-  originalTweet: any;
+  originalTweet: Tweet | null;
   id: string;
   content: string;
   picture?: string[];
@@ -54,19 +56,14 @@ export interface Comment {
 
 // Types pour les hashtags
 export interface Hashtag {
-  [x: string]: number;
-  [x: string]: number;
-  [x: string]: boolean;
-  averageViews: number;
-  averageViews: number;
-  engagementRate: boolean;
-  averageViews: boolean;
-  trendScore: any;
-  category: string;
   id: string;
   name: string;
   usage_count: number;
   created_at: string;
+  category?: string;
+  averageViews?: number;
+  engagementRate?: number;
+  trendScore?: number;
 }
 
 // Types pour les abonnements
@@ -99,6 +96,12 @@ export interface ProfileForm {
 }
 
 // Types pour les notifications
+interface NotificationSender {
+  id: string;
+  nickname: string;
+  profilePicture?: string;
+}
+
 export interface Notification {
   id: string;
   user_id: string;
@@ -109,11 +112,7 @@ export interface Notification {
   message: string;
   is_read: boolean;
   created_at: string;
-  sender?: {
-    id: string;
-    nickname: string;
-    profilePicture?: string;
-  };
+  sender?: NotificationSender;
 }
 
 // Types pour les actions de notifications
@@ -125,10 +124,14 @@ export interface NotificationAction {
 }
 
 // Types pour les commentaires avec callbacks
+interface CommentCallbackParam {
+  [key: string]: string | number | boolean;
+}
+
 export interface CommentFormProps {
   tweetId: string;
   parentCommentId?: string;
-  onCommentAdded: (comment: any) => void;
+  onCommentAdded: (comment: CommentCallbackParam) => void;
   onCancel?: () => void;
 }
 
@@ -136,5 +139,19 @@ export interface CommentListProps {
   tweetId?: string;
   comments?: Comment[];
   parentCommentId?: string;
-  onCommentAdded?: (comment: any) => void;
+  onCommentAdded?: (comment: CommentCallbackParam) => void;
+}
+
+export interface HashtagSubscription {
+  id: string;
+  hashtag_id: string;
+  profile_id: string;
+  created_at: string;
+}
+
+export interface HashtagBlock {
+  id: string;
+  hashtag_id: string;
+  profile_id: string;
+  created_at: string;
 }

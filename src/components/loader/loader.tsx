@@ -3,71 +3,33 @@ import { useEffect, useState } from 'react';
 import styles from './loader.module.css';
 
 interface LogoLoaderProps {
-  size?: string;
+  size?: "small" | "medium" | "large";
 }
 
 export default function LogoLoader({ size = "medium" }: LogoLoaderProps) {
-  const [progress, setProgress] = useState(0);
-  
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          return 0; // Redémarre l'animation
-        }
-        return prevProgress + 2; // Animation plus fluide
-      });
-    }, 50);
-    
-    return () => clearInterval(interval);
+    setMounted(true);
   }, []);
 
+  if (!mounted) return null;
+
+  const sizeClasses = {
+    small: "w-8 h-8",
+    medium: "w-12 h-12", 
+    large: "w-16 h-16"
+  };
+
   return (
-    <div className={styles.loaderContainer}>
-      {/* Effet de fond comme sur auth */}
-      <div className={styles.backgroundEffects}>
-        <div className={styles.redGlow}></div>
-        <div className={styles.blueGlow}></div>
-      </div>
-      
-      {/* Logo avec les mêmes effets que auth */}
-      <div className={styles.logoSection}>
-        <div className={styles.logoGroup}>
-          <div className={styles.logoGradientEffect}></div>
-          <Image
-            src="/logo_Flow.png"
-            alt="Flow Logo"
-            width={280}
-            height={280}
-            priority
-            className={styles.authLogo}
-          />
-        </div>
-        
-        {/* Cercle de progression autour du logo */}
-        <div className={styles.progressCircle}>
-          <svg className={styles.progressSvg} viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              className={styles.progressBackground}
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              className={styles.progressBar}
-              style={{
-                strokeDasharray: `${progress * 2.83} 283`,
-              }}
-            />
-          </svg>
-        </div>
-      </div>
-      
-      {/* Texte de chargement */}
-      <div className={styles.loadingText}>Chargement...</div>
+    <div className={`${sizeClasses[size]} animate-spin`}>
+      <Image
+        src="/logo_Flow.png"
+        alt="Loading"
+        width={size === 'small' ? 32 : size === 'medium' ? 48 : 64}
+        height={size === 'small' ? 32 : size === 'medium' ? 48 : 64}
+        className="rounded-lg"
+      />
     </div>
   );
 }

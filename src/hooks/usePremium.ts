@@ -1,31 +1,16 @@
 // src/hooks/usePremium.ts
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
-import { loadStripe } from '@stripe/stripe-js';
-import { Subscription } from '@/types'; // Importez le type Subscription
-
-// Add Profile type import and extend it if needed
-import type { Profile } from '@/types';
-
-// Declare module for stripe-js if types aren't available
-declare module '@/services/stripe/stripe' {
-  export function loadStripe(apiKey: string): Promise<any>;
-}
-
-// Initialiser la promesse Stripe en dehors du hook
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+import { Subscription } from '@/types';
 
 export const usePremium = () => {
-  const router = useRouter();
   const { profile } = useProfile();
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
   const [subscriptionData, setSubscriptionData] = useState<Subscription | null>(null);
   const [error, setError] = useState('');
 
-  // Récupérer le statut de l'abonnement
   const fetchSubscriptionStatus = useCallback(async () => {
     if (!profile) return;
 
@@ -33,10 +18,8 @@ export const usePremium = () => {
     setError('');
 
     try {
-      // Vérifier le statut premium dans le profil
-      setIsPremium(!!(profile as any).is_premium); // Use type assertion as a temporary fix
+      setIsPremium(!!(profile as Record<string, unknown>).is_premium);
       
-      // Récupérer les détails de l'abonnement
       const { data, error } = await supabase
         .from('Subscriptions')
         .select('*')
@@ -48,14 +31,13 @@ export const usePremium = () => {
       }
       
       setSubscriptionData(data as Subscription | null);
-    } catch (err) {
+    } catch {
       setError('Impossible de vérifier le statut de votre abonnement');
     } finally {
       setLoading(false);
     }
   }, [profile]);
 
-  // Rediriger vers la page de checkout Stripe
   const subscribeToPermium = async () => {
     try {
       setLoading(true);
@@ -82,7 +64,6 @@ export const usePremium = () => {
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
         throw new Error(`Erreur lors de la création de la session: ${response.statusText}`);
       }
       
@@ -90,19 +71,18 @@ export const usePremium = () => {
       
       window.location.href = data.url;
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Une erreur est survenue");
+      setError(error instanceof Error ? error.message : 'Erreur lors de la souscription');
     } finally {
       setLoading(false);
     }
   };
 
-  // Annuler l'abonnement
   const cancelSubscription = async () => {
-    if (!subscriptionData?.subscription_id) return;
-    
-    setLoading(true);
+    if (!subscriptionData) return;
     
     try {
+      setLoading(true);
+      
       const response = await fetch('/api/stripe/cancel-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,20 +96,19 @@ export const usePremium = () => {
       }
       
       fetchSubscriptionStatus();
-    } catch (err) {
+    } catch {
       setError('Impossible d\'annuler votre abonnement');
     } finally {
       setLoading(false);
     }
   };
 
-  // Réactiver l'abonnement
   const reactivateSubscription = async () => {
-    if (!subscriptionData?.subscription_id) return;
-    
-    setLoading(true);
+    if (!subscriptionData) return;
     
     try {
+      setLoading(true);
+      
       const response = await fetch('/api/stripe/reactivate-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -143,7 +122,7 @@ export const usePremium = () => {
       }
       
       fetchSubscriptionStatus();
-    } catch (err) {
+    } catch {
       setError('Impossible de réactiver votre abonnement');
     } finally {
       setLoading(false);
