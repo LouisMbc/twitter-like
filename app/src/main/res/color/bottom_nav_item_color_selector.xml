@@ -1,0 +1,8 @@
+<!-- res/color/bottom_nav_item_color_selector.xml -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Couleur de l'item lorsqu'il est sélectionné (coché) -->
+    <item android:state_checked="true" android:color="@color/bottom_nav_item_selected" />
+
+    <!-- Couleur de l'item par défaut (non sélectionné) -->
+    <item android:color="@color/bottom_nav_item_unselected" />
+</selector>

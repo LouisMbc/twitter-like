@@ -1,0 +1,6 @@
+<!-- res/drawable/image_error_placeholder.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF3131"/> <!-- Rouge clair -->
+    <!-- Vous pourriez aussi utiliser un <bitmap> ou <vector> ici -->
+</shape>

@@ -1,0 +1,33 @@
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation_graph"
+    app:startDestination="@id/navigation_home">
+
+<fragment
+    android:id="@id/navigation_home"
+    android:name="com.example.flow2.AccueilFragment"
+    android:label="fragment_accueil"
+    tools:layout="@layout/fragment_accueil" />
+
+<fragment
+    android:id="@id/navigation_search"
+    android:name="com.example.flow2.ExplorerFragment"
+    android:label="fragment_explorer"
+    tools:layout="@layout/fragment_explorer" />
+<fragment
+    android:id="@id/navigation_messages"
+    android:name="com.example.flow2.MessagesFragment"
+    android:label="fragment_messages"
+    tools:layout="@layout/fragment_messages" />
+<fragment
+    android:id="@id/navigation_notifications"
+    android:name="com.example.flow2.NotificationsFragment"
+    android:label="fragment_notifications"
+    tools:layout="@layout/fragment_notifications" />
+<fragment
+    android:id="@id/navigation_profile"
+    android:name="com.example.flow2.ProfileFragment"
+    android:label="fragment_profil"
+    tools:layout="@layout/fragment_profile" />
+    </navigation>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF0000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="primaire">#282325</color>
+    <color name="secondaire">#FF3131</color>
+    <color name="fondEcran">#FFFFFF</color>
+    <color name="selection">#E6E7E8</color>
+    <color name="hyperlink_blue">#0078D7</color>
+
+
+    <!-- Couleurs pour la BottomNavigationView -->
+    <color name="bottom_nav_background">#282325</color>
+    <color name="bottom_nav_item_selected">#FF3131</color>
+    <color name="bottom_nav_item_unselected">#E6E7E8</color>
+</resources>
