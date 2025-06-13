@@ -205,39 +205,30 @@ const Story = ({
               >
                 <div className="flex flex-col items-center">
                   {/* Photo de profil avec bordure rose comme dans l'image */}
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-500 to-red-500 p-[3px]">
-                      <div className="w-full h-full bg-gray-900 rounded-full flex items-center justify-center">
-                        {firstStory.Profile?.profilePicture ? (
-                          <img 
-                            src={firstStory.Profile.profilePicture} 
-                            alt={firstStory.Profile.nickname || 'Profile'}
-                            className="w-full h-full object-cover rounded-full"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                            {firstStory.Profile?.nickname?.charAt(0).toUpperCase() || 'U'}
-                          </div>
-                        )}
-                      </div>
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-500 to-red-500 p-[3px]">
+                    <div className="w-full h-full bg-gray-900 rounded-full flex items-center justify-center">
+                      {firstStory.Profile?.profilePicture ? (
+                        <img 
+                          src={firstStory.Profile.profilePicture} 
+                          alt={firstStory.Profile.nickname || 'Profile'}
+                          className="w-full h-full object-cover rounded-full"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                          {firstStory.Profile?.nickname?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                      )}
                     </div>
-                    
-                    {/* Bouton + pour l'utilisateur actuel */}
-                    {isCurrentUserStory && (
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center border-2 border-gray-900 shadow-lg">
-                        <span className="text-white font-bold text-sm leading-none">+</span>
-                      </div>
-                    )}
                   </div>
-                  
-                  {/* Nom d'utilisateur */}
-                  <p className="text-xs text-gray-300 text-center mt-2 truncate max-w-16">
-                    {firstStory.Profile?.nickname || 'User'}
-                  </p>
                 </div>
+                
+                {/* Nom d'utilisateur */}
+                <p className="text-xs text-gray-300 text-center mt-2 truncate max-w-16">
+                  {firstStory.Profile?.nickname || 'User'}
+                </p>
               </div>
             );
           })}
