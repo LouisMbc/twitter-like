@@ -1,5 +1,4 @@
 import { FC } from 'react';
-import supabase from '@/lib/supabase';
 
 export interface FollowButtonProps {
   isFollowing: boolean;

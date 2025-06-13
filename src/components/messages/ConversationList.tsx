@@ -1,7 +1,5 @@
 // src/components/messages/ConversationList.tsx
 import { useMessages } from '@/hooks/useMessages';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import Image from 'next/image';
 
 interface ConversationListProps {
@@ -26,7 +24,7 @@ export default function ConversationList({ onSelectConversation, selectedUserId 
 
   return (
     <div className="divide-y divide-gray-200">
-      {conversations.map((conversation: any) => (
+      {conversations.map((conversation: unknown) => (
         <div
           key={conversation.id}
           onClick={() => onSelectConversation(conversation.otherUser.id)}

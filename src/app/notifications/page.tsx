@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { FaSearch, FaEllipsisH } from 'react-icons/fa';
+import { FaEllipsisH } from 'react-icons/fa';
 import { BellIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -19,7 +19,7 @@ export default function NotificationsPage() {
     useAuth(); // Protection de la route
 
     // Déterminer l'URL de redirection en fonction du type de notification
-    const getNotificationUrl = (notification: any) => {
+    const getNotificationUrl = (notification: unknown) => {
         switch (notification.content_type) {
             case 'tweet':
                 return `/tweets/${notification.content_id}`;
@@ -42,7 +42,7 @@ export default function NotificationsPage() {
     };
 
     // Marquer une notification comme lue et naviguer vers la cible
-    const handleNotificationClick = async (notification: any) => {
+    const handleNotificationClick = async (notification: unknown) => {
         // Si la notification n'est pas lue, la marquer comme lue
         if (!notification.is_read) {
             await markAsRead(notification.id);
@@ -52,7 +52,7 @@ export default function NotificationsPage() {
     };
 
     // Filter notifications based on active tab
-    const filteredNotifications = notifications.filter((notification: any) => {
+    const filteredNotifications = notifications.filter((notification: unknown) => {
         if (activeTab === 'mention') {
             return notification.type === 'mention';
         }
@@ -97,7 +97,7 @@ export default function NotificationsPage() {
                             className={`px-4 py-3 text-sm font-medium ${activeTab === 'mention' ? 'border-b-2 border-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
                             onClick={() => setActiveTab('mention')}
                         >
-                            Mentions ({notifications.filter((n: any) => n.type === 'mention').length})
+                            Mentions ({notifications.filter((n: unknown) => n.type === 'mention').length})
                         </button>
                     </div>
                 </div>
@@ -113,7 +113,7 @@ export default function NotificationsPage() {
                     </div>
                 ) : filteredNotifications.length > 0 ? (
                     <div className="divide-y divide-gray-200 dark:divide-gray-800">
-                        {filteredNotifications.map((notification: any) => (
+                        {filteredNotifications.map((notification: unknown) => (
                             <div 
                                 key={notification.id}
                                 className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors cursor-pointer ${!notification.is_read ? 'bg-red-50 dark:bg-gray-900/30 border-l-2 border-red-500' : ''}`}

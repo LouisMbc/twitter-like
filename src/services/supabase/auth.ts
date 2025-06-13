@@ -29,7 +29,7 @@ export const authService = {
     return { error };
   },
 
-  updatePassword: async (password: string, _confirmPassword?: string | null) => {
+  updatePassword: async (password: string) => {
     const { data, error } = await supabase.auth.updateUser({
       password
     });

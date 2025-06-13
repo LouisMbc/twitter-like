@@ -42,7 +42,7 @@ export default function CommentForm({ tweetId, onCommentAdded, parentCommentId }
           if (mentions.length > 0) {
             await mentionService.createMentions(mentions, tweetId, 'comment');
           }
-        } catch (mentionError) {
+        } catch {
         }
   
         // Créer le commentaire

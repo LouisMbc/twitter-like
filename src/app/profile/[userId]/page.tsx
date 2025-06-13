@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -28,12 +28,6 @@ export default function UserProfilePage() {
     setActiveTab
   } = useUserProfile(userId);
 
-  // Fonction pour gérer le changement du nombre d'abonnements
-  const handleFollowingChange = (change: number) => {
-    // Cette fonction peut rester vide car c'est le profil d'un autre utilisateur
-    // Le compteur d'abonnements de l'utilisateur courant est géré par handleFollowToggle
-  };
-
   // Empêcher le scroll quand une story est ouverte
   useEffect(() => {
     const body = document.body;
@@ -58,14 +52,13 @@ export default function UserProfilePage() {
         <div className="ml-64 flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Profil non trouvé</h2>
-            <p className="text-muted-foreground">Ce profil n'existe pas ou a été supprimé.</p>
+            <p className="text-muted-foreground">Ce profil n&apos;existe pas ou a été supprimé.</p>
           </div>
         </div>
       </div>
     );
   }
 
-  const isCurrentUser = currentProfileId === profile.id;
   return (
     <div className="min-h-screen flex bg-background text-foreground transition-all duration-300">
       <Header />
@@ -114,7 +107,7 @@ export default function UserProfilePage() {
                 <div className="text-center py-16 px-8">
                   <div className="text-6xl mb-4">📝</div>
                   <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">Aucune publication</h3>
-                  <p className="text-gray-500 dark:text-gray-500">{profile.nickname} n'a pas encore publié.</p>
+                  <p className="text-gray-500 dark:text-gray-500">{profile.nickname} n&apos;a pas encore publié.</p>
                 </div>
               )
             ) : (
@@ -134,7 +127,7 @@ export default function UserProfilePage() {
                 <div className="text-center py-16 px-8">
                   <div className="text-6xl mb-4">💬</div>
                   <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">Aucune réponse</h3>
-                  <p className="text-gray-500 dark:text-gray-500">{profile.nickname} n'a pas encore répondu.</p>
+                  <p className="text-gray-500 dark:text-gray-500">{profile.nickname} n&apos;a pas encore répondu.</p>
                 </div>
               )
             )}

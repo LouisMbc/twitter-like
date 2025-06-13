@@ -28,7 +28,7 @@ export const hashtagService = {
 
     for (const name of hashtagNames) {
       // Vérifier si le hashtag existe
-      let { data: existingHashtag } = await supabase
+      const { data: existingHashtag } = await supabase
         .from('hashtags') 
         .select('*')
         .eq('name', name)

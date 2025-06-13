@@ -2,13 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import TweetCard from "@/components/tweets/TweetCard";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import { useRef, useCallback } from "react";
-import Image from "next/image";
 import Header from "@/components/shared/Header";
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -32,7 +30,6 @@ export default function ProfilePage() {
     setActiveTab,
   } = useProfile();
 
-  const [mediaTweets, setMediaTweets] = useState<Tweet[]>([]);
   const [likedTweets, setLikedTweets] = useState<Tweet[]>([]);
 
   useEffect(() => {
@@ -40,18 +37,7 @@ export default function ProfilePage() {
   }, [loadProfile]);
 
   useEffect(() => {
-    if (tweets.length > 0) {
-      // Filtrer les tweets avec médias - EXCLURE les retweets
-      const tweetsWithMedia = tweets.filter(
-        (tweet) => tweet.picture && 
-                   tweet.picture.length > 0 && 
-                   !tweet.retweet_id  // Exclure les retweets
-      );
-      setMediaTweets(tweetsWithMedia);
-    }
-
     if (profile?.id) {
-      // Charger les tweets likés
       const loadLikedTweets = async () => {
         const { data: likedTweetsData, error } = await supabase
           .from("Likes")
@@ -109,7 +95,7 @@ export default function ProfilePage() {
   const tweetsObserver = useRef<IntersectionObserver | null>(null);
 
   // Fonction pour charger plus de tweets (placeholder)
-  const loadMoreTweets = useCallback(async (profileId: string, page: number) => {
+  const loadMoreTweets = useCallback(async () => {
     // Logique pour charger plus de tweets si nécessaire
   }, []);
 
@@ -121,7 +107,7 @@ export default function ProfilePage() {
 
       tweetsObserver.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && tweets.length > 0) {
-          loadMoreTweets(currentProfileId || "", 1);
+          loadMoreTweets();
         }
       });
 
@@ -162,13 +148,13 @@ export default function ProfilePage() {
               </svg>
               <h2 className="text-2xl font-bold mb-4">Profil non trouvé</h2>
               <p className="text-gray-400 mb-6">
-                Ce profil n'existe pas ou a été supprimé.
+                Ce profil n&apos;existe pas ou a été supprimé.
               </p>
               <button
                 onClick={() => router.push("/dashboard")}
                 className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
               >
-                Retour à l'accueil
+                Retour à l&apos;accueil
               </button>
             </div>
           </div>
@@ -213,9 +199,7 @@ export default function ProfilePage() {
           {/* Tabs and Content - Full Width */}
           <div className="w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-10 transition-colors duration-300">
             <div className="w-full">
-              <ProfileTabs activeTab={"tweets"} onTabChange={function (tab: "tweets" | "comments"): void {
-                throw new Error("Function not implemented.");
-              } } />
+              <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
             </div>
           </div>
 
@@ -242,6 +226,29 @@ export default function ProfilePage() {
                     </h3>
                     <p className="text-gray-500 dark:text-gray-500">
                       Quand vous publierez des posts, ils apparaîtront ici.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === "likes" ? (
+              <div className="w-full">
+                {likedTweets.length > 0 ? (
+                  likedTweets.map((tweet) => (
+                    <div
+                      key={tweet.id}
+                      className="w-full border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors"
+                    >
+                      <TweetCard tweet={tweet} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="w-full text-center py-16 px-8">
+                    <div className="text-6xl mb-4">❤️</div>
+                    <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+                      Aucun like
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-500">
+                      Quand vous aimerez des posts, ils apparaîtront ici.
                     </p>
                   </div>
                 )}

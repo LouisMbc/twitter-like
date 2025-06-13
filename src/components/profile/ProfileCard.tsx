@@ -69,7 +69,7 @@ export default function ProfileCard({
         if (error && error.code !== 'PGRST116') throw error;
         
         setIsFollowing(!!data);
-      } catch (error) {
+      } catch {
       }
     };
     
@@ -149,7 +149,7 @@ export default function ProfileCard({
       // Force refresh de la page pour récupérer les données à jour
       router.refresh();
       
-    } catch (error) {
+    } catch {
     } finally {
       setLoading(false);
     }

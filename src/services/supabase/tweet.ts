@@ -112,11 +112,7 @@ export const tweetService = {
         .eq('following_id', authorId);
       
       if (followers && followers.length > 0) {
-        const { data: authorData } = await supabase
-          .from('Profile')
-          .select('nickname')
-          .eq('id', authorId)
-          .single();
+      
         
         const notificationPromises = followers.map(follower => 
           notificationService.createNotification({

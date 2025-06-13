@@ -27,7 +27,7 @@ export default function SuccessPage() {
           body: JSON.stringify({ sessionId })
         });
         
-        const { success, error } = await response.json();
+        const { success } = await response.json();
         
         if (!success) {
           router.push('/premium?error=payment_verification_failed');
@@ -39,7 +39,7 @@ export default function SuccessPage() {
         setTimeout(() => {
           router.push('/premium');
         }, 5000);
-      } catch (err) {
+      } catch {
         router.push('/premium?error=unexpected_error');
       }
     };
@@ -77,7 +77,7 @@ export default function SuccessPage() {
           </p>
           
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            Vous serez redirigé vers votre page d'abonnement dans quelques secondes...
+            Vous serez redirigé vers votre page d&apos;abonnement dans quelques secondes...
           </p>
           
           <button

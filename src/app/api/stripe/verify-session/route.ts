@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, session });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la vérification de la session' },
       { status: 500 }

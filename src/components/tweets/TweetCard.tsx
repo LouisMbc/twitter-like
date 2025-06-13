@@ -6,7 +6,6 @@ import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import { ArrowPathIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
-import { MessageCircle } from 'lucide-react';
 import ReactionBar from '@/components/reactions/ReactionBar';
 import ViewCount from '@/components/shared/ViewCount';
 import RetweetButton from './RetweetButton';
@@ -16,7 +15,6 @@ import { Tweet } from '@/types';
 import { tweetService } from '@/services/supabase/tweet';
 import supabase from '@/lib/supabase';
 import Image from 'next/image';
-import { Comment } from '@/types';
 
 interface TweetCardProps {
   tweet: Tweet;
@@ -32,7 +30,7 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
   const [showComments, setShowComments] = useState(false);
 
   // Fonction pour gérer l'ajout de commentaires avec mise à jour immédiate
-  const handleCommentAdded = useCallback((newComment: Comment) => {
+  const handleCommentAdded = useCallback(() => {
     setCommentCount(prev => prev + 1);
   }, []);
 
@@ -64,23 +62,6 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
     fetchCommentCount();
   }, [tweet.id]);
 
-  // Format the date with error handling
-  const formattedDate = (() => {
-    try {
-      // Check if created_at is a valid date string
-      const dateObj = new Date(tweet.published_at);
-      if (isNaN(dateObj.getTime())) {
-        return "récemment";
-      }
-      return formatDistance(dateObj, new Date(), { 
-        addSuffix: true,
-        locale: fr 
-      });
-    } catch (error) {
-      return "récemment";
-    }
-  })();
-  
   // Helper function to format dates consistently
   const formatDate = (dateString: string) => {
     try {
@@ -92,7 +73,7 @@ export default function TweetCard({ tweet, detailed = false, showRetweetButton =
         addSuffix: true,
         locale: fr 
       });
-    } catch (error) {
+    } catch {
       return "récemment";
     }
   };

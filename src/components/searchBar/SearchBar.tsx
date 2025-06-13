@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import supabase from '@/lib/supabase';
 import { hashtagService } from '@/services/supabase/hashtag';
 import { Profile } from '@/types';
-import Image from 'next/image';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -86,7 +85,7 @@ export default function SearchBar({
 
       setSearchResults(users || []);
       setHashtagResults(hashtags);
-    } catch (error) {
+    } catch {
       setSearchResults([]);
       setHashtagResults([]);
     } finally {
@@ -220,13 +219,13 @@ export default function SearchBar({
                     onClick={handleViewAllResults}
                   >
                     <span className="text-sm font-medium">
-                      Voir tous les résultats pour "{searchQuery}"
+                      Voir tous les résultats pour &quot;{searchQuery}&quot;
                     </span>
                   </div>
                 </>
               ) : (
                 <div className="p-4 text-center">
-                  <p className="text-gray-600 dark:text-gray-400">Aucun résultat trouvé pour "{searchQuery}"</p>
+                  <p className="text-gray-600 dark:text-gray-400">Aucun résultat trouvé pour &quot;{searchQuery}&quot;</p>
                   <p className="text-sm text-gray-500 mt-1">
                     Essayez avec un autre terme de recherche
                   </p>

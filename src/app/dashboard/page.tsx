@@ -40,7 +40,7 @@ export default function DashboardPage() {
         if (!session) {
           router.push('/auth/login');
         }
-      } catch (error) {
+      } catch {
       } finally {
         setAuthChecked(true);
       }
@@ -73,7 +73,7 @@ export default function DashboardPage() {
       setIsRefreshing(true);
       await new Promise(resolve => setTimeout(resolve, 500));
       await refreshFeed();
-    } catch (error) {
+    } catch {
     } finally {
       setIsRefreshing(false);
     }
@@ -160,7 +160,7 @@ export default function DashboardPage() {
                         </svg>
                       </div>
                       <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent mb-2 sm:mb-3">
-                        Aucun tweet dans votre fil d'actualité
+                        Aucun tweet dans votre fil d&apos;actualité
                       </h3>
                       <p className="text-muted-foreground text-base sm:text-lg px-4">
                         Commencez à suivre des personnes pour voir leurs tweets ici !

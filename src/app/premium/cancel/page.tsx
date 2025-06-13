@@ -20,7 +20,7 @@ export default function CancelPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Abonnement non complété</h1>
           
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Le processus d'abonnement a été annulé ou interrompu. Aucun paiement n'a été effectué.
+            Le processus d&apos;abonnement a été annulé ou interrompu. Aucun paiement n&apos;a été effectué.
           </p>
           
           <div className="space-y-4">
@@ -35,7 +35,7 @@ export default function CancelPage() {
               onClick={() => router.push('/dashboard')}
               className="w-full py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg shadow focus:outline-none transition-colors duration-300"
             >
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </button>
           </div>
         </div>

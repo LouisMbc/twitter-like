@@ -1,19 +1,15 @@
 // src/app/premium/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { usePremium } from '@/hooks/usePremium';
-import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Header from '@/components/shared/Header';
 
 export default function PremiumPage() {
-  const router = useRouter();
   const { isPremium, subscriptionData, loading, error, subscribeToPermium, cancelSubscription, reactivateSubscription } = usePremium();
-  const { profile } = useProfile();
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Protéger la page
@@ -46,7 +42,7 @@ export default function PremiumPage() {
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-8 text-white">
               <h2 className="text-2xl font-bold mb-2">Débloquez toutes les fonctionnalités premium</h2>
-              <p className="opacity-90">Profitez d'une expérience sans limite sur Flow</p>
+              <p className="opacity-90">Profitez d&apos;une expérience sans limite sur Flow</p>
             </div>
             
             <div className="p-6 space-y-6">
@@ -89,7 +85,7 @@ export default function PremiumPage() {
                         <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                         </svg>
-                        <span>Priorité dans les fils d'actualité</span>
+                        <span>Priorité dans les fils d&apos;actualité</span>
                       </li>
                       <li className="flex items-center">
                         <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -155,7 +151,7 @@ export default function PremiumPage() {
                       <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                       </svg>
-                      <span>Vos tweets apparaissent en priorité dans les fils d'actualité</span>
+                      <span>Vos tweets apparaissent en priorité dans les fils d&apos;actualité</span>
                     </li>
                     <li className="flex items-center">
                       <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">

@@ -1,8 +1,5 @@
 //Types pour auth
 
-import { Session } from '@supabase/supabase-js';
-import { UserLanguagePreferences } from './language';
-
 interface UserMetadata {
   [key: string]: string | number | boolean;
 }

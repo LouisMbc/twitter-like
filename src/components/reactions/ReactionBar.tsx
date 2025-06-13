@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import supabase from '@/lib/supabase';
-import { notificationService } from '@/services/supabase/notification';
 
 interface ReactionBarProps {
   tweetId?: string;

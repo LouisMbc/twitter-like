@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { formatDistance } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import CommentForm from '@/components/comments/CommentForm';
 import supabase from '@/lib/supabase';

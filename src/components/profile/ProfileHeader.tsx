@@ -1,17 +1,13 @@
 "use client";
 
-import { formatDistance } from "date-fns";
-import { fr } from "date-fns/locale";
 import { Profile } from "@/types";
 import { useState, useRef, useEffect } from "react";
 import { addStory } from "@/services/supabase/story";
-import supabase from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { useStories } from "@/hooks/useStories";
 import Story from "@/components/stories/Story";
 import { messageService } from '@/services/supabase/message';
-import Image from 'next/image';
 
 interface ProfileHeaderProps {
   profile: Profile;
@@ -92,9 +88,9 @@ export default function ProfileHeader({
       
       
       try {
-        const { canMessage: canSendMessage, error } = await messageService.canMessage(currentProfileId, profile.id);
+        const { canMessage: canSendMessage } = await messageService.canMessage(currentProfileId, profile.id);
         setCanMessage(canSendMessage);
-      } catch (err) {
+      } catch {
         setCanMessage(false);
       }
     };

@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import styles from './loader.module.css';
 
 interface LogoLoaderProps {
   size?: "small" | "medium" | "large";

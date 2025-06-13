@@ -41,7 +41,7 @@ export default function SetupProfilePage() {
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Ces informations vous aideront à être découvert par d'autres utilisateurs
+              Ces informations vous aideront à être découvert par d&apos;autres utilisateurs
             </p>
           </div>
         </div>

@@ -6,8 +6,8 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap justify-center gap-1">
           <Link href="/about" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">À propos</Link>
-          <Link href="/help" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">Centre d'assistance</Link>
-          <Link href="/terms" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">Conditions d'utilisation</Link>
+          <Link href="/help" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">Centre d&apos;assistance</Link>
+          <Link href="/terms" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">Conditions d&apos;utilisation</Link>
           <Link href="/privacy" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">Politique de confidentialité</Link>
           <Link href="/cookies" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">Cookies</Link>
           <Link href="/accessibility" className="mx-3 hover:underline text-gray-400 hover:text-white transition-colors duration-200">Accessibilité</Link>

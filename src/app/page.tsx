@@ -17,7 +17,7 @@ export default function Home() {
         } else {
           router.push('/auth');
         }
-      } catch (err) {
+      } catch {
         router.push('/auth');
       }
     }

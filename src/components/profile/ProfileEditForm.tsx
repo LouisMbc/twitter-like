@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { ProfileForm } from '@/types';
+import { Profile } from '@/types';
 
 interface ProfileEditFormProps {
   profile: Profile;
@@ -17,9 +17,7 @@ export default function ProfileEditForm({ profile, onSave }: ProfileEditFormProp
     website: profile.website || ''
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewBanner, setPreviewBanner] = useState<string | null>(null);
-  const [selectedBanner, setSelectedBanner] = useState<File | null>(null);
 
   useEffect(() => {
     if (profile.profilePicture) {
@@ -38,10 +36,8 @@ export default function ProfileEditForm({ profile, onSave }: ProfileEditFormProp
         setPreviewImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-      setSelectedImage(file);
     }
   };
-
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -50,13 +46,22 @@ export default function ProfileEditForm({ profile, onSave }: ProfileEditFormProp
         setPreviewBanner(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-      setSelectedBanner(file);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
+    
+    const updatedProfile: Profile = {
+      ...profile,
+      nickname: formData.nickname,
+      bio: formData.bio,
+      location: formData.location,
+      website: formData.website,
+      profilePicture: previewImage || profile.profilePicture,
+      bannerPicture: previewBanner || profile.bannerPicture
+    };
+    
+    onSave(updatedProfile);
   };
 
   return (
@@ -78,9 +83,16 @@ export default function ProfileEditForm({ profile, onSave }: ProfileEditFormProp
               </span>
             </div>
           )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
         </div>
       </div>
       
+      {/* Banner preview */}
       {/* Banner preview */}
       {previewBanner || profile.bannerPicture ? (
         <div className="w-full h-48 relative rounded-lg overflow-hidden">
@@ -90,9 +102,24 @@ export default function ProfileEditForm({ profile, onSave }: ProfileEditFormProp
             fill
             className="object-cover"
           />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleBannerChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
         </div>
-      ) : null}
-
+      ) : (
+        <div className="w-full h-48 bg-gray-700 rounded-lg flex items-center justify-center relative">
+          <span className="text-gray-400">Click to add banner</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleBannerChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+        </div>
+      )}
       <div className="space-y-4">
         {/* Pseudo */}
         <div>

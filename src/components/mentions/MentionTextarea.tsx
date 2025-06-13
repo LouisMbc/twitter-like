@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { mentionService } from '@/services/supabase/mention';
-import Image from 'next/image';
 
 interface MentionTextareaProps {
   value: string;
@@ -66,7 +65,7 @@ export default function MentionTextarea({
         setShowSuggestions(data.length > 0);
         setSelectedIndex(0);
       }
-    } catch (error) {
+    } catch {
     }
   };
 

@@ -28,7 +28,7 @@ export default function UsernameProfilePage() {
           // Utilisateur non trouvé
           router.push('/404');
         }
-      } catch (error) {
+      } catch {
         router.push('/404');
       } finally {
         setLoading(false);

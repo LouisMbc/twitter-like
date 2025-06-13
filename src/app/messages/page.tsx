@@ -4,11 +4,10 @@
 import { useProfile } from '@/hooks/useProfile';
 import { useMessages } from '@/hooks/useMessages';
 import ConversationList from '@/components/messages/ConversationList';
-import { MagnifyingGlassIcon, PencilSquareIcon, InboxIcon, ArrowLeftIcon, InformationCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, PencilSquareIcon, ArrowLeftIcon, InformationCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import { useState, useRef, useEffect, FormEvent, useCallback } from 'react';
-import { profileService } from '@/services/supabase/profile';
 import supabase from '@/lib/supabase';
 import { messageService } from '@/services/supabase/message';
 import { debounce } from 'lodash';
@@ -21,7 +20,7 @@ type ContactType = {
 };
 
 export default function MessagesPage() {
-  const { profile, loading } = useProfile();  const { conversations, currentMessages, currentContact, loading: messagesLoading, sendingMessage, error, fetchMessages, sendMessage, checkCanMessage } = useMessages();
+  const { profile, loading } = useProfile();  const { conversations, currentMessages, currentContact, loading: messagesLoading, sendingMessage, fetchMessages, sendMessage, checkCanMessage } = useMessages();
   const router = useRouter();
   
   // États pour la conversation active
@@ -49,7 +48,7 @@ export default function MessagesPage() {
       }
       
       setFollowings(allUsers || []);
-    } catch (err) {
+    } catch {
     } finally {
       setLoadingFollowings(false);
     }
@@ -69,7 +68,7 @@ export default function MessagesPage() {
         }
         
         setFollowings(searchedUsers || []);
-      } catch (err) {
+      } catch {
       } finally {
         setLoadingFollowings(false);
       }
@@ -120,7 +119,7 @@ export default function MessagesPage() {
         contact = userData;
       } else {
         // Récupérer les informations du contact depuis les conversations existantes d'abord
-        const existingConversation = conversations.find((conv: any) => 
+        const existingConversation = conversations.find((conv: unknown) => 
           conv.id === userId || conv.user?.id === userId
         );
         
@@ -159,7 +158,7 @@ export default function MessagesPage() {
       // Charger les messages via useMessages
       fetchMessages(contact);
       
-    } catch (error) {
+    } catch {
     } finally {
       setCheckingPermissions(false);
     }
@@ -310,7 +309,7 @@ export default function MessagesPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 15v2m0 0v2m0-2h2m-2 0H10m0 0V9a3 3 0 116 0v6z" />
                         </svg>
                       </div>
-                      <h3 className="text-base lg:text-lg font-medium text-white mb-2">Impossible d'envoyer des messages</h3>
+                      <h3 className="text-base lg:text-lg font-medium text-white mb-2">Impossible d&apos;envoyer des messages</h3>
                       <p className="text-gray-400 text-sm lg:text-base">Vous devez vous suivre mutuellement pour pouvoir communiquer.</p>
                     </div>
                   </div>
@@ -410,7 +409,7 @@ export default function MessagesPage() {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
                             if (message.trim()) {
-                              handleSendMessage(e as any);
+                              handleSendMessage(e as unknown);
                             }
                           }
                         }}

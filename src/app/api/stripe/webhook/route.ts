@@ -75,15 +75,15 @@ async function processSubscription(session: Stripe.Checkout.Session) {
     : session.subscription.id;
 
   const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId);
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('Subscriptions')
     .upsert({
       profile_id: profileId,
       subscription_id: subscriptionId,
       plan: 'premium',
       status: subscriptionResponse.status,
-      current_period_end: new Date((subscriptionResponse as any).current_period_end * 1000).toISOString(),
-      cancel_at_period_end: (subscriptionResponse as any).cancel_at_period_end
+      current_period_end: new Date((subscriptionResponse as unknown).current_period_end * 1000).toISOString(),
+      cancel_at_period_end: (subscriptionResponse as unknown).cancel_at_period_end
     }, { onConflict: 'subscription_id' });
 
   if (error) {

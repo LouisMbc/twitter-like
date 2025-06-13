@@ -12,12 +12,6 @@ import Image from 'next/image';
 
 const STORY_DURATION = 60; // Durée en secondes (1 minute)
 
-interface StoryUser {
-  id: string;
-  nickname: string;
-  profilePicture?: string;
-}
-
 const Story = ({ 
   userId, 
   initialStoryIndex,
@@ -62,7 +56,7 @@ const Story = ({
     }
     acc[userId].push(story);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, unknown[]>);
 
   // Vérifier si l'utilisateur actuel est le propriétaire de la story
   useEffect(() => {
@@ -210,9 +204,11 @@ const Story = ({
                   {/* Avatar */}
                   <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-800 border-2 border-gray-900 flex items-center justify-center">
                     {firstStory.Profile?.profilePicture ? (
-                      <img 
+                      <Image 
                         src={firstStory.Profile.profilePicture} 
                         alt={firstStory.Profile.nickname || 'Profile'}
+                        width={64}
+                        height={64}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';

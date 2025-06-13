@@ -68,7 +68,7 @@ export const useNotifications = () => {
     } catch {
       fetchNotifications();
     }
-  }, [fetchNotifications]);
+  }, [fetchNotifications, profile]);
 
   const markAllAsRead = useCallback(async () => {
     if (!profile) return;
