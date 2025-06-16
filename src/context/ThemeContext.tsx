@@ -18,27 +18,37 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setMounted(true);
     
-    // Récupérer le thème depuis localStorage
-    const savedTheme = (localStorage.getItem('theme') as Theme) || 'light';
-    setTheme(savedTheme);    // Appliquer la classe immédiatement
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    // Vérifier si on est côté client
+    if (typeof window !== 'undefined') {
+      // Récupérer le thème depuis localStorage
+      const savedTheme = (localStorage.getItem('theme') as Theme) || 'light';
+      setTheme(savedTheme);
+      
+      // Appliquer la classe immédiatement
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
   }, []);
+
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    
+    // Vérifier si on est côté client
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', newTheme);
+      
       if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
   };
 
-  // Éviter l'hydration mismatch - afficher les enfants même avant le montage
   const value = { theme, toggleTheme };
   
   return (

@@ -41,15 +41,40 @@ module.exports = {
       },
       animation: {
         'plus-rotate': 'plusRotate 0.3s ease',
+        'spin-slow': 'spin 3s linear infinite',
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
       },
       keyframes: {
         plusRotate: {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(90deg)' }
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
         }
       }
     },
+  },  plugins: [],
+  // Optimisation pour la production
+  corePlugins: {
+    preflight: true,
   },
-  plugins: [],
+  // Safelist configuration for Tailwind CSS v3.0+
+  safelist: [
+    'dark',
+    'story-red-500',
+    'story-red-600',
+    'notification-badge',
+    {
+      pattern: /^(bg|text|border)-/,
+      variants: ['hover', 'focus', 'dark'],
+    },
+  ],
 }
 

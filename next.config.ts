@@ -1,88 +1,39 @@
-import type { Configuration as WebpackConfig } from 'webpack';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Configuration minimale pour des performances optimales en développement
+  swcMinify: true,
+  poweredByHeader: false,
+  
+  // Optimisations expérimentales simplifiées
   experimental: {
-    optimizePackageImports: ['@supabase/supabase-js'],
-    serverActions: {
-      allowedOrigins: ['localhost:3000'],
-      bodySizeLimit: '2mb'
-    }
+    optimizePackageImports: [
+      '@supabase/supabase-js',
+      '@heroicons/react',
+      'lucide-react'
+    ],
+    // Désactiver turbo pour éviter les conflits
   },
-  webpack: (config: WebpackConfig, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    config.resolve = config.resolve || {};
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'fs': false,
-      'path': false,
-    };
-
-    // Fallbacks basiques pour Node.js
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      path: false,
-    };
-
-    // Optimisation pour la production
-    if (!dev) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              priority: 10,
-              reuseExistingChunk: true,
-            },
-            supabase: {
-              test: /[\\/]node_modules[\\/]@supabase[\\/]/,
-              name: 'supabase',
-              priority: 20,
-              reuseExistingChunk: true,
-            },
-          },
-        },
-      };
-    }
-
-    return config;
-  },
+  
+  // Images optimisées simplifiées
   images: {
-    domains: ['ekpximtmuwwxdkhrepna.supabase.co'],
-    formats: ['image/webp', 'image/avif'],
-  },
-  headers: async () => {
-    return [
+    remotePatterns: [
       {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin'
-          },
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'unsafe-none' 
-          },
-          {
-            key: 'Cross-Origin-Resource-Policy',
-            value: 'cross-origin' 
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      }
-    ];
+        protocol: 'https',
+        hostname: 'ekpximtmuwwxdkhrepna.supabase.co',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
-  // Ignorer les erreurs pendant le build
+  
+  // Ignorer les erreurs en développement pour la vitesse
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: process.env.NODE_ENV === 'development',
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
